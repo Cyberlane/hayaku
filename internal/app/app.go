@@ -24,7 +24,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-var Version = "0.2.0"
+var Version = "0.2.1"
 
 // Run returns a nonzero status for invalid policy, incomplete execution or misses.
 func Run(ctx context.Context, args []string, out, errout io.Writer) int {
@@ -376,6 +376,9 @@ func initialize(root, path string, out, errout io.Writer) int {
 	}
 	if w, ok := detectVitest(root); ok {
 		c.Workspaces = append(c.Workspaces, w)
+		if w.NodeRuntime != nil {
+			c.Context.Env = map[string]string{"CI": "true"}
+		}
 	}
 	if len(c.Workspaces) == 0 {
 		return failure(errout, errors.New("no supported root manifest detected; create explicit hayaku.json with original suite command (adapter command)"))

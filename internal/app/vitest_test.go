@@ -28,7 +28,7 @@ func vitestNativeFixture(t *testing.T, hidden bool) (string, string, model.Confi
 		t.Fatal("native qualification requires explicit absolute Node and dependency paths")
 	}
 	root := t.TempDir()
-	c := model.Config{Schema: model.Schema, Context: model.Context{ID: "native-vitest-fixture", OS: runtime.GOOS, Arch: runtime.GOARCH}, Workspaces: []model.Workspace{{
+	c := model.Config{Schema: model.Schema, Context: model.Context{ID: "native-vitest-fixture", OS: runtime.GOOS, Arch: runtime.GOARCH, Env: map[string]string{"CI": "true"}}, Workspaces: []model.Workspace{{
 		ID: "js", Root: ".", Adapter: "vitest", NodeRuntime: &model.NodeRuntime{Node: node, Modules: modules},
 		Command: model.Command{Dir: ".", Executable: filepath.Join(modules, ".bin", "vitest"), Args: []string{"run", "--globals", "--config", "vitest.config.mjs"}},
 	}}}
@@ -289,5 +289,42 @@ func TestNativeVitestSetupChangeBroadensEveryConfiguredFile(t *testing.T) {
 	}
 	if len(plan.Proposed) != 2 || len(plan.Selected) != 2 || plan.Mode != "full-fallback" {
 		t.Fatalf("configured setup influence omitted a test file: proposed=%v selected=%v", plan.Proposed, plan.Selected)
+	}
+}
+
+func TestNativeVitestConfiguredRootIsNotOverridden(t *testing.T) {
+	root, _, c := vitestNativeFixture(t, false)
+	if err := os.Mkdir(filepath.Join(root, "nested"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	vitestWrite(t, root, "nested/inside.test.ts", "test('inside configured root', () => { expect(true).toBe(true) });\n")
+	vitestWrite(t, root, "b.test.ts", "test('outside configured root', () => { throw new Error('must not execute'); });\n")
+	vitestWrite(t, root, "vitest.config.mjs", "export default { root: './nested', test: { globals: true } };\n")
+	candidate := vitestCandidate(t, root)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	plan, err := Build(ctx, root, candidate, candidate, c, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(plan.Selected) != 1 || plan.Selected[0].Selector != "nested/inside.test.ts" {
+		t.Fatalf("configured root changed native full inventory: %+v", plan.Selected)
+	}
+	full, err := Execute(ctx, root, c, plan)
+	if err != nil || !full.Passed || !full.Commands[0].Complete {
+		t.Fatalf("configured root execution changed: err=%v result=%+v", err, full)
+	}
+}
+
+func TestNativeVitestContradictoryCIContextIsRejected(t *testing.T) {
+	root, base, c := vitestNativeFixture(t, false)
+	c.Context.Env["CI"] = "false"
+	// A forced CI value would silently omit b from this conditional inventory.
+	vitestWrite(t, root, "vitest.config.mjs", "export default { test: { globals: true, include: process.env.CI === 'true' ? ['a.test.ts'] : ['a.test.ts', 'b.test.ts'] } };\n")
+	candidate := vitestCandidate(t, root)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	if _, err := Build(ctx, root, base, candidate, c, false); err == nil {
+		t.Fatal("contradictory CI context was silently replaced")
 	}
 }

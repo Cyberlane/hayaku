@@ -1,6 +1,6 @@
 # Vitest support
 
-Hayaku v0.2.0 supports the **Vitest 4.1.11 native API** for configured Vite import
+Hayaku v0.2.1 supports the **Vitest 4.1.11 native API** for configured Vite import
 influence, experimental JS/TS file/project proposals, full execution and shadow
 comparison. Production test omission remains disabled. Jest, Mocha, Node's test
 runner, Playwright and Cypress still use configured full-suite fallback commands.
@@ -31,7 +31,7 @@ For an explicit root workspace, the configuration shape is:
 ```json
 {
   "schema": 1,
-  "context": { "id": "node22-linux", "os": "linux", "arch": "amd64" },
+  "context": { "id": "node22-linux", "os": "linux", "arch": "amd64", "env": { "CI": "true" } },
   "workspaces": [{
     "id": "js", "root": ".", "adapter": "vitest",
     "command": {
@@ -45,6 +45,11 @@ For an explicit root workspace, the configuration shape is:
   }]
 }
 ```
+
+Bound Vitest requires effective `CI=true`, supplied by the job environment or
+explicitly reviewed in `context.env`; missing or contradictory values are rejected.
+`init` declares this value for review. Configured Vite roots are preserved; discovered
+files must remain within the configured command workspace.
 
 Replace the absolute paths and host context with actual runner values. The
 configured executable must resolve to that installation's `vitest/vitest.mjs`;

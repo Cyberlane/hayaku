@@ -39,7 +39,7 @@ try {
   if (pkg.version !== '4.1.11') throw new Error('unsupported Vitest API version');
   const api = await import(pathToFileURL(path.join(input.modules, 'vitest/dist/node.js')).href);
   const parsed = api.parseCLI(['vitest', ...input.args]);
-  vitest = await api.createVitest('test', { ...parsed.options, watch: false, root: input.cwd, cache: false }, { cacheDir: path.join(path.dirname(process.argv[1]), 'vite-cache') });
+  vitest = await api.createVitest('test', { ...parsed.options, watch: false, cache: false }, { cacheDir: path.join(path.dirname(process.argv[1]), 'vite-cache') });
   // Reject native modes that alter scope, write acceptance artifacts, or cannot
   // be reconciled by this qualified Node file protocol.
   const config = vitest.config;

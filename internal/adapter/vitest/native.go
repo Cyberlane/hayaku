@@ -91,7 +91,13 @@ func bridge(ctx context.Context, root string, w model.Workspace, c model.Context
 	for key, value := range c.Env {
 		env[key] = value
 	}
-	env["CI"] = "true"
+	ci := os.Getenv("CI")
+	if value, ok := c.Env["CI"]; ok {
+		ci = value
+	}
+	if ci != "true" {
+		return process.Output{}, errors.New("bound Vitest requires reviewed CI=true in context.env or the job environment")
+	}
 	return process.Run(bounded, model.Command{Executable: w.NodeRuntime.Node, Args: []string{script, string(payload)}}, cwd, env)
 }
 

@@ -19,6 +19,7 @@ import (
 // runtime. Native qualification uses opt-in installed runtime integration tests.
 func graphFixture(t *testing.T, inventory graphInventory) (string, model.Workspace) {
 	t.Helper()
+	t.Setenv("CI", "true")
 	if runtime.GOOS == "windows" {
 		t.Skip("Unix protocol fixture")
 	}

@@ -143,3 +143,19 @@ sort predicates, independent path guards, adapter ownership walks, normalization
 and independent test scaffolds were retained as intentional small similarities.
 No findings were suppressed or acknowledged. This review is advisory; native
 results and safety regressions provide behavioral evidence.
+
+The v0.2.1 scope correction adds native cases for configured nested Vite roots and
+contradictory CI values (ten native application cases in total). Required runs
+preserve configured roots and require reviewed effective CI=true. Independent
+patch review found no safety blockers. Mori's patch scan covered 63/63 supported
+files and 7/7 changed supported files without warnings, parse diagnostics or
+truncation. Its one focused similarity is independent fixture setup in the
+project/duplicate-name and configured-root tests; both assertions and scopes were
+reviewed and retained.
+
+After the patch, the complete local `go test -count=1 ./...`,
+`go test -race -count=1 ./...` and `go vet ./...` checks passed with the pinned
+native fixture enabled. The immutable staged Mori advisory check passed with
+63/63 supported files, 7/7 changed supported files and the same reviewed fixture
+similarity; working-tree/untracked inclusion was false and no findings were
+suppressed or acknowledged. Documentation links and public-path hygiene passed.

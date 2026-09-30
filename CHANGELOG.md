@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+- Preserve the configured Vite root during native discovery and execution.
+- Require reviewed effective `CI=true` instead of replacing configuration context.
+- Add native regressions for configured roots and contradictory CI values.
+
 ## v0.2.0
 
 - Native Vitest 4.1.11 configured Vite graph, JS/TS alias influence and experimental file/project proposals.
