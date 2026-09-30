@@ -1,0 +1,9 @@
+Generated with the built-in imagegen tool; transparent background enabled.
+
+Use case: logo-brand.
+Asset type: primary logo for Hayaku, a developer CLI that plans affected tests to speed up CI while retaining a conservative safety contract.
+Create one polished, distinctive minimal horizontal logo on a genuinely transparent background. A compact abstract geometric symbol on the left, the exact word "Hayaku" on the right, with generous clear space around the entire lockup.
+Symbol: three short parallel forward-slanting paths, forming a coherent fast-moving H silhouette, with one path continuing into a subtle upward check-shaped cut. Communicate speed, precise selection and dependable testing using simple bold geometry. Make the mark legible at small sizes, with few shapes and clean negative space. Avoid a generic lightning bolt.
+Typography: custom-feeling clean modern sans serif, medium-bold, exact text "Hayaku" (H capital, remaining lowercase), thoughtful kerning, calm technical character.
+Use a restrained solid high-contrast two-color treatment that suits a modern developer tool. Flat solid fills, sharp polished edges, vector-like craftsmanship.
+Composition: symbol and wordmark on one horizontal baseline, balanced sizes and spacing, centered as a single logo. No extra text, no slogan, no framing, no shadows, no gradient, no 3D, no mockup, no watermark, no decorative background. Output should be an actual ready-to-use transparent PNG, not a presentation sheet.

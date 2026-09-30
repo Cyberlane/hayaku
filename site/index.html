@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hayaku is a Go CLI for affected-test planning. Compare exact Git revisions, explain uncertainty, and evaluate proposals while full test suites remain the CI gate.">
+  <meta name="theme-color" content="#0751ff">
+  <title>Hayaku — Affected-test planning for careful CI</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="header wrap">
+    <a class="brand" href="./" aria-label="Hayaku home"><img src="assets/hayaku-logo.png" alt="Hayaku" width="2172" height="724"></a>
+    <nav aria-label="Main navigation">
+      <a href="#how-it-works">How it works</a>
+      <a href="https://github.com/Cyberlane/hayaku#readme">Docs</a>
+      <a class="nav-source" href="https://github.com/Cyberlane/hayaku">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <a class="release-label" href="https://github.com/Cyberlane/hayaku/releases/latest"><span class="status-dot" aria-hidden="true"></span> First release · Experimental <span aria-hidden="true">↗</span></a>
+        <h1 id="hero-title">Understand the change.<br><span>Keep the confidence.</span></h1>
+        <p class="hero-description">Affected-test planning for careful CI. Hayaku compares exact Git revisions, traces conservative influence, and makes uncertainty visible.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/Cyberlane/hayaku/releases/latest">Download Hayaku <span aria-hidden="true">↓</span></a>
+          <a class="button secondary" href="#get-started">Get started <span aria-hidden="true">→</span></a>
+        </div>
+        <p class="hero-footnote">A standalone Go CLI. No service account. No automatic runner installs.</p>
+      </div>
+      <div class="plan-card" aria-label="Illustrative planning flow">
+        <div class="plan-header"><span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>from change to evidence</span><span class="terminal-mark" aria-hidden="true">↗</span></div>
+        <div class="plan-body">
+          <p class="terminal-command"><span aria-hidden="true">$</span> hayaku plan --base BASE --candidate HEAD</p>
+          <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Exact source snapshots</strong><span>Committed bytes, modes, and revisions</span></div></div>
+          <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Conservative influence</strong><span>Old and new graphs; explicit evidence gaps</span></div></div>
+          <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Structured execution plan</strong><span>Original commands and execution context</span></div></div>
+          <div class="plan-outcome"><span class="outcome-label">REQUIRED</span><strong>Full test suite</strong><span class="outcome-dot" aria-hidden="true"></span></div>
+          <p class="plan-note">Affected-test proposals stay in shadow evaluation.</p>
+        </div>
+        <p class="illustration-caption">Illustrative flow · Current releases retain full suites</p>
+      </div>
+    </section>
+
+    <div class="principle-bar"><div class="wrap"><span>Exact revisions</span><span>Explainable evidence</span><span>Fail-closed decisions</span><span>Local-first workflow</span></div></div>
+
+    <section class="section wrap" id="how-it-works" aria-labelledby="how-title">
+      <div class="section-heading"><p class="eyebrow">A clearer path to faster CI</p><h2 id="how-title">Measure first. Narrow responsibly.</h2><p>Build evidence for test selection without trading away the checks you already trust.</p></div>
+      <div class="feature-grid">
+        <article class="feature"><div class="feature-number">01 <span aria-hidden="true">↗</span></div><h3>Map the change</h3><p>Read exact, locally available Git commits. Compare both dependency graphs so deleted and renamed code remain part of the analysis.</p></article>
+        <article class="feature"><div class="feature-number">02 <span aria-hidden="true">↗</span></div><h3>Explain the decision</h3><p>Inspect structured plans with workspace commands and evidence gaps. Unknown inputs retain the original suite or stop planning.</p></article>
+        <article class="feature"><div class="feature-number">03 <span aria-hidden="true">↗</span></div><h3>Evaluate in shadow</h3><p>Compare experimental Go proposals with full runs in separate source copies. Find missed failures and incomplete comparisons before considering omission.</p></article>
+      </div>
+    </section>
+
+    <section class="safety-section wrap" aria-labelledby="safety-title">
+      <div><p class="eyebrow">The safety contract</p><h2 id="safety-title">Uncertainty broadens a run.</h2><p>Native dependency metadata cannot capture every file read, service, subprocess, or shared state. Hayaku makes those limits explicit.</p></div>
+      <div class="safety-detail"><p><strong>Full suites remain the CI gate.</strong> Production test omission is disabled in this release. Shadow comparisons are finite evidence, and do not establish complete runtime influence.</p><a class="text-link" href="https://github.com/Cyberlane/hayaku/blob/main/docs/safety.md">Read the selection contract <span aria-hidden="true">→</span></a></div>
+    </section>
+
+    <section class="section wrap adapters-section" aria-labelledby="adapters-title">
+      <div class="section-heading"><p class="eyebrow">Ecosystem adapters</p><h2 id="adapters-title">A shared core. Honest boundaries.</h2><p>Discovery support and permission to skip tests are separate capabilities.</p></div>
+      <div class="adapter-table" role="region" aria-label="Adapter availability" tabindex="0">
+        <table><thead><tr><th scope="col">Ecosystem</th><th scope="col">Current capability</th><th scope="col">Production omission</th></tr></thead><tbody>
+          <tr><th scope="row">Go</th><td>Native package graph and experimental shadow comparison</td><td><span class="disabled-badge">Disabled</span></td></tr>
+          <tr><th scope="row">Cargo</th><td>Native offline, locked package metadata</td><td><span class="disabled-badge">Disabled</span></td></tr>
+          <tr><th scope="row">pytest / Vitest</th><td>Native collection bridges; qualification remains incomplete</td><td><span class="disabled-badge">Disabled</span></td></tr>
+          <tr><th scope="row">Other frameworks</th><td>Original configured full-suite commands</td><td><span class="disabled-badge">Disabled</span></td></tr>
+        </tbody></table>
+      </div>
+      <p class="table-note">Installed ecosystem tools are required for native discovery. Hayaku does not download runners. <a href="https://github.com/Cyberlane/hayaku/blob/main/docs/qualification.md">See qualification details.</a></p>
+    </section>
+
+    <section class="get-started wrap" id="get-started" aria-labelledby="start-title">
+      <div><p class="eyebrow">Start with a trusted repository</p><h2 id="start-title">A small CLI.<br>A visible decision.</h2><p>Download a release archive for your platform and verify its SHA-256 checksum. Review the generated workspace commands before planning.</p><a class="text-link" href="https://github.com/Cyberlane/hayaku#readme">Read the full setup guide <span aria-hidden="true">→</span></a></div>
+      <div class="quickstart"><div class="code-label">In your repository</div><pre><code><span class="code-comment"># Generate and review hayaku.json</span>
+hayaku init
+hayaku doctor
+
+<span class="code-comment"># Both commits must already exist locally</span>
+hayaku plan --base BASE --candidate HEAD \
+  --output .git/hayaku-plan.json
+hayaku explain --plan .git/hayaku-plan.json</code></pre><p>Replace <code>BASE</code> with your comparison commit. Native discovery can execute project code; use trusted repositories.</p></div>
+    </section>
+  </main>
+
+  <footer class="footer wrap"><p>Hayaku <span aria-hidden="true">/</span> Thoughtful test selection, built in the open.</p><div><a href="https://github.com/Cyberlane/hayaku">Source</a><a href="https://github.com/Cyberlane/hayaku/releases">Releases</a><a href="https://github.com/Cyberlane/hayaku/issues">Issues</a></div></footer>
+</body>
+</html>

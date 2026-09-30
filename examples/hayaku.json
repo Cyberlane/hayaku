@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "context": {"id": "linux-amd64-go", "os": "linux", "arch": "amd64"},
+  "workspaces": [
+    {
+      "id": "backend", "root": "backend", "adapter": "go",
+      "command": {"cwd": ".", "executable": "go", "argv": ["test", "-race", "./..."]},
+      "inputs": ["contracts/api.json"]
+    },
+    {
+      "id": "frontend", "root": "frontend", "adapter": "command",
+      "command": {"cwd": ".", "executable": "npm", "argv": ["test", "--", "--run"]}
+    }
+  ],
+  "contracts": [
+    {"input": "contracts/api.json", "consumers": ["backend", "frontend"], "reason": "API schema consumed by backend and generated client"}
+  ]
+}

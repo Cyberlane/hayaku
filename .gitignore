@@ -1,0 +1,5 @@
+/bin/
+/dist/
+/.hayaku/
+*.test
+coverage.out

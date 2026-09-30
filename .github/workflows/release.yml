@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Validate release identity
+        shell: bash
+        run: |
+          if [[ ! "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Release tag must be strict vMAJOR.MINOR.PATCH."
+            exit 1
+          fi
+          go run ./cmd/hayaku version > "$RUNNER_TEMP/version"
+          test "$(cat "$RUNNER_TEMP/version")" = "${TAG#v}"
+          test -f "docs/releases/$TAG.md"
+      - name: Build complete archives
+        run: |
+          go build -trimpath -o "$RUNNER_TEMP/hayaku-dist" ./cmd/hayaku-dist
+          "$RUNNER_TEMP/hayaku-dist" --root "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/hayaku-release"
+      - name: Verify archives
+        working-directory: ${{ runner.temp }}/hayaku-release
+        run: |
+          sha256sum -c SHA256SUMS
+          mkdir "$RUNNER_TEMP/hayaku-smoke"
+          tar -xzf hayaku-linux-amd64.tar.gz -C "$RUNNER_TEMP/hayaku-smoke"
+          "$RUNNER_TEMP/hayaku-smoke/hayaku" version > "$RUNNER_TEMP/archive-version"
+          test "$(cat "$RUNNER_TEMP/archive-version")" = "${TAG#v}"
+          test -s "$RUNNER_TEMP/hayaku-smoke/LICENSE"
+          test -s "$RUNNER_TEMP/hayaku-smoke/THIRD_PARTY_NOTICES.md"
+      - name: Publish complete release
+        shell: bash
+        run: |
+          gh release create "$TAG" "$RUNNER_TEMP/hayaku-release/"* \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --draft \
+            --title "Hayaku $TAG" --notes-file "docs/releases/$TAG.md"
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest

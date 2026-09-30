@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_call' }}
+
+jobs:
+  check:
+    name: Check ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Check formatting
+        run: |
+          gofmt -l . > "$RUNNER_TEMP/gofmt.txt"
+          if test -s "$RUNNER_TEMP/gofmt.txt"; then
+            cat "$RUNNER_TEMP/gofmt.txt"
+            exit 1
+          fi
+      - name: Test
+        run: go test -count=1 ./...
+      - name: Test races
+        run: go test -race -count=1 ./...
+      - name: Vet
+        run: go vet ./...

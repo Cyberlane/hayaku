@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "kind": "seeded-regression-challenges",
+  "repository": "go",
+  "faults": [
+    {
+      "id": "literal-change-with-downstream-consumer",
+      "operation": "replace",
+      "path": "calc/value.go",
+      "before": "return 42",
+      "after": "return 41",
+      "expected_failures": ["example.invalid/hayaku-faults/calc/TestValue", "example.invalid/hayaku-faults/client/TestConsumer"]
+    },
+    {
+      "id": "embedded-resource-bytes",
+      "operation": "replace",
+      "path": "calc/config.txt",
+      "before": "ready\n",
+      "after": "broken\n",
+      "expected_failures": ["example.invalid/hayaku-faults/calc/TestResource"]
+    },
+    {
+      "id": "startup-side-effect",
+      "operation": "replace",
+      "path": "startup/state.go",
+      "before": "enabled = true",
+      "after": "enabled = false",
+      "expected_failures": ["example.invalid/hayaku-faults/startup/TestInitialized"]
+    },
+    {
+      "id": "newly-added-failing-test",
+      "operation": "add",
+      "path": "calc/new_test.go",
+      "after": "package calc\nimport \"testing\"\nfunc TestNew(t *testing.T) { t.Fatal(\"new test must enter the inventory\") }\n",
+      "expected_failures": ["example.invalid/hayaku-faults/calc/TestNew"]
+    },
+    {
+      "id": "deleted-embedded-input",
+      "operation": "delete",
+      "path": "calc/config.txt",
+      "expected_failures": [],
+      "expected_build_failure": true
+    }
+  ]
+}

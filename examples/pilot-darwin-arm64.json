@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "context": {"id": "hayaku-darwin-arm64-go", "os": "darwin", "arch": "arm64",
+    "env": {"SHLVL": "1", "XPC_SERVICE_NAME": "0"}},
+  "workspaces": [{
+    "id": "hayaku", "root": ".", "adapter": "go",
+    "command": {"cwd": ".", "executable": "go", "argv": ["test", "-count=1", "./..."]}
+  }]
+}
