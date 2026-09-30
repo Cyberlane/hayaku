@@ -98,6 +98,22 @@ func Validate(c model.Config) error {
 		if w.Adapter == "" {
 			return fmt.Errorf("workspace %s requires an adapter", w.ID)
 		}
+		if w.NodeRuntime != nil {
+			if w.Adapter != "vitest" {
+				return errors.New("node_runtime is supported only for Vitest workspaces")
+			}
+			if len(w.Prerequisites) != 0 {
+				return errors.New("bound Vitest runtime does not support prerequisites or generated inputs")
+			}
+			for _, path := range []string{w.NodeRuntime.Node, w.NodeRuntime.Modules} {
+				if !filepath.IsAbs(path) || filepath.Clean(path) != path || strings.ContainsAny(path, "\x00\n") {
+					return errors.New("node_runtime requires clean absolute node and modules paths")
+				}
+			}
+			if filepath.Base(w.NodeRuntime.Modules) != "node_modules" {
+				return errors.New("node_runtime modules must name a node_modules directory")
+			}
+		}
 		commands := append([]model.Command{w.Command}, w.Prerequisites...)
 		for _, cmd := range commands {
 			if err := ValidateCommand(cmd); err != nil {

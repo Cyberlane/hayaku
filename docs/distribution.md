@@ -1,7 +1,7 @@
 # Distribution and releases
 
-v0.1.0 is the first public release of the conservative planning and shadow
-foundation. Production affected-test omission remains disabled. Download binaries
+v0.2.0 adds native Vitest graph, execution and shadow support to the conservative
+planning foundation introduced in v0.1.0. Production affected-test omission remains disabled. Download binaries
 from [GitHub releases](https://github.com/Cyberlane/hayaku/releases); release notes
 describe features and maturity boundaries for each version.
 
@@ -29,8 +29,9 @@ the project's [MIT license](../LICENSE) and [Go runtime notices](../THIRD_PARTY_
 capabilities, platform and archive sizes/checksums. `SHA256SUMS` can be checked
 locally with `shasum -a 256 -c SHA256SUMS`. Archive ordering, modes and timestamps
 are fixed; timestamps derive from the source commit, also passed as
-`SOURCE_DATE_EPOCH`. Reproducibility assumes the same pinned Go toolchain and
-source. Checksums are integrity evidence, not signatures or trust attestations.
+`SOURCE_DATE_EPOCH`. Reproducibility assumes the same pinned Go toolchain, tagged source and
+module metadata. Use a fresh isolated `GOMODCACHE` for rebuild comparisons; an
+older offline pseudo-version cache can change embedded Go module metadata. Checksums are integrity evidence, not signatures or trust attestations.
 
 Local cross-compilation and embedded build-info checks do not prove native
 execution on another platform or acceptance of a downloaded artifact. Verify

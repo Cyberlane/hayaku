@@ -15,7 +15,9 @@ history. Use independent positive and negative regression oracles.
 
 Before submitting, run `go test ./...`, `go test -race ./...` and `go vet ./...`.
 Explain the behavior change, validation and remaining platform/runtime limits.
-Source similarity reviews are advisory.
+Source similarity reviews are advisory. For Vitest changes, also run the
+[explicit pinned native fixture checks](docs/vitest.md#native-development-checks);
+protocol-only tests do not establish native compatibility.
 
 Releases use strict `vMAJOR.MINOR.PATCH` tags matching `internal/app.Version`,
 reviewed release notes and the automated verification/archive pipeline.

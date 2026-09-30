@@ -1,0 +1,13 @@
+{
+  "name": "hayaku-vitest-native-qualification",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pinned development fixture dependencies; Hayaku never installs these automatically.",
+  "devDependencies": {
+    "vite": "7.3.1",
+    "vitest": "4.1.11"
+  },
+  "overrides": {
+    "vite": "$vite"
+  }
+}

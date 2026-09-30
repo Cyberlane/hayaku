@@ -105,6 +105,13 @@ func Capture(ctx context.Context, root, base, candidate string) (_ *Pair, err er
 // It requires an exact HEAD and no tracked, untracked or ignored worktree inputs.
 // Git cannot observe services, environment changes or files outside this root.
 func ValidateCandidate(ctx context.Context, root, id string) error {
+	return ValidateCandidateWithModules(ctx, root, id, nil)
+}
+
+// ValidateCandidateWithModules permits only explicitly bound, ignored dependency
+// directories. The caller must independently validate their complete identities;
+// this is not an arbitrary ignore list or an authority to omit tests.
+func ValidateCandidateWithModules(ctx context.Context, root, id string, modules []string) error {
 	root, err := repositoryRoot(ctx, root)
 	if err != nil {
 		return err
@@ -120,8 +127,26 @@ func ValidateCandidate(ctx context.Context, root, id string) error {
 	if err != nil {
 		return err
 	}
-	if len(state) != 0 {
-		return errors.New("checkout contains tracked, untracked or ignored changes")
+	allowed := map[string]bool{}
+	for _, name := range modules {
+		if err := validPath(name); err != nil || filepath.Base(name) != "node_modules" {
+			return errors.New("invalid bound module directory")
+		}
+		info, err := os.Lstat(filepath.Join(root, filepath.FromSlash(name)))
+		if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("bound modules must be real directories")
+		}
+		allowed[name+"/"] = true
+	}
+	for _, entry := range bytes.Split(bytes.TrimSuffix(state, []byte{0}), []byte{0}) {
+		if len(entry) == 0 {
+			continue
+		}
+		// With ignored=matching Git reports a whole ignored directory. Accept
+		// exactly that record; tracked changes and nested untracked files fail.
+		if !bytes.HasPrefix(entry, []byte("!! ")) || !allowed[string(entry[3:])] {
+			return errors.New("checkout contains tracked, untracked or unbound ignored changes")
+		}
 	}
 	return validateRawFiles(ctx, root, id)
 }

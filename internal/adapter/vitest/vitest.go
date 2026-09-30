@@ -47,6 +47,9 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 	if err != nil {
 		return e, err
 	}
+	if w.NodeRuntime != nil {
+		return discoverBound(ctx, root, w, c, e)
+	}
 	dir := filepath.Join(root, filepath.FromSlash(w.Root), filepath.FromSlash(w.Command.Dir))
 	if !within(root, dir) {
 		return e, errors.New("Vitest cwd escapes snapshot")
@@ -95,34 +98,7 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 		e.Nodes = append(e.Nodes, id)
 		e.Units = append(e.Units, model.Unit{ID: id, Workspace: w.ID, Selector: filepath.ToSlash(selector), Kind: "vitest-file"})
 	}
-	sort.Strings(e.Nodes)
-	sort.Slice(e.Units, func(i, j int) bool { return e.Units[i].ID < e.Units[j].ID })
-	count := 0
-	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if timeout.Err() != nil {
-			return timeout.Err()
-		}
-		if d.IsDir() {
-			if d.Name() == ".git" || d.Name() == "node_modules" {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		if !d.Type().IsRegular() {
-			return errors.New("unsupported Vitest input type")
-		}
-		count++
-		if count > 50000 {
-			return errors.New("Vitest workspace input limit exceeded")
-		}
-		rel, _ := filepath.Rel(root, path)
-		e.Inputs[filepath.ToSlash(rel)] = append([]string(nil), e.Nodes...)
-		return nil
-	})
-	if err != nil {
+	if err = workspaceInputs(timeout, root, w, &e); err != nil {
 		return e, err
 	}
 	for _, scope := range scopes {
@@ -207,4 +183,43 @@ func Execution(w model.Workspace) (model.Command, error) {
 		return model.Command{}, err
 	}
 	return w.Command, nil
+}
+
+func sortEvidence(e *model.Evidence) {
+	sort.Strings(e.Nodes)
+	sort.Slice(e.Units, func(i, j int) bool { return e.Units[i].ID < e.Units[j].ID })
+	for key := range e.Inputs {
+		sort.Strings(e.Inputs[key])
+	}
+}
+func workspaceInputs(ctx context.Context, root string, w model.Workspace, e *model.Evidence) error {
+	dir := filepath.Join(root, filepath.FromSlash(w.Root), filepath.FromSlash(w.Command.Dir))
+	count := 0
+	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if d.IsDir() {
+			if d.Name() == ".git" || d.Name() == "node_modules" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !d.Type().IsRegular() {
+			return errors.New("unsupported Vitest input type")
+		}
+		count++
+		if count > 50000 {
+			return errors.New("Vitest workspace input limit exceeded")
+		}
+		rel, _ := filepath.Rel(root, path)
+		e.Inputs[filepath.ToSlash(rel)] = append([]string(nil), e.Nodes...)
+		return nil
+	})
+
+	sortEvidence(e)
+	return err
 }

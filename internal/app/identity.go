@@ -15,6 +15,7 @@ import (
 
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
+	"github.com/Cyberlane/hayaku/internal/noderuntime"
 )
 
 // ToolIdentity binds advisory cache data to actual installed executable bytes,
@@ -62,7 +63,7 @@ func toolIdentityAt(executable, dir string) (string, error) {
 	return path + ":" + hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func toolsIdentity(c model.Config, root string) (string, error) {
+func toolsIdentity(ctx context.Context, c model.Config, root string) (string, error) {
 	root, err := filepath.Abs(root)
 	if err != nil {
 		return "", err
@@ -73,6 +74,16 @@ func toolsIdentity(c model.Config, root string) (string, error) {
 	}
 	values := map[string]string{}
 	for _, w := range c.Workspaces {
+		if w.NodeRuntime != nil {
+			if err := validateVitestRunner(root, w); err != nil {
+				return "", err
+			}
+			id, err := noderuntime.Identity(ctx, *w.NodeRuntime)
+			if err != nil {
+				return "", err
+			}
+			values[w.ID+"\x00node-runtime"] = id.Digest
+		}
 		commands := append([]model.Command{w.Command}, w.Prerequisites...)
 		for _, command := range commands {
 			key := filepath.Join(root, w.Root, command.Dir) + "\x00" + command.Executable

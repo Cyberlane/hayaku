@@ -45,3 +45,38 @@ jobs:
         run: go test -race -count=1 ./...
       - name: Vet
         run: go vet ./...
+
+  vitest:
+    name: Native Vitest ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.18.0"
+      - name: Prepare pinned native fixture outside source
+        shell: bash
+        run: |
+          mkdir "$RUNNER_TEMP/hayaku-vitest-runtime"
+          cp testdata/vitest-runtime/package*.json "$RUNNER_TEMP/hayaku-vitest-runtime/"
+          npm ci --prefix "$RUNNER_TEMP/hayaku-vitest-runtime" --ignore-scripts --no-audit --no-fund
+          {
+            echo "HAYAKU_VITEST_NODE=$(command -v node)"
+            echo "HAYAKU_VITEST_MODULES=$RUNNER_TEMP/hayaku-vitest-runtime/node_modules"
+            echo "HAYAKU_VITEST_BINARY=$RUNNER_TEMP/hayaku-vitest-runtime/node_modules/.bin/vitest"
+          } >> "$GITHUB_ENV"
+      - name: Qualify native graph, execution and shadow results
+        run: go test -count=1 ./internal/adapter/vitest ./internal/app

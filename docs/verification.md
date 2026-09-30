@@ -107,3 +107,39 @@ production omission. Native Bazel/JVM/.NET/Apple graphs, pytest acceptance,
 external-state isolation, fine cases, historical CI datasets, agreed performance
 thresholds and production skipping remain open. v0.1.0 adds public MIT licensing
 and release automation; binary signing and notarization are not provided.
+
+
+## v0.2.0 local Vitest verification, 2026-10-01
+
+The full Go suite, race suite and vet passed with explicit Node 22.18.0,
+Vitest 4.1.11 and Vite 7.3.1 development fixtures on macOS arm64. Eight native
+application fixtures cover TS aliases, required full execution, hidden filesystem
+failure misses, resource/new/deleted test broadening, multiple projects and
+duplicate names, failed hooks, ignored bound dependency installation plus CLI
+execution/drift rejection, unhandled errors and setup changes. Protocol tests
+challenge malformed/missing/unexpected/nonterminal results and graph gaps;
+runtime-copy tests challenge unsafe symlinks, identity drift, mutation and limits.
+The actual pinned fixture package lock is committed under `testdata/vitest-runtime`.
+Native application tests skip explicitly without their environment variables;
+release CI sets them and requires native checks on Linux and macOS.
+
+The final changed-source Mori scan used version 0.35.0, revision `65f1dba5fde6`,
+normalization 14/schema 23, profile review, threshold 0.85 and a 40-token floor:
+
+```sh
+mori scan --profile review --threshold 0.85 --min-tokens 40 \
+  --max-groups 250 --max-occurrences 10 --require-coverage --changed-since HEAD \
+  --format agent --output .git/hayaku-release-review/vitest-final.json .
+```
+
+It analyzed 63/63 supported files (61 Go, one JS bridge, one shell) and 25/25
+supported changed files, with 54 fragment files and nine zero-fragment files
+(the type-only model and eight small fault fixtures below the floor). There were
+nine focused identities, 24 total groups/32 location pairs, zero warnings/parse
+diagnostics/generated exclusions, and no truncation. Forty-four documentation,
+configuration and asset files were unsupported by the comparison parser and
+reviewed separately. The nine focused identities were inspected on both sides:
+sort predicates, independent path guards, adapter ownership walks, normalization
+and independent test scaffolds were retained as intentional small similarities.
+No findings were suppressed or acknowledged. This review is advisory; native
+results and safety regressions provide behavioral evidence.

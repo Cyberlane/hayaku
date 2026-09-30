@@ -11,21 +11,24 @@ import (
 
 	"github.com/Cyberlane/hayaku/internal/adapter"
 	goprovider "github.com/Cyberlane/hayaku/internal/adapter/golang"
+	vitestprovider "github.com/Cyberlane/hayaku/internal/adapter/vitest"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/process"
 	gorunner "github.com/Cyberlane/hayaku/internal/runner/golang"
+	vitestRunner "github.com/Cyberlane/hayaku/internal/runner/vitest"
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
 type CommandResult struct {
-	Workspace   string           `json:"workspace"`
-	Command     model.Command    `json:"command"`
-	ExitCode    int              `json:"exit_code"`
-	Duration    time.Duration    `json:"duration_ns"`
-	OutputBytes int              `json:"output_bytes"`
-	Go          *gorunner.Result `json:"go,omitempty"`
-	Complete    bool             `json:"complete"`
+	Workspace   string               `json:"workspace"`
+	Command     model.Command        `json:"command"`
+	ExitCode    int                  `json:"exit_code"`
+	Duration    time.Duration        `json:"duration_ns"`
+	OutputBytes int                  `json:"output_bytes"`
+	Go          *gorunner.Result     `json:"go,omitempty"`
+	Vitest      *vitestRunner.Result `json:"vitest,omitempty"`
+	Complete    bool                 `json:"complete"`
 }
 type Execution struct {
 	Schema        int             `json:"schema"`
@@ -57,7 +60,25 @@ func Execute(ctx context.Context, root string, c model.Config, p model.Plan) (Ex
 	if err := validateExecution(ctx, root, c, p); err != nil {
 		return result, err
 	}
-	if err := runWorkspaces(ctx, root, c, p.Selected, false, false, &result, func() error { return validateExecution(ctx, root, c, p) }); err != nil {
+	executionRoot := root
+	revalidate := func() error { return validateExecution(ctx, root, c, p) }
+	if hasNodeRuntime(c) {
+		pair, err := snapshot.Capture(ctx, root, p.Candidate, p.Candidate)
+		if err != nil {
+			return result, err
+		}
+		defer pair.Close()
+		executionRoot = pair.CandidateDir
+		if err := prepareNodeRuntimes(ctx, executionRoot, c); err != nil {
+			return result, err
+		}
+		original, err := executionTreeDigest(ctx, executionRoot, c)
+		if err != nil {
+			return result, err
+		}
+		revalidate = treeValidator(ctx, executionRoot, c, original, revalidate)
+	}
+	if err := runWorkspaces(ctx, executionRoot, c, p.Selected, false, false, &result, revalidate); err != nil {
 		return result, err
 	}
 	if err := validateExecution(ctx, root, c, p); err != nil {
@@ -126,7 +147,13 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 			}
 			var output process.Output
 			var runErr error
-			if w.Adapter == "go" {
+			if i == len(commands)-1 && w.Adapter == "vitest" {
+				var selected []model.Unit
+				if proposal {
+					selected = workspaceUnits
+				}
+				output, runErr = vitestprovider.Execute(ctx, root, w, c.Context, selected)
+			} else if w.Adapter == "go" {
 				env, envErr := goprovider.ExecutionEnvironment(ctx, root, w, c.Context)
 				if envErr != nil {
 					return envErr
@@ -157,9 +184,21 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 					runErr = errors.New("Go results report failure")
 				}
 			}
+			if i == len(commands)-1 && w.Adapter == "vitest" {
+				vitestResult, reconcileErr := vitestRunner.Reconcile(bytes.NewReader(output.Stdout), workspaceUnits)
+				entry.Vitest = &vitestResult
+				entry.Complete = reconcileErr == nil && output.Completed && (output.ExitCode == 0 || vitestResult.Failed)
+				if reconcileErr != nil && runErr == nil {
+					runErr = reconcileErr
+				}
+				if vitestResult.Failed && runErr == nil {
+					runErr = errors.New("Vitest results report failure")
+				}
+			}
 			result.Commands = append(result.Commands, entry)
 			if revalidate != nil {
 				if err := revalidate(); err != nil {
+					result.Commands[len(result.Commands)-1].Complete = false
 					return err
 				}
 			}
@@ -191,7 +230,7 @@ type ShadowResult struct {
 	Assurance       string        `json:"assurance"`
 }
 
-// Shadow uses separate raw-tree copies and fresh Go tests. It is a challenge
+// Shadow uses separate raw-tree copies and fresh native tests. It is a challenge
 // harness, not a production qualification certificate. Native Git metadata and
 // external services are not isolated by these copies and remain contract gaps.
 func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (result ShadowResult, returnedErr error) {
@@ -207,8 +246,8 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		}
 	}()
 	for _, w := range c.Workspaces {
-		if w.Adapter != "go" {
-			return result, errors.New("shadow outcome reconciliation currently requires Go workspaces")
+		if w.Adapter != "go" && (w.Adapter != "vitest" || w.NodeRuntime == nil) {
+			return result, errors.New("shadow outcome reconciliation requires Go or runtime-bound Vitest workspaces")
 		}
 	}
 	if config.Digest(c) != p.ConfigDigest {
@@ -222,11 +261,25 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		return result, err
 	}
 	defer pair.Close()
+	for _, dir := range []string{pair.BaseDir, pair.CandidateDir} {
+		if err := prepareNodeRuntimes(ctx, dir, c); err != nil {
+			return result, err
+		}
+	}
+	proposalTree, err := executionTreeDigest(ctx, pair.BaseDir, c)
+	if err != nil {
+		return result, err
+	}
+	fullTree, err := executionTreeDigest(ctx, pair.CandidateDir, c)
+	if err != nil {
+		return result, err
+	}
 	result.Proposal = Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "shadow-proposal", Commands: []CommandResult{}}
 	result.Full = Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "shadow-full", Commands: []CommandResult{}}
-	proposalErr := runWorkspaces(ctx, pair.BaseDir, c, p.Proposed, true, true, &result.Proposal, nil)
+	checkOriginal := func() error { return validateExecution(ctx, root, c, p) }
+	proposalErr := runWorkspaces(ctx, pair.BaseDir, c, p.Proposed, true, true, &result.Proposal, treeValidator(ctx, pair.BaseDir, c, proposalTree, checkOriginal))
 	result.Proposal.Passed = proposalErr == nil
-	fullErr := runWorkspaces(ctx, pair.CandidateDir, c, p.Selected, false, true, &result.Full, nil)
+	fullErr := runWorkspaces(ctx, pair.CandidateDir, c, p.Selected, false, true, &result.Full, treeValidator(ctx, pair.CandidateDir, c, fullTree, checkOriginal))
 	result.Full.Passed = fullErr == nil
 	if ctx.Err() != nil {
 		return result, ctx.Err()
@@ -238,7 +291,7 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 	// outcomes inside a proposed package invalidate comparison (failfast/filters).
 	proposedPackages := map[string]bool{}
 	for _, u := range p.Proposed {
-		proposedPackages[u.Workspace+":"+u.Selector] = true
+		proposedPackages[unitOutcomeID(u)] = true
 	}
 	for id, state := range full {
 		other, seen := selected[id]
@@ -255,6 +308,16 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		}
 	}
 	for _, cmd := range result.Full.Commands {
+		if cmd.Vitest != nil {
+			for _, test := range cmd.Vitest.Tests {
+				if proposedPackages[test.Unit] {
+					id := test.Unit + "/" + test.Test
+					if _, seen := selected[id]; !seen {
+						result.Inconsistencies = append(result.Inconsistencies, id)
+					}
+				}
+			}
+		}
 		if cmd.Go == nil {
 			continue
 		}
@@ -276,18 +339,23 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 			if !command.Complete {
 				result.ComparisonValid = false
 			}
+			// Global native errors cannot be attributed to a stable file/test
+			// identity. They fail the run and invalidate the comparison.
+			if command.Vitest != nil && command.Vitest.UnhandledErrors > 0 {
+				result.ComparisonValid = false
+			}
 			if command.Go == nil && !command.Complete {
 				result.ComparisonValid = false
 			}
 		}
 	}
 	for _, u := range p.Selected {
-		if _, ok := full[u.Workspace+":"+u.Selector]; !ok {
+		if _, ok := full[unitOutcomeID(u)]; !ok {
 			result.ComparisonValid = false
 		}
 	}
 	for _, u := range p.Proposed {
-		if _, ok := selected[u.Workspace+":"+u.Selector]; !ok {
+		if _, ok := selected[unitOutcomeID(u)]; !ok {
 			result.ComparisonValid = false
 		}
 	}
@@ -312,6 +380,14 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 func outcomes(execution Execution) map[string]string {
 	result := map[string]string{}
 	for _, command := range execution.Commands {
+		if command.Vitest != nil {
+			for _, outcome := range command.Vitest.Files {
+				result[outcome.Unit] = outcome.Action
+			}
+			for _, outcome := range command.Vitest.Tests {
+				result[outcome.Unit+"/"+outcome.Test] = outcome.Action
+			}
+		}
 		if command.Go == nil {
 			continue
 		}
@@ -325,6 +401,13 @@ func outcomes(execution Execution) map[string]string {
 	return result
 }
 
+func unitOutcomeID(unit model.Unit) string {
+	if unit.Kind == "vitest-file" {
+		return unit.ID
+	}
+	return unit.Workspace + ":" + unit.Selector
+}
+
 func validateExecution(ctx context.Context, root string, c model.Config, p model.Plan) error {
 	effective, err := EffectiveContextDigest(ctx, root, c)
 	if err != nil {
@@ -333,12 +416,16 @@ func validateExecution(ctx context.Context, root string, c model.Config, p model
 	if effective != p.ContextDigest {
 		return errors.New("execution context drifted")
 	}
-	tools, err := toolsIdentity(c, root)
+	tools, err := toolsIdentity(ctx, c, root)
 	if err != nil {
 		return err
 	}
 	if tools != p.ToolsDigest {
 		return errors.New("installed tool bytes differ from plan")
 	}
-	return snapshot.ValidateCandidate(ctx, root, p.Candidate)
+	modules, err := checkoutModules(root, c)
+	if err != nil {
+		return err
+	}
+	return snapshot.ValidateCandidateWithModules(ctx, root, p.Candidate, modules)
 }

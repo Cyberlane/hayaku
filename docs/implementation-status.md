@@ -21,12 +21,12 @@ baseline integration; additional projects require their own qualification.
 | HYK-010 Go runner | Commands and terminal package/test reconciliation | More flag/wrapper/version contexts independently qualify |
 | HYK-011 Fixtures | Native Git/Go/Cargo/Vitest, protocol pytest, five fault challenges | Broader framework/dispatch/FFI/service corpus |
 | HYK-012 Properties | Independent graph oracle, monotonicity, decoder/snapshot/qualification fuzzing | Extend as new algorithms/adapters arrive |
-| HYK-013 Shadow | Separate Go source copies, misses and incomplete/mismatched outcomes | External-state isolation and other native reconciliers |
+| HYK-013 Shadow | Separate Go/Vitest source/runtime copies, misses and incomplete/mismatched outcomes | External-state isolation and other native reconcilers |
 | HYK-014 Performance | Complete-cost arithmetic, local pilot tooling and two warmed synthetic observations | Representative CI datasets, thresholds and accepted savings |
 | HYK-015 Cache | Private atomic advisory JSON, integrity/context/source/tool keys | No cached omission authority; measured storage-scale work |
 | HYK-016 Fault challenges | Five independent seeded Go regression oracles | Real incident datasets; native Stryker JS/.NET/Scala integration |
 | HYK-017 CI integration | Full-gated reference script, force-full override, private consumer baseline hook | Qualified skip mode and consumer CI acceptance |
-| HYK-018 Vitest | Native file/project inventory attempt, conservative inputs | Native 4.1.11 fixture verified; transformed dependency graph/result reconciliation remain |
+| HYK-018 Vitest | Configured Vite import influence, Node/dependency binding, native full results and shadow for 4.1.11 | Runtime completeness, browser/typecheck/other versions and consumer qualification |
 | HYK-019 Bazel | Explicit original full-suite integration | Native configured target/action graph and pinned real fixtures |
 | HYK-020 Cross-language | Declared producer/input consumers add influence | Enforced generator/service/FFI contract evidence |
 | HYK-021 pytest | Native JSON collection bridge, whole files, conservative inputs | Installed native verification; runtime/dependency/fixture qualification |
@@ -35,8 +35,8 @@ baseline integration; additional projects require their own qualification.
 | HYK-024 .NET | Explicit original full-suite integration | SDK/VSTest/MTP/framework-specific native metadata and filters |
 | HYK-025 Apple | Explicit original Xcode/Swift full-suite integration | Native schemes/plans/destinations/XCTest/SwiftTesting result fixtures |
 | HYK-026 Fine cases | Qualification criteria and challenge/observation validators | Sound case-level algorithm; no case-level omission enabled |
-| HYK-027 Distribution | Six cross-build archives, checksums, source/build provenance, MIT/Go notices and v0.1.0 release automation | Native installed-artifact matrix and binary signing/notarization |
-| HYK-028 Setup | Init without overwrite, doctor capabilities/runner paths, honest gaps | Richer multi-root detection and framework setup |
+| HYK-027 Distribution | Six cross-build archives, checksums, source/build provenance, MIT/Go notices and versioned release automation | Native installed-artifact matrix and binary signing/notarization |
+| HYK-028 Setup | Init without overwrite, doctor capabilities/runner paths, honest gaps | Root Vitest manifest detection; richer multi-root and framework setup |
 
 No installed pytest runner was available; that native test explicitly skips.
 Go/Cargo native fixtures ran locally. Vitest 4.1.11 file/project/filter fixtures
@@ -55,4 +55,15 @@ that dataset.
 A private consumer's prepared integration and native Node 22 workspace observation
 are described in [CI integration](ci.md#historical-external-consumer-baseline).
 This validates an original full command and adds measurement overhead; it does not establish
-non-Go shadow reconciliation, affected-test savings or live CI acceptance.
+Vitest shadow acceptance for that consumer, affected-test savings or live CI acceptance.
+
+## v0.2.0 Vitest implementation
+
+The bound adapter uses native Vitest 4.1.11/Vite transforms for JS/TS proposals,
+retains broad config/setup/resource ownership and original full required scopes,
+and reconciles project/file/test results including duplicate names. Shadow detects
+a deliberately omitted filesystem-dependent failure; unhandled global errors
+invalidate comparison. Node and installed module bytes/modes/links are bound and
+revalidated, and source/runtime mutation cannot become a successful comparison.
+See [setup, qualification commands and limits](vitest.md). Legacy unbound file
+discovery remains available, with full proposal gaps and no native execution.

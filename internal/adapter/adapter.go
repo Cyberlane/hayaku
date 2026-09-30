@@ -127,5 +127,5 @@ func Normalize(e *model.Evidence) {
 }
 
 func ImplementationVersions() map[string]string {
-	return map[string]string{"go": "go-native-v1", "cargo": "cargo-native-v1", "pytest": "pytest-native-v1", "vitest": "vitest-native-v1", "fallback": "full-suite-v1"}
+	return map[string]string{"go": "go-native-v1", "cargo": "cargo-native-v1", "pytest": "pytest-native-v1", "vitest": "vitest-vite-graph-v1", "fallback": "full-suite-v1"}
 }

@@ -7,8 +7,8 @@ Hayaku is a Go CLI for planning test runs from exact Git revisions. It discovers
 workspace dependencies, explains uncertainty and emits structured commands and
 experimental affected-test proposals.
 
-**v0.1.0 is an early release. Required commands always run the original full
-suites. Affected-test skipping is disabled.** Go shadow evaluation lets you
+**v0.2.0 is an early release. Required commands always run the original full
+suites. Affected-test skipping is disabled.** Go and runtime-bound Vitest shadow evaluation let you
 challenge proposals against an independent full run. Complete runtime influence
 cannot be inferred from imports alone; there is no confidence-based or
 skip-anyway switch.
@@ -21,8 +21,8 @@ Each release includes `SHA256SUMS`, a source/build manifest and license notices.
 For macOS with Apple Silicon:
 
 ```sh
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.1.0/hayaku-darwin-arm64.tar.gz
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.1.0/SHA256SUMS
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.2.0/hayaku-darwin-arm64.tar.gz
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.2.0/SHA256SUMS
 grep '  hayaku-darwin-arm64.tar.gz$' SHA256SUMS | shasum -a 256 -c -
 tar -xzf hayaku-darwin-arm64.tar.gz
 mkdir -p "$HOME/.local/bin"
@@ -41,7 +41,7 @@ See [distribution](docs/distribution.md) for validation and provenance.
 With Go 1.26 or newer installed:
 
 ```sh
-go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.1.0
+go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.2.0
 ```
 
 No npm package is required. Hayaku has no third-party Go modules. Git and your
@@ -88,11 +88,13 @@ with no untracked or ignored source inputs. Store reports under Git metadata;
 write test/build outputs outside the source tree. Native Go JSON reconciliation
 makes missing outcomes, failures and cancellation return nonzero.
 
-`shadow` currently supports Go workspaces. Separate source copies do not isolate
-services or external state. A passing comparison is finite evidence, not proof
-of selection safety. For installed/generated ecosystems such as Node/Turbo,
-retain the original full runner alongside observational planning: ordinary
-`node_modules` is outside the immutable execution contract.
+`shadow` supports Go and explicitly runtime-bound Vitest 4.1.11 workspaces.
+[Vitest setup](docs/vitest.md) binds Node and installed dependency bytes, copies
+them into disposable source snapshots, and reconciles native file/project/test
+outcomes. Only the declared, ignored dependency tree is permitted in a checkout;
+other generated inputs remain unsupported. Separate copies do not isolate services
+or external state. A passing comparison is finite evidence, not selection proof.
+Other Node/Turbo frameworks retain their original full runner alongside planning.
 
 ## Framework status
 
@@ -101,7 +103,7 @@ retain the original full runner alongside observational planning: ordinary
 | Go | Native package, import, test and embed graph | Full suite; native JSON reconciliation |
 | Cargo | Offline/locked metadata, whole packages | Full suite; result qualification pending |
 | pytest | Collection bridge, whole files | Full suite; native acceptance pending |
-| Vitest | File/project inventory; 4.1.11 fixture tested | Full suite; dependency/results pending |
+| Vitest 4.1.11 | Configured Vite import graph, TS aliases, file/project proposals | Full suite; native results and shadow comparison |
 | Bazel, Maven, Gradle, sbt, .NET, Xcode, Swift | Explicit fallback; native graphs pending | Full suite |
 | command | Language-independent configured command | Full suite |
 
@@ -111,7 +113,7 @@ No adapter is authorized to omit production tests.
 ## Documentation
 
 - [Safety](docs/safety.md), [architecture](docs/architecture.md) and [qualification](docs/qualification.md)
-- [CI integration](docs/ci.md) and [implementation status](docs/implementation-status.md)
+- [Vitest setup and limits](docs/vitest.md), [CI integration](docs/ci.md) and [implementation status](docs/implementation-status.md)
 - [Pilot methodology](docs/pilot-methodology.md) and [historical observations](docs/pilot-results.md)
 - [Verification](docs/verification.md) and [distribution](docs/distribution.md)
 - [First-release checks](docs/release-checks.md)
@@ -131,7 +133,9 @@ go build -o /tmp/hayaku ./cmd/hayaku
 Release verification pins Go 1.27.1. Tests include native Git/Go/Cargo fixtures,
 independent graph oracles, seeded faults and a runtime-dependency counterexample.
 Optional native fixtures skip explicitly when tools are unavailable; nothing is
-installed automatically. Test an existing Vitest runner with `HAYAKU_VITEST_BINARY`.
+installed automatically. Native Vitest CI installs the pinned development fixture
+outside source. Local native qualification uses `HAYAKU_VITEST_NODE`,
+`HAYAKU_VITEST_MODULES` and `HAYAKU_VITEST_BINARY`; see [Vitest](docs/vitest.md).
 
 See [contributing](CONTRIBUTING.md). Licensed under [MIT](LICENSE);
 Go runtime notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

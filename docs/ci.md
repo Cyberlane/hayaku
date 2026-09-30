@@ -8,11 +8,12 @@ pipeline. The script never makes a skipped/full failing suite green.
 
 Shadow defaults on; HAYAKU_FORCE_FULL=1 suppresses the additional proposal challenge
 and still executes the full required suite. It cannot enable omissions. Native
-Go shadow reconciliation currently requires an all-Go workspace configuration;
-other ecosystems can retain their original full runner alongside observational
-plans until reconciliers and installed dependency inputs are qualified. `run`
-rejects ignored installed/build inputs, including ordinary `node_modules`; do not
-weaken that execution contract to force a checkout through it. A planning/discovery
+shadow reconciliation supports Go and explicitly runtime-bound Vitest 4.1.11
+workspaces. [Vitest setup](vitest.md) binds a user-installed Node/dependency tree,
+then uses separate copies and native outcomes. Only its exact declared ignored
+`node_modules` directory is admitted; other untracked/ignored/generated inputs
+still fail. Other ecosystems retain their original full runner alongside plans
+until their reconcilers and installed inputs are supported. A planning/discovery
 failure fails the integration rather than asserting that no tests are affected.
 An owner may run their original full command to recover
 without treating the invalid plan as a successful selector.
@@ -58,3 +59,12 @@ private development revisions, not the public v0.1.0 source or downloaded releas
 assets. The consumer source and raw reports are not published; this is a historical
 summary, not a reproducible public dataset or live CI acceptance record. No remote
 consumer workflow activation or public installation was performed for that trial.
+
+## Native Vitest release checks
+
+The reusable CI workflow installs a pinned **development fixture** outside the
+checkout (Node 22.18.0, Vitest 4.1.11, Vite 7.3.1), then runs native adapter and
+application tests on Linux amd64 and macOS arm64. This explicit CI setup is separate
+from Hayaku, which never installs runners. Release publication depends on these
+checks and the Go test/race/vet matrix. Passing fixture checks does not enroll or
+qualify a consumer project.

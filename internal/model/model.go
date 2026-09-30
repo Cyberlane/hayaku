@@ -10,14 +10,22 @@ type Command struct {
 }
 
 type Workspace struct {
-	ID            string    `json:"id"`
-	Root          string    `json:"root"`
-	Adapter       string    `json:"adapter"`
-	Command       Command   `json:"command"`
-	Prerequisites []Command `json:"prerequisites,omitempty"`
-	Patterns      []string  `json:"patterns,omitempty"`
-	BuildFlags    []string  `json:"build_flags,omitempty"`
-	Inputs        []string  `json:"inputs,omitempty"`
+	ID            string       `json:"id"`
+	Root          string       `json:"root"`
+	Adapter       string       `json:"adapter"`
+	Command       Command      `json:"command"`
+	Prerequisites []Command    `json:"prerequisites,omitempty"`
+	Patterns      []string     `json:"patterns,omitempty"`
+	BuildFlags    []string     `json:"build_flags,omitempty"`
+	Inputs        []string     `json:"inputs,omitempty"`
+	NodeRuntime   *NodeRuntime `json:"node_runtime,omitempty"`
+}
+
+// NodeRuntime declares preinstalled, content-bound runtime inputs. Hayaku never
+// installs dependencies. Absolute paths remain in configuration, not reports.
+type NodeRuntime struct {
+	Node    string `json:"node"`
+	Modules string `json:"modules"`
 }
 
 type Context struct {

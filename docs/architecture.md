@@ -18,10 +18,14 @@ library. There is no service, telemetry, AI model, credential requirement or DB.
   influence; declarations do not prove enforced isolation.
 - `report`: JSON and human views of the same plan. Required commands and proposed
   commands are separate fields; candidate exclusions are never CI skip authority.
-- `runner/golang`: terminal package/test reconciliation, cache disclosure, missing
-  results and compiler event handling.
+- `runner/golang` and `runner/vitest`: native terminal reconciliation, stable
+  scope/test identities, failed/skipped outcomes and missing-result rejection.
+- `noderuntime`: bounded Node/dependency content identities and verified copies;
+  internal npm links are allowed only within the declared installed tree.
+- `adapter/vitest`: an embedded Node bridge uses the installed Vitest 4.1.11 API
+  and configured Vite transforms; the Go core does not parse TypeScript imports.
 - `process` / `app`: bounded/cancellable structured argv; saved-plan reconstruction,
-  source/context revalidation, execution, and disposable Go shadow comparisons.
+  source/context revalidation, execution, and disposable Go/Vitest shadow comparisons.
 - `evidence`: optional private, atomic JSON advisory cache, keyed by source, context,
   installed executable bytes, policy and installed CLI bytes/implementation version. Integrity checks
   are not a cryptographic signature. Execution does not use cached metadata.
@@ -47,3 +51,12 @@ Native Go context captures persisted effective compiler/CGO/architecture setting
 Nonempty hidden GOFLAGS rejects with a request to place scope flags in argv.
 A differing PATH override rejects; explicit absolute runner paths are supported.
 Discovery checks materialized raw-tree digests before/after tooling.
+
+Declared Node runtimes are separately bounded to 250k dependency entries and
+2 GiB including Node bytes. Snapshot source keeps its original strict digest;
+explicit module subtrees receive independent complete digests, including modes
+and internal symlink targets. Copies cannot overwrite committed inputs. Bound
+Vitest runs use private copies, uncached results and private Vite caches; a newly
+created empty bundler scratch directory is restored before revalidation. No
+arbitrary ignore list is introduced. These checks observe before/after state;
+they do not enforce hermetic execution or observe every transient side effect.

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.0
+
+- Native Vitest 4.1.11 configured Vite graph, JS/TS alias influence and experimental file/project proposals.
+- Bound Node/dependency copies, native full execution and Go/Vitest shadow reconciliation.
+- Stable duplicate test identities; terminal failures/skips, unhandled errors, runtime drift and mutation checks.
+- Root Vitest setup detection, supporting adversarial native/protocol tests, setup documentation and Linux/macOS native CI.
+- Full-suite CI gates and production omission disabled.
+
 ## 0.1.0 — 2026-10-01
 
 First public release of Hayaku's conservative test-planning foundation.

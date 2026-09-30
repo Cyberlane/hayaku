@@ -24,7 +24,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-var Version = "0.1.0"
+var Version = "0.2.0"
 
 // Run returns a nonzero status for invalid policy, incomplete execution or misses.
 func Run(ctx context.Context, args []string, out, errout io.Writer) int {
@@ -142,7 +142,7 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 			return report.JSON(w, p)
 		})
 	}
-	if err := snapshot.ValidateCandidate(ctx, rootabs, p.Candidate); err != nil {
+	if err := validateExecution(ctx, rootabs, c, p); err != nil {
 		return failure(errout, err)
 	}
 	if args[0] == "shadow" {
@@ -229,7 +229,7 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 	if err != nil {
 		return model.Plan{}, err
 	}
-	toolDigest, err := toolsIdentity(c, root)
+	toolDigest, err := toolsIdentity(ctx, c, root)
 	if err != nil {
 		return model.Plan{}, err
 	}
@@ -237,6 +237,9 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 		id, dir string
 		dest    *[]model.Evidence
 	}{{pair.Base, pair.BaseDir, &old}, {pair.Candidate, pair.CandidateDir, &current}} {
+		if err := prepareNodeRuntimes(ctx, tree.dir, c); err != nil {
+			return model.Plan{}, err
+		}
 		nativeContext, err := EffectiveContextDigest(ctx, tree.dir, c)
 		if err != nil {
 			return model.Plan{}, err
@@ -246,7 +249,7 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 		} else if contextDigest != nativeContext {
 			return model.Plan{}, errors.New("native contexts differ across snapshots")
 		}
-		originalTree, err := snapshot.Digest(ctx, tree.dir)
+		originalTree, err := executionTreeDigest(ctx, tree.dir, c)
 		if err != nil {
 			return model.Plan{}, err
 		}
@@ -272,7 +275,7 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 					}
 				}
 			}
-			afterTree, err := snapshot.Digest(ctx, tree.dir)
+			afterTree, err := executionTreeDigest(ctx, tree.dir, c)
 			if err != nil {
 				return model.Plan{}, err
 			}
@@ -281,6 +284,13 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 			}
 			*tree.dest = append(*tree.dest, e)
 		}
+	}
+	finalTools, err := toolsIdentity(ctx, c, root)
+	if err != nil {
+		return model.Plan{}, err
+	}
+	if finalTools != toolDigest {
+		return model.Plan{}, errors.New("installed tools or runtime dependencies changed during planning")
 	}
 	p, err := planner.Build(old, current, pair.Changes, c)
 	if err != nil {
@@ -363,6 +373,9 @@ func initialize(root, path string, out, errout io.Writer) int {
 		if _, err := os.Stat(filepath.Join(root, d.file)); err == nil {
 			c.Workspaces = append(c.Workspaces, model.Workspace{ID: d.id, Root: ".", Adapter: d.id, Command: model.Command{Dir: ".", Executable: d.tool, Args: d.args}})
 		}
+	}
+	if w, ok := detectVitest(root); ok {
+		c.Workspaces = append(c.Workspaces, w)
 	}
 	if len(c.Workspaces) == 0 {
 		return failure(errout, errors.New("no supported root manifest detected; create explicit hayaku.json with original suite command (adapter command)"))
