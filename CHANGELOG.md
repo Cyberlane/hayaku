@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.3.0
+
+- Add separate native Vitest runtime observation runs for dynamic reads, missing
+  paths, metadata and directory membership, with bounded validated transport.
+- Bind observation reports to source/context/configuration/tools and combine them
+  monotonically with static proposals; gaps retain broad scope.
+- Add adversarial trace and strict fallback regressions. No observation or JSON
+  declaration can authorize production omission; enforced isolation is pending.
+
 ## v0.2.1
 
 - Preserve the configured Vite root during native discovery and execution.

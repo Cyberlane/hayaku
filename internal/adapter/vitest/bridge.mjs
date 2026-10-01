@@ -35,6 +35,7 @@ const relative = file => {
 const dependencyFile = file => typeof file === 'string' && file.replaceAll('\\', '/').includes('/node_modules/');
 const identity = spec => `${input.workspace}:${spec.project.name}:${relative(spec.moduleId)}`;
 try {
+  if (input.mode === 'observe') await import(pathToFileURL(process.env.HAYAKU_TRACE_HOOK).href);
   const pkg = JSON.parse(fs.readFileSync(path.join(input.modules, 'vitest/package.json'), 'utf8'));
   if (pkg.version !== '4.1.11') throw new Error('unsupported Vitest API version');
   const api = await import(pathToFileURL(path.join(input.modules, 'vitest/dist/node.js')).href);
@@ -46,6 +47,16 @@ try {
   if (config.changed || config.related?.length || config.shard || config.standalone || config.bail || config.testNamePattern || config.tagsFilter?.length || config.coverage?.enabled || config.dangerouslyIgnoreUnhandledErrors || config.update === true || config.update === 'all' || config.update === 'new') throw new Error('unsupported configured Vitest execution mode');
   for (const project of vitest.projects) {
     if (project.config.browser?.enabled || project.config.typecheck?.enabled) throw new Error('unsupported configured Vitest project mode');
+  }
+  if (input.mode === 'observe') {
+    // Diagnostics run serially; this is not the original full-run execution mode.
+    // Prepend the hook ahead of user setup in each already configured project.
+    for (const project of vitest.projects) {
+      project.config.setupFiles = [process.env.HAYAKU_TRACE_HOOK, ...project.config.setupFiles || []];
+      project.config.fileParallelism = false;
+    }
+    vitest.config.fileParallelism = false;
+    vitest.config.maxWorkers = 1;
   }
   const specs = await vitest.globTestSpecifications(parsed.filter);
   if (!specs.length || specs.length > 50000) throw new Error('empty or oversized inventory');
@@ -94,7 +105,7 @@ try {
     await vitest.close(); vitest = undefined;
     await cleanBundlerDirectory();
     protocolWrite(JSON.stringify({ schema: 1, version: pkg.version, scopes, global: [...global].sort() }) + '\n');
-  } else if (input.mode === 'run') {
+  } else if (input.mode === 'run' || input.mode === 'observe') {
     let selected = specs;
     if (input.selected !== null) {
       const wanted = new Set(input.selected);

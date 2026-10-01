@@ -328,3 +328,59 @@ func TestNativeVitestContradictoryCIContextIsRejected(t *testing.T) {
 		t.Fatal("contradictory CI context was silently replaced")
 	}
 }
+
+func TestNativeVitestRuntimeObservationCapturesDynamicInputs(t *testing.T) {
+	root, _, c := vitestNativeFixture(t, true)
+	vitestWrite(t, root, "b.test.ts", "import { readFileSync, existsSync, readdirSync } from 'node:fs';\nimport { join } from 'node:path';\ntest('dynamic inputs', () => { expect(readFileSync(join(process.cwd(), 'value' + '.ts'), 'utf8')).toContain('= 1'); existsSync(join(process.cwd(), 'missing.json')); readdirSync(process.cwd()); });\n")
+	base := vitestCandidate(t, root)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	baseline, err := Build(ctx, root, base, base, c, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	observed, err := Observe(ctx, root, c, baseline)
+	if err != nil || !observed.Passed {
+		t.Fatalf("native observation failed: %v %+v", err, observed)
+	}
+	trace := observed.Commands[0].RuntimeTrace
+	if trace == nil || !trace.Complete {
+		t.Fatal("runtime stream missing")
+	}
+	want := map[string]bool{"read:value.ts": false, "exists:missing.json": false, "directory:.": false}
+	for _, item := range trace.Observations {
+		key := item.Operation + ":" + item.Path
+		if _, ok := want[key]; ok {
+			want[key] = true
+		}
+	}
+	for key, ok := range want {
+		if !ok {
+			t.Fatalf("runtime dependency %s was not observed: %+v", key, trace)
+		}
+	}
+	file := filepath.Join(root, ".git", "observations.json")
+	data, _ := json.Marshal(observed)
+	if err := os.WriteFile(file, data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	vitestWrite(t, root, "value.ts", "export const value: number = 2;\n")
+	candidate := vitestCandidate(t, root)
+	p, err := Build(ctx, root, base, candidate, c, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Proposed) != 1 {
+		t.Fatalf("fixture did not challenge static omission: %+v", p.Proposed)
+	}
+	if err := BroadenFromObservations(ctx, &p, c, file); err != nil {
+		t.Fatal(err)
+	}
+	if len(p.Proposed) != 2 || len(p.Selected) != 2 || p.Mode != "full-fallback" {
+		t.Fatalf("dynamic dependency did not broaden: %+v", p)
+	}
+	full, err := Execute(ctx, root, c, p)
+	if err == nil || full.Passed {
+		t.Fatal("affected runtime failure became green")
+	}
+}

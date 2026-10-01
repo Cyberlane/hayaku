@@ -21,14 +21,15 @@ import (
 )
 
 type CommandResult struct {
-	Workspace   string               `json:"workspace"`
-	Command     model.Command        `json:"command"`
-	ExitCode    int                  `json:"exit_code"`
-	Duration    time.Duration        `json:"duration_ns"`
-	OutputBytes int                  `json:"output_bytes"`
-	Go          *gorunner.Result     `json:"go,omitempty"`
-	Vitest      *vitestRunner.Result `json:"vitest,omitempty"`
-	Complete    bool                 `json:"complete"`
+	Workspace    string                `json:"workspace"`
+	Command      model.Command         `json:"command"`
+	ExitCode     int                   `json:"exit_code"`
+	Duration     time.Duration         `json:"duration_ns"`
+	OutputBytes  int                   `json:"output_bytes"`
+	Go           *gorunner.Result      `json:"go,omitempty"`
+	Vitest       *vitestRunner.Result  `json:"vitest,omitempty"`
+	Complete     bool                  `json:"complete"`
+	RuntimeTrace *vitestprovider.Trace `json:"runtime_trace,omitempty"`
 }
 type Execution struct {
 	Schema        int             `json:"schema"`
@@ -37,6 +38,8 @@ type Execution struct {
 	Mode          string          `json:"mode"`
 	Commands      []CommandResult `json:"commands"`
 	Passed        bool            `json:"passed"`
+	ConfigDigest  string          `json:"config_digest"`
+	ToolsDigest   string          `json:"tools_digest"`
 }
 
 func executionEnv(c model.Context) map[string]string {
@@ -53,7 +56,24 @@ func executionEnv(c model.Context) map[string]string {
 // Execute is used only after fresh plan reconstruction, and enforces identity
 // again here so callers cannot accidentally execute an unvalidated saved plan.
 func Execute(ctx context.Context, root string, c model.Config, p model.Plan) (Execution, error) {
-	result := Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "full", Commands: []CommandResult{}}
+	return executeMode(ctx, root, c, p, false)
+}
+
+// Observe is a full-inventory diagnostic run, separate from required execution.
+func Observe(ctx context.Context, root string, c model.Config, p model.Plan) (Execution, error) {
+	for _, w := range c.Workspaces {
+		if w.Adapter != "vitest" || w.NodeRuntime == nil {
+			return Execution{}, errors.New("observe requires bound Vitest workspaces; preserve other full suite gates")
+		}
+	}
+	return executeMode(ctx, root, c, p, true)
+}
+
+func executeMode(ctx context.Context, root string, c model.Config, p model.Plan, observe bool) (Execution, error) {
+	result := Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "full", ConfigDigest: p.ConfigDigest, ToolsDigest: p.ToolsDigest, Commands: []CommandResult{}}
+	if observe {
+		result.Mode = "runtime-observation"
+	}
 	if p.Mode != "full-fallback" || config.Digest(c) != p.ConfigDigest {
 		return result, errors.New("execution identities differ from plan")
 	}
@@ -78,7 +98,7 @@ func Execute(ctx context.Context, root string, c model.Config, p model.Plan) (Ex
 		}
 		revalidate = treeValidator(ctx, executionRoot, c, original, revalidate)
 	}
-	if err := runWorkspaces(ctx, executionRoot, c, p.Selected, false, false, &result, revalidate); err != nil {
+	if err := runWorkspaces(ctx, executionRoot, c, p.Selected, false, observe, &result, revalidate); err != nil {
 		return result, err
 	}
 	if err := validateExecution(ctx, root, c, p); err != nil {
@@ -145,6 +165,7 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 			if err != nil || !config.Relative(filepath.ToSlash(rel)) {
 				return errors.New("execution cwd resolves outside repository")
 			}
+			var runtimeTrace *vitestprovider.Trace
 			var output process.Output
 			var runErr error
 			if i == len(commands)-1 && w.Adapter == "vitest" {
@@ -152,7 +173,13 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 				if proposal {
 					selected = workspaceUnits
 				}
-				output, runErr = vitestprovider.Execute(ctx, root, w, c.Context, selected)
+				if result.Mode == "runtime-observation" {
+					var trace vitestprovider.Trace
+					output, trace, runErr = vitestprovider.Observe(ctx, root, w, c.Context)
+					runtimeTrace = &trace
+				} else {
+					output, runErr = vitestprovider.Execute(ctx, root, w, c.Context, selected)
+				}
 			} else if w.Adapter == "go" {
 				env, envErr := goprovider.ExecutionEnvironment(ctx, root, w, c.Context)
 				if envErr != nil {
@@ -162,7 +189,7 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 			} else {
 				output, runErr = process.Run(ctx, cmd, dir, executionEnv(c.Context))
 			}
-			entry := CommandResult{Workspace: w.ID, Command: cmd, ExitCode: output.ExitCode, Duration: output.Duration, OutputBytes: len(output.Stdout) + len(output.Stderr), Complete: runErr == nil}
+			entry := CommandResult{Workspace: w.ID, Command: cmd, ExitCode: output.ExitCode, Duration: output.Duration, OutputBytes: len(output.Stdout) + len(output.Stderr), Complete: runErr == nil, RuntimeTrace: runtimeTrace}
 			if i == len(commands)-1 && w.Adapter == "go" {
 				expected := []string{}
 				for _, u := range workspaceUnits {
@@ -193,6 +220,12 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 				}
 				if vitestResult.Failed && runErr == nil {
 					runErr = errors.New("Vitest results report failure")
+				}
+			}
+			if result.Mode == "runtime-observation" && (runtimeTrace == nil || !runtimeTrace.Complete) {
+				entry.Complete = false
+				if runErr == nil {
+					runErr = errors.New("runtime observation transport incomplete")
 				}
 			}
 			result.Commands = append(result.Commands, entry)

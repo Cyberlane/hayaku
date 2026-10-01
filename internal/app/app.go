@@ -24,12 +24,12 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-var Version = "0.2.1"
+var Version = "0.3.0"
 
 // Run returns a nonzero status for invalid policy, incomplete execution or misses.
 func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(errout, "usage: hayaku <init|doctor|plan|explain|run|shadow|version> [options]")
+		fmt.Fprintln(errout, "usage: hayaku <init|doctor|plan|explain|run|shadow|observe|version> [options]")
 		return 2
 	}
 	if args[0] == "version" {
@@ -41,7 +41,7 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 		return 0
 	}
 	if args[0] == "help" || args[0] == "--help" {
-		fmt.Fprintln(out, "hayaku init|doctor|plan|explain|run|shadow|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\nPlans retain full suites. proposal_commands are experimental shadow inputs.")
+		fmt.Fprintln(out, "hayaku init|doctor|plan|explain|run|shadow|observe|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\nPlans retain full suites. proposal_commands are experimental shadow inputs.")
 		return 0
 	}
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -53,6 +53,7 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 	format := fs.String("format", "json", "json or human (plan only)")
 	output := fs.String("output", "", "output file (must not exist)")
 	planpath := fs.String("plan", "", "saved plan to explain or revalidate/run")
+	observations := fs.String("observations", "", "runtime observation report from base (only broadens proposals)")
 	cache := fs.Bool("cache", false, "reuse private advisory discovery metadata for planning")
 	timeout := fs.Duration("timeout", 10*time.Minute, "maximum command duration")
 	if err := fs.Parse(args[1:]); err != nil {
@@ -108,7 +109,7 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 		}
 		return writeResult(out, errout, *output, func(w io.Writer) error { return report.Human(w, *supplied) })
 	}
-	if args[0] != "plan" && args[0] != "run" && args[0] != "shadow" {
+	if args[0] != "plan" && args[0] != "run" && args[0] != "shadow" && args[0] != "observe" {
 		return failure(errout, fmt.Errorf("unknown command %q", args[0]))
 	}
 	if supplied != nil {
@@ -127,6 +128,11 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 	p, err := Build(ctx, rootabs, *base, *candidate, c, *cache)
 	if err != nil {
 		return failure(errout, err)
+	}
+	if *observations != "" {
+		if err := BroadenFromObservations(ctx, &p, c, *observations); err != nil {
+			return failure(errout, err)
+		}
 	}
 	if supplied != nil && !report.Equal(p, *supplied) {
 		return failure(errout, fmt.Errorf("saved plan differs from fresh source, policy, context or evidence (%v); regenerate it", report.Differences(p, *supplied)))
@@ -153,7 +159,12 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 		}
 		return status
 	}
-	r, err := Execute(ctx, rootabs, c, p)
+	var r Execution
+	if args[0] == "observe" {
+		r, err = Observe(ctx, rootabs, c, p)
+	} else {
+		r, err = Execute(ctx, rootabs, c, p)
+	}
 	status := writeResult(out, errout, *output, func(w io.Writer) error { return report.JSON(w, r) })
 	if err != nil {
 		return failure(errout, err)
@@ -303,28 +314,7 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 	p.ConfigDigest = config.Digest(c)
 	p.ContextDigest = contextDigest
 	p.ToolsDigest = toolDigest
-	p.ProposalCommands = []model.Command{}
-	for _, w := range c.Workspaces {
-		units := []model.Unit{}
-		for _, u := range p.Proposed {
-			if u.Workspace == w.ID {
-				units = append(units, u)
-			}
-		}
-		if len(units) == 0 {
-			continue
-		}
-		cmd, err := adapter.Proposal(w, units)
-		if err != nil {
-			p.Gaps = append(p.Gaps, model.Gap{Code: "proposal-command-unavailable", Workspace: w.ID, Detail: "Original runner arguments cannot be safely narrowed; keep full command"})
-			continue
-		}
-		for _, pre := range w.Prerequisites {
-			pre.Dir = filepath.ToSlash(filepath.Join(w.Root, pre.Dir))
-			p.ProposalCommands = append(p.ProposalCommands, pre)
-		}
-		p.ProposalCommands = append(p.ProposalCommands, cmd)
-	}
+	renderProposalCommands(&p, c)
 	sort.Slice(p.Gaps, func(i, j int) bool {
 		a, b := p.Gaps[i], p.Gaps[j]
 		return a.Workspace+"\x00"+a.Code+"\x00"+a.Detail < b.Workspace+"\x00"+b.Code+"\x00"+b.Detail
@@ -417,4 +407,29 @@ func doctor(root string, c model.Config, out, errout io.Writer) int {
 		}
 	}
 	return 0
+}
+
+func renderProposalCommands(p *model.Plan, c model.Config) {
+	p.ProposalCommands = []model.Command{}
+	for _, w := range c.Workspaces {
+		units := []model.Unit{}
+		for _, u := range p.Proposed {
+			if u.Workspace == w.ID {
+				units = append(units, u)
+			}
+		}
+		if len(units) == 0 {
+			continue
+		}
+		cmd, err := adapter.Proposal(w, units)
+		if err != nil {
+			p.Gaps = append(p.Gaps, model.Gap{Code: "proposal-command-unavailable", Workspace: w.ID, Detail: "Original runner arguments cannot be safely narrowed; keep full command"})
+			continue
+		}
+		for _, pre := range w.Prerequisites {
+			pre.Dir = filepath.ToSlash(filepath.Join(w.Root, pre.Dir))
+			p.ProposalCommands = append(p.ProposalCommands, pre)
+		}
+		p.ProposalCommands = append(p.ProposalCommands, cmd)
+	}
 }

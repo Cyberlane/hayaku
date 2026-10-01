@@ -1,6 +1,7 @@
 # Distribution and releases
 
-v0.2.1 adds native Vitest graph, execution and shadow support to the conservative
+v0.3.0 adds diagnostic runtime observations to native Vitest graph, execution and
+shadow support, preserving the conservative
 planning foundation introduced in v0.1.0. Production affected-test omission remains disabled. Download binaries
 from [GitHub releases](https://github.com/Cyberlane/hayaku/releases); release notes
 describe features and maturity boundaries for each version.

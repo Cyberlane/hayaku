@@ -159,3 +159,25 @@ native fixture enabled. The immutable staged Mori advisory check passed with
 63/63 supported files, 7/7 changed supported files and the same reviewed fixture
 similarity; working-tree/untracked inclusion was false and no findings were
 suppressed or acknowledged. Documentation links and public-path hygiene passed.
+
+## v0.3.0 runtime observation checks
+
+Full local tests, race checks and vet passed with the pinned native fixture.
+After the final bounded/cancellable observation changes, targeted observation,
+transport and hook race regressions passed again. Native Vitest records dynamic
+reads, missing probes and directory listings; applying the base report broadens
+the static hidden-dependency omission, while required execution still detects the
+actual failure. Independent tests retain static influences/full commands, reject
+forged authority/identities, broaden incomplete workspace/worker capture, exercise
+unsupported effects and require deterministic saved-plan reconstruction.
+Directory metadata descendants and internal/escaping symlinks have regressions.
+
+Mori 0.35.0 (65f1dba5fde6, normalization14/schema23) reviewed 68/68 supported files
+and 12/12 changed supported files at threshold0.85/token floor40, with no warnings,
+parse diagnostics, generated exclusions or truncation. Five focused identities
+were inspected at all ten distinct ranges: three-field sorts operate on distinct
+contracts, JSON fixture writing differs from source fixture directory setup, and
+the observational Node harness differs from verified dependency-copy tests. All
+were retained as small intentional similarities; none were suppressed. Forty-seven
+documentation/configuration/assets are unsupported parser inputs and checked
+separately. An enforced isolation backend and production omission remain pending.

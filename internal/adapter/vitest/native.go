@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,16 +52,29 @@ func Execute(ctx context.Context, root string, w model.Workspace, c model.Contex
 	return bridge(ctx, root, w, c, "run", selected)
 }
 func bridge(ctx context.Context, root string, w model.Workspace, c model.Context, mode string, selected []string) (process.Output, error) {
+	out, _, err := bridgeObserved(ctx, root, w, c, mode, selected)
+	return out, err
+}
+
+// Observe captures diagnostic runtime inputs; it never authorizes omission.
+func Observe(ctx context.Context, root string, w model.Workspace, c model.Context) (process.Output, Trace, error) {
+	if _, _, err := parse(w); err != nil {
+		return process.Output{}, Trace{}, err
+	}
+	return bridgeObserved(ctx, root, w, c, "observe", nil)
+}
+
+func bridgeObserved(ctx context.Context, root string, w model.Workspace, c model.Context, mode string, selected []string) (process.Output, Trace, error) {
 	if w.NodeRuntime == nil || !filepath.IsAbs(w.NodeRuntime.Node) || !filepath.IsAbs(w.NodeRuntime.Modules) {
-		return process.Output{}, errors.New("Vitest native API requires bound absolute Node and modules paths")
+		return process.Output{}, Trace{}, errors.New("Vitest native API requires bound absolute Node and modules paths")
 	}
 	root, err := filepath.Abs(root)
 	if err != nil {
-		return process.Output{}, err
+		return process.Output{}, Trace{}, err
 	}
 	cwd := filepath.Join(root, filepath.FromSlash(w.Root), filepath.FromSlash(w.Command.Dir))
 	if !within(root, cwd) {
-		return process.Output{}, errors.New("Vitest cwd escapes snapshot")
+		return process.Output{}, Trace{}, errors.New("Vitest cwd escapes snapshot")
 	}
 	modules := w.NodeRuntime.Modules
 	// Immutable snapshots materialize dependencies at their configured workspace cwd.
@@ -74,16 +88,16 @@ func bridge(ctx context.Context, root string, w model.Workspace, c model.Context
 	// Explicit lower-case keys keep the embedded protocol independent of Go field names.
 	payload, err := json.Marshal(map[string]any{"root": request.Root, "cwd": request.Cwd, "modules": request.Modules, "workspace": request.Workspace, "mode": request.Mode, "args": request.Args, "selected": request.Selected})
 	if err != nil {
-		return process.Output{}, err
+		return process.Output{}, Trace{}, err
 	}
 	dir, err := os.MkdirTemp("", "hayaku-vitest-bridge-")
 	if err != nil {
-		return process.Output{}, err
+		return process.Output{}, Trace{}, err
 	}
 	defer os.RemoveAll(dir)
 	script := filepath.Join(dir, "bridge.mjs")
 	if err = os.WriteFile(script, []byte(nativeBridge), 0600); err != nil {
-		return process.Output{}, err
+		return process.Output{}, Trace{}, err
 	}
 	bounded, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
@@ -96,9 +110,35 @@ func bridge(ctx context.Context, root string, w model.Workspace, c model.Context
 		ci = value
 	}
 	if ci != "true" {
-		return process.Output{}, errors.New("bound Vitest requires reviewed CI=true in context.env or the job environment")
+		return process.Output{}, Trace{}, errors.New("bound Vitest requires reviewed CI=true in context.env or the job environment")
 	}
-	return process.Run(bounded, model.Command{Executable: w.NodeRuntime.Node, Args: []string{script, string(payload)}}, cwd, env)
+	if mode == "observe" {
+		hook := filepath.Join(dir, "trace.mjs")
+		if err := os.WriteFile(hook, TraceHook(), 0600); err != nil {
+			return process.Output{}, Trace{}, err
+		}
+		env["HAYAKU_TRACE_ROOT"] = root
+		env["HAYAKU_TRACE_OUTPUT"] = filepath.Join(dir, "trace.jsonl")
+		env["HAYAKU_TRACE_HOOK"] = hook
+	}
+	out, runErr := process.Run(bounded, model.Command{Executable: w.NodeRuntime.Node, Args: []string{script, string(payload)}}, cwd, env)
+	if mode != "observe" {
+		return out, Trace{}, runErr
+	}
+	f, err := os.Open(env["HAYAKU_TRACE_OUTPUT"])
+	if err != nil {
+		return out, Trace{}, errors.New("runtime observation stream missing")
+	}
+	defer f.Close()
+	data, err := io.ReadAll(io.LimitReader(f, process.MaxOutput+1))
+	if err != nil || len(data) > process.MaxOutput {
+		return out, Trace{}, errors.New("runtime observation stream exceeds limit")
+	}
+	trace, err := DecodeTrace(data, root)
+	if err != nil {
+		return out, Trace{}, err
+	}
+	return out, trace, runErr
 }
 
 func discoverBound(ctx context.Context, root string, w model.Workspace, c model.Context, e model.Evidence) (model.Evidence, error) {

@@ -27,3 +27,9 @@ file is not a trusted executable: the CLI reconstructs the plan before running
 its commands. Failed or incomplete execution cannot become a green result.
 Source/config changes during execution invalidate the result. External state
 cannot be inferred from Git and remains an explicit qualification gap.
+
+Runtime observations can add influence to static proposals but cannot remove it.
+Trace transport completeness, a previously passing result and user-supplied JSON
+are not proof of an enforced input boundary. Observe runs are instrumented/serial
+diagnostics, separate from original required execution. Missing/failed captures
+and unsupported effects broaden proposals; no isolation backend is yet qualified.

@@ -7,7 +7,7 @@ Hayaku is a Go CLI for planning test runs from exact Git revisions. It discovers
 workspace dependencies, explains uncertainty and emits structured commands and
 experimental affected-test proposals.
 
-**v0.2.1 is an early release. Required commands always run the original full
+**v0.3.0 is an early release. Required commands always run the original full
 suites. Affected-test skipping is disabled.** Go and runtime-bound Vitest shadow evaluation let you
 challenge proposals against an independent full run. Complete runtime influence
 cannot be inferred from imports alone; there is no confidence-based or
@@ -21,8 +21,8 @@ Each release includes `SHA256SUMS`, a source/build manifest and license notices.
 For macOS with Apple Silicon:
 
 ```sh
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.2.1/hayaku-darwin-arm64.tar.gz
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.2.1/SHA256SUMS
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.3.0/hayaku-darwin-arm64.tar.gz
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.3.0/SHA256SUMS
 grep '  hayaku-darwin-arm64.tar.gz$' SHA256SUMS | shasum -a 256 -c -
 tar -xzf hayaku-darwin-arm64.tar.gz
 mkdir -p "$HOME/.local/bin"
@@ -41,7 +41,7 @@ See [distribution](docs/distribution.md) for validation and provenance.
 With Go 1.26 or newer installed:
 
 ```sh
-go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.2.1
+go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.3.0
 ```
 
 No npm package is required. Hayaku has no third-party Go modules. Git and your
@@ -139,3 +139,7 @@ outside source. Local native qualification uses `HAYAKU_VITEST_NODE`,
 
 See [contributing](CONTRIBUTING.md). Licensed under [MIT](LICENSE);
 Go runtime notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Runtime filesystem observations are available for bound Vitest installations.
+See [runtime setup and strict assurance](docs/runtime-observations.md). This
+diagnostic feature does not yet provide qualified affected-only execution.

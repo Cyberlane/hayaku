@@ -1,6 +1,6 @@
 # Vitest support
 
-Hayaku v0.2.1 supports the **Vitest 4.1.11 native API** for configured Vite import
+Hayaku supports the **Vitest 4.1.11 native API** for configured Vite import
 influence, experimental JS/TS file/project proposals, full execution and shadow
 comparison. Production test omission remains disabled. Jest, Mocha, Node's test
 runner, Playwright and Cypress still use configured full-suite fallback commands.
@@ -148,3 +148,7 @@ Primary references: [Vitest API](https://vitest.dev/api/advanced/vitest.html),
 [CLI](https://vitest.dev/guide/cli.html), and
 [reported tasks](https://vitest.dev/api/advanced/test-module.html). Current upstream
 pages may describe newer versions; the implementation explicitly binds 4.1.11.
+
+For dynamic filesystem observations that broaden the static envelope, see
+[runtime observations](runtime-observations.md). These are separate diagnostics,
+not an enforced execution backend or authorization to skip.

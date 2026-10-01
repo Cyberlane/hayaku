@@ -26,7 +26,7 @@ baseline integration; additional projects require their own qualification.
 | HYK-015 Cache | Private atomic advisory JSON, integrity/context/source/tool keys | No cached omission authority; measured storage-scale work |
 | HYK-016 Fault challenges | Five independent seeded Go regression oracles | Real incident datasets; native Stryker JS/.NET/Scala integration |
 | HYK-017 CI integration | Full-gated reference script, force-full override, private consumer baseline hook | Qualified skip mode and consumer CI acceptance |
-| HYK-018 Vitest | Configured Vite import influence, Node/dependency binding, native full results and shadow for 4.1.11 | Runtime completeness, browser/typecheck/other versions and consumer qualification |
+| HYK-018 Vitest | Configured Vite import influence, bound native execution/shadow and runtime observations for 4.1.11 | Runtime completeness, browser/typecheck/other versions and consumer qualification |
 | HYK-019 Bazel | Explicit original full-suite integration | Native configured target/action graph and pinned real fixtures |
 | HYK-020 Cross-language | Declared producer/input consumers add influence | Enforced generator/service/FFI contract evidence |
 | HYK-021 pytest | Native JSON collection bridge, whole files, conservative inputs | Installed native verification; runtime/dependency/fixture qualification |
@@ -67,3 +67,12 @@ invalidate comparison. Node and installed module bytes/modes/links are bound and
 revalidated, and source/runtime mutation cannot become a successful comparison.
 See [setup, qualification commands and limits](vitest.md). Legacy unbound file
 discovery remains available, with full proposal gaps and no native execution.
+
+## v0.3.0 runtime observations
+
+Bound Vitest diagnostics record supported dynamic filesystem operations and
+combine their influence monotonically with static proposals. The native hidden
+read regression is captured; missing files, directory additions/deletions and
+unsupported effects have strict fallback tests. Transport completeness is not
+runtime completeness. A qualified OS isolation backend, actual production skips
+and representative CI savings remain pending. See [runtime observations](runtime-observations.md).

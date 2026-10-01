@@ -105,6 +105,8 @@ func TestDocumentationPreservesLinkedFilesAndRequiresLicenseNotices(t *testing.T
 		"docs/releases/v0.1.0.md":                        "First release notes\n",
 		"docs/releases/v0.2.0.md":                        "Vitest release notes\n",
 		"docs/releases/v0.2.1.md":                        "Vitest scope correction notes\n",
+		"docs/releases/v0.3.0.md":                        "Runtime observation release notes\n",
+		"docs/runtime-observations.md":                   "Runtime observation setup\n",
 		"docs/vitest.md":                                 "Vitest setup\n",
 		"docs/research/README.md":                        "Research index\n",
 		"docs/research/2026-09-30-design-and-safety.md":  "Design research\n",
