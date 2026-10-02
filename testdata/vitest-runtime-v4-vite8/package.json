@@ -1,0 +1,13 @@
+{
+  "name": "hayaku-vitest-v4-vite8-native-compatibility",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pinned development compatibility fixture; Hayaku never installs these automatically.",
+  "devDependencies": {
+    "vite": "8.1.5",
+    "vitest": "4.1.11"
+  },
+  "overrides": {
+    "vite": "$vite"
+  }
+}

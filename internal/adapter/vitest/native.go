@@ -25,10 +25,11 @@ type graphScope struct {
 	Incomplete   bool     `json:"incomplete"`
 }
 type graphInventory struct {
-	Schema  int          `json:"schema"`
-	Version string       `json:"version"`
-	Scopes  []graphScope `json:"scopes"`
-	Global  []string     `json:"global"`
+	Schema      int          `json:"schema"`
+	Version     string       `json:"version"`
+	ViteVersion string       `json:"viteVersion"`
+	Scopes      []graphScope `json:"scopes"`
+	Global      []string     `json:"global"`
 }
 
 // Execute runs a bound installed native runtime. Nil units preserves the full
@@ -71,6 +72,12 @@ func bridgeObserved(ctx context.Context, root string, w model.Workspace, c model
 	root, err := filepath.Abs(root)
 	if err != nil {
 		return process.Output{}, Trace{}, err
+	}
+	// Vite 8 normalizes module identities through OS directory aliases. Bind the
+	// request root to the same real directory before validating relative scopes.
+	root, err = filepath.EvalSymlinks(root)
+	if err != nil {
+		return process.Output{}, Trace{}, errors.New("Vitest snapshot root cannot be resolved")
 	}
 	cwd := filepath.Join(root, filepath.FromSlash(w.Root), filepath.FromSlash(w.Command.Dir))
 	if !within(root, cwd) {
@@ -147,10 +154,10 @@ func discoverBound(ctx context.Context, root string, w model.Workspace, c model.
 		return e, errors.New("bound Vitest native graph discovery failed")
 	}
 	var inventory graphInventory
-	if err = json.Unmarshal(out.Stdout, &inventory); err != nil || inventory.Schema != 1 || inventory.Version != "4.1.11" || len(inventory.Scopes) == 0 || len(inventory.Scopes) > 50000 {
+	if err = json.Unmarshal(out.Stdout, &inventory); err != nil || inventory.Schema != 1 || !supportedAPIVersions(inventory.Version, inventory.ViteVersion) || len(inventory.Scopes) == 0 || len(inventory.Scopes) > 50000 {
 		return e, errors.New("invalid Vitest graph inventory")
 	}
-	e.Version = "vitest-vite-graph-v1:" + inventory.Version
+	e.Version = "vitest-vite-graph-v1:" + inventory.Version + ":vite:" + inventory.ViteVersion
 	e.Gaps = []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "Configured Vite transforms provide experimental import influence only; dynamic imports, external resources and arbitrary runtime effects remain unqualified"}}
 	global := map[string]bool{}
 	for _, p := range inventory.Global {
@@ -207,6 +214,9 @@ func discoverBound(ctx context.Context, root string, w model.Workspace, c model.
 	}
 	sortEvidence(&e)
 	return e, nil
+}
+func supportedAPIVersions(vitest, vite string) bool {
+	return (vitest == "3.2.7" && vite == "6.4.3") || (vitest == "4.1.11" && (vite == "7.3.1" || vite == "8.1.5"))
 }
 func validRelative(p string) bool {
 	return p != "" && !filepath.IsAbs(p) && filepath.ToSlash(filepath.Clean(p)) == p && p != ".." && !strings.HasPrefix(p, "../") && !strings.Contains(p, "\\")

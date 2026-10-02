@@ -40,7 +40,7 @@ func graphFixture(t *testing.T, inventory graphInventory) (string, model.Workspa
 	return root, model.Workspace{ID: "js", Root: ".", Command: model.Command{Dir: ".", Executable: "vitest", Args: []string{"run"}}, NodeRuntime: &model.NodeRuntime{Node: node, Modules: t.TempDir()}}
 }
 func graphData() graphInventory {
-	return graphInventory{Schema: 1, Version: "4.1.11", Global: []string{"setup.ts", "vitest.config.ts"}, Scopes: []graphScope{{File: "one.test.ts", Project: "one", Dependencies: []string{"one.test.ts", "src.ts", "setup.ts", "resource.json", "vitest.config.ts"}}, {File: "two.test.ts", Project: "two", Dependencies: []string{"two.test.ts"}}}}
+	return graphInventory{Schema: 1, Version: "4.1.11", ViteVersion: "7.3.1", Global: []string{"setup.ts", "vitest.config.ts"}, Scopes: []graphScope{{File: "one.test.ts", Project: "one", Dependencies: []string{"one.test.ts", "src.ts", "setup.ts", "resource.json", "vitest.config.ts"}}, {File: "two.test.ts", Project: "two", Dependencies: []string{"two.test.ts"}}}}
 }
 func TestConfiguredGraphOwnersRetainGlobalAndResources(t *testing.T) {
 	root, w := graphFixture(t, graphData())
@@ -58,6 +58,33 @@ func TestConfiguredGraphOwnersRetainGlobalAndResources(t *testing.T) {
 	}
 	if len(got.Gaps) != 1 || got.Gaps[0].Code != "runtime-unqualified" {
 		t.Fatalf("qualification overstated: %+v", got.Gaps)
+	}
+}
+
+func TestExactNativeAPIVersionMatrix(t *testing.T) {
+	for _, pair := range [][2]string{{"3.2.7", "6.4.3"}, {"4.1.11", "7.3.1"}, {"4.1.11", "8.1.5"}} {
+		t.Run(pair[0]+"-"+pair[1], func(t *testing.T) {
+			data := graphData()
+			data.Version, data.ViteVersion = pair[0], pair[1]
+			root, w := graphFixture(t, data)
+			evidence, err := Discover(context.Background(), root, w, model.Context{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if evidence.Version != "vitest-vite-graph-v1:"+pair[0]+":vite:"+pair[1] || len(evidence.Gaps) != 1 || evidence.Gaps[0].Code != "runtime-unqualified" {
+				t.Fatalf("version identity or strict gap lost: %+v", evidence)
+			}
+		})
+	}
+	for _, pair := range [][2]string{{"3.2.6", "6.4.3"}, {"3.2.7", "6.4.2"}, {"3.2.7", "7.3.1"}, {"4.1.11", "6.4.3"}, {"4.1.11", "8.1.4"}, {"4.1.12", "7.3.1"}, {"4.1.11", ""}, {"4.1.11-beta.1", "7.3.1"}, {"", ""}} {
+		t.Run("reject-"+pair[0]+"-"+pair[1], func(t *testing.T) {
+			data := graphData()
+			data.Version, data.ViteVersion = pair[0], pair[1]
+			root, w := graphFixture(t, data)
+			if _, err := Discover(context.Background(), root, w, model.Context{}); err == nil {
+				t.Fatal("unqualified version pair accepted")
+			}
+		})
 	}
 }
 func TestIncompleteTransformBroadensEveryGraphInput(t *testing.T) {
