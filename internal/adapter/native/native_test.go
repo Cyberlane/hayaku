@@ -110,6 +110,26 @@ func TestNodeCollectionSuppressesBodiesButErrorsRemainFailures(t *testing.T) {
 		t.Fatal("native failed outcome lost", decodeErr)
 	}
 }
+
+func TestNodeNativeTypeScriptStripping(t *testing.T) {
+	root, w := nativeFixture(t, "node-test", map[string]string{
+		"package.json":  "{\"type\":\"module\"}\n",
+		"value.ts":      "export const value: number = 42;\n",
+		"typed.test.ts": "import {test} from 'node:test';import assert from 'node:assert/strict';import {value} from './value.ts';test('typed native source',()=>assert.equal(value,42));\n",
+	}, []string{"--test", "typed.test.ts"})
+	e, err := Discover(context.Background(), root, w, model.Context{})
+	if err != nil {
+		t.Fatal("native TS discovery", err)
+	}
+	out, err := Execute(context.Background(), root, w, model.Context{}, nil)
+	if err != nil {
+		t.Fatal("native TS execution", err)
+	}
+	result, err := nativerunner.Reconcile(bytes.NewReader(out.Stdout), "node-test", resultVersion(e), e.Units)
+	if err != nil || result.Failed || len(result.Tests) != 1 || len(e.Inputs["value.ts"]) != 1 {
+		t.Fatalf("native TypeScript support incomplete %+v %v", result, err)
+	}
+}
 func TestUnittestNativeDiscoveryAndSubtests(t *testing.T) {
 	root, w := nativeFixture(t, "unittest", map[string]string{
 		"tests/test_value.py": "import unittest\nclass Values(unittest.TestCase):\n def test_one(self): self.assertEqual(1,1)\n def test_subs(self):\n  for value in [1,2]:\n   with self.subTest(value=value): self.assertGreater(value,0)\n @unittest.skip('private reason')\n def test_skip(self): raise Exception('skip')\n",
@@ -123,6 +143,11 @@ func TestUnittestNativeDiscoveryAndSubtests(t *testing.T) {
 	if len(e.Units) != 2 || len(e.Inputs["input.txt"]) != 2 {
 		t.Fatal("missing broad native ownership")
 	}
+	for _, name := range []string{"tests/__pycache__", "__pycache__"} {
+		if _, err := os.Stat(filepath.Join(root, name)); err == nil {
+			t.Fatal("collection bytecode modified snapshot")
+		}
+	}
 	out, err := Execute(context.Background(), root, w, model.Context{}, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -130,11 +155,6 @@ func TestUnittestNativeDiscoveryAndSubtests(t *testing.T) {
 	result, err := nativerunner.Reconcile(bytes.NewReader(out.Stdout), "unittest", resultVersion(e), e.Units)
 	if err != nil || result.Failed || len(result.Tests) != 6 {
 		t.Fatalf("bad unittest results %+v %v", result, err)
-	}
-	for _, name := range []string{"tests/__pycache__", "__pycache__"} {
-		if _, err := os.Stat(filepath.Join(root, name)); err == nil {
-			t.Fatal("bytecode modified snapshot")
-		}
 	}
 	cmd, err := Proposal(w, e.Units)
 	if err != nil || !reflect.DeepEqual(cmd.Args[:len(w.Command.Args)], w.Command.Args) || !strings.Contains(strings.Join(cmd.Args, " "), "-k test_other.*") {
@@ -203,6 +223,11 @@ func TestJestPrivateResultsAndPathExactProposals(t *testing.T) {
 	report, err := jestReport(data, "/snapshot", "30.2.0")
 	if err != nil || len(report.Tests) != 2 || report.Tests[0].Test == report.Tests[1].Test {
 		t.Fatal("Jest identities ambiguous", err)
+	}
+	interrupted := bytes.Replace(data, []byte(`{"numTotalTestSuites"`), []byte(`{"wasInterrupted":true,"numTotalTestSuites"`), 1)
+	stopped, err := jestReport(interrupted, "/snapshot", "30.2.0")
+	if err != nil || stopped.Complete {
+		t.Fatal("interrupted Jest report accepted as complete")
 	}
 	w := model.Workspace{ID: "w", Adapter: "jest", Command: model.Command{Executable: "jest", Dir: ".", Args: []string{"--runInBand", "--config=jest.config.js"}}}
 	units := []model.Unit{{Workspace: "w", Kind: "jest-file", Selector: "b.test.js"}, {Workspace: "w", Kind: "jest-file", Selector: "a.test.js"}}

@@ -10,8 +10,11 @@ import (
 
 	"github.com/Cyberlane/hayaku/internal/adapter/cargo"
 	"github.com/Cyberlane/hayaku/internal/adapter/golang"
+	"github.com/Cyberlane/hayaku/internal/adapter/native"
+	"github.com/Cyberlane/hayaku/internal/adapter/nextest"
 	"github.com/Cyberlane/hayaku/internal/adapter/pytest"
 	"github.com/Cyberlane/hayaku/internal/adapter/vitest"
+	"github.com/Cyberlane/hayaku/internal/catalog"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
 )
@@ -22,23 +25,17 @@ type Capability struct {
 	NativeDiscovery    bool   `json:"native_discovery"`
 	Granularity        string `json:"granularity"`
 	ProductionOmission bool   `json:"production_omission"`
+	Language           string `json:"language,omitempty"`
+	ResultFormat       string `json:"result_format,omitempty"`
+	Assurance          string `json:"assurance,omitempty"`
 }
 
 func Capabilities() []Capability {
-	return []Capability{
-		{ID: "go", Tool: "go", NativeDiscovery: true, Granularity: "package"},
-		{ID: "vitest", Tool: "vitest", NativeDiscovery: true, Granularity: "file/project"},
-		{ID: "bazel", Tool: "bazel", Granularity: "suite"},
-		{ID: "pytest", Tool: "python3", NativeDiscovery: true, Granularity: "file"},
-		{ID: "cargo", Tool: "cargo", NativeDiscovery: true, Granularity: "package"},
-		{ID: "maven", Tool: "mvn", Granularity: "suite"},
-		{ID: "gradle", Tool: "gradle", Granularity: "suite"},
-		{ID: "sbt", Tool: "sbt", Granularity: "suite"},
-		{ID: "dotnet", Tool: "dotnet", Granularity: "suite"},
-		{ID: "xcode", Tool: "xcodebuild", Granularity: "suite"},
-		{ID: "swift", Tool: "swift", Granularity: "suite"},
-		{ID: "command", Granularity: "suite"},
+	result := []Capability{}
+	for _, r := range catalog.Runners() {
+		result = append(result, Capability{ID: r.ID, Tool: r.Tool, NativeDiscovery: r.Discovery == "native", Granularity: r.Granularity, Language: r.Language, ResultFormat: r.Results, Assurance: r.Assurance})
 	}
+	return result
 }
 
 func Discover(ctx context.Context, root string, w model.Workspace, c model.Context) (model.Evidence, error) {
@@ -47,10 +44,14 @@ func Discover(ctx context.Context, root string, w model.Workspace, c model.Conte
 		return golang.Discover(ctx, root, w, c)
 	case "cargo":
 		return cargo.Discover(ctx, root, w, c)
+	case "nextest":
+		return nextest.Discover(ctx, root, w, c)
 	case "pytest":
 		return pytest.Discover(ctx, root, w, c)
 	case "vitest":
 		return vitest.Discover(ctx, root, w, c)
+	case "node-test", "unittest", "jest", "playwright":
+		return native.Discover(ctx, root, w, c)
 	}
 	for _, capability := range Capabilities() {
 		if capability.ID == w.Adapter {
@@ -103,10 +104,14 @@ func Proposal(w model.Workspace, units []model.Unit) (model.Command, error) {
 		cmd, err = golang.Proposal(w, units)
 	case "cargo":
 		cmd, err = cargo.Proposal(w, units)
+	case "nextest":
+		cmd, err = nextest.Proposal(w, units)
 	case "pytest":
 		cmd, err = pytest.Proposal(w, units)
 	case "vitest":
 		cmd, err = vitest.Proposal(w, units)
+	case "node-test", "unittest", "jest", "playwright":
+		cmd, err = native.Proposal(w, units)
 	default:
 		if len(units) == 0 {
 			return model.Command{}, fmt.Errorf("empty full-suite proposal")
@@ -127,5 +132,5 @@ func Normalize(e *model.Evidence) {
 }
 
 func ImplementationVersions() map[string]string {
-	return map[string]string{"go": "go-native-v1", "cargo": "cargo-native-v1", "pytest": "pytest-native-v1", "vitest": "vitest-vite-graph-v1", "fallback": "full-suite-v1"}
+	return map[string]string{"go": "go-native-v1", "cargo": "cargo-native-v1", "nextest": nextest.Version, "pytest": "pytest-native-v1", "vitest": "vitest-vite-graph-v1", "node-test": "native-files-v1", "unittest": "native-files-v1", "jest": "native-files-v1", "playwright": "native-files-v1", "fallback": "full-suite-v1"}
 }

@@ -542,7 +542,9 @@ func invoke(ctx context.Context, root, dir string, w model.Workspace, c model.Co
 		if err := os.WriteFile(script, []byte(unittestBridge), 0600); err != nil {
 			return collected, out, err
 		}
-		env["PYTHONDONTWRITEBYTECODE"] = "1"
+		if mode == "discover" {
+			env["PYTHONDONTWRITEBYTECODE"] = "1"
+		}
 		cmd = model.Command{Executable: w.Command.Executable, Args: []string{script, string(request)}}
 	case "jest", "playwright":
 		if w.NodeRuntime == nil || !filepath.IsAbs(w.NodeRuntime.Node) || !filepath.IsAbs(w.NodeRuntime.Modules) {
@@ -683,8 +685,9 @@ func jestReport(data []byte, dir, version string) (nativerunner.Report, error) {
 	// Native Jest reports include diagnostics. Only selected identity/status
 	// fields survive normalization, never messages, source or assertion values.
 	var raw struct {
-		NumTotalTestSuites        int `json:"numTotalTestSuites"`
-		NumRuntimeErrorTestSuites int `json:"numRuntimeErrorTestSuites"`
+		WasInterrupted            bool `json:"wasInterrupted"`
+		NumTotalTestSuites        int  `json:"numTotalTestSuites"`
+		NumRuntimeErrorTestSuites int  `json:"numRuntimeErrorTestSuites"`
 		TestResults               []struct {
 			Name             string `json:"name"`
 			Status           string `json:"status"`
@@ -729,7 +732,7 @@ func jestReport(data []byte, dir, version string) (nativerunner.Report, error) {
 			report.Tests = append(report.Tests, nativerunner.Terminal{Selector: selector, Test: string(identity), Action: a})
 		}
 	}
-	report.Complete = true
+	report.Complete = !raw.WasInterrupted
 	return report, nil
 }
 func jestAction(status string) (string, error) {

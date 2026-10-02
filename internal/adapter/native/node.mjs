@@ -29,7 +29,7 @@ for await (const event of run(options)) {
     // Native file wrapper outcomes are represented by the file summary.
     if (data.name === data.file && data.nesting === 0) continue;
     let action = event.type === 'test:fail' ? 'fail' : 'pass';
-    if (data.skip || data.todo) action = 'skip';
+    if ((data.skip !== undefined && data.skip !== false) || (data.todo !== undefined && data.todo !== false)) action = 'skip';
     tests.push({selector: files.get(data.file), test: JSON.stringify([data.nesting, data.name, data.testNumber]), action});
     if (tests.length > 100000) throw new Error('native case limit exceeded');
   }
