@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "contract": "separate-deterministic-go-wasi-suite-v1",
+  "compiler_cache": "independent-fresh",
+  "baseline": {
+    "context": {
+      "source_digest": "d1f1455513c3b7db2ad5b0e92ce981a16cc4cf057083a2a422544639bed224db",
+      "inputs_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "runner_digest": "e16504438ec87c64cba29eacfb042b0e4f4232cf51099370fa4a1bd680e7ce07",
+      "environment_digest": "64bdd021db1f8fb807450c5af398adf33eca1a5c4e1f1f94b7f28cdbdd31446f",
+      "platform": "darwin/arm64",
+      "suite_set_digest": "ef113ed7e4a98c070b3b76f29a9cd80764b2fb6557ededff3f0edf7b54f5e0ac"
+    },
+    "wall_nanos": 11474691833,
+    "phases": [
+      {
+        "id": "capture-and-compile",
+        "kind": "hayaku",
+        "start_nanos": 0,
+        "duration_nanos": 10952493750
+      },
+      {
+        "id": "capsule",
+        "kind": "runner",
+        "start_nanos": 10952493750,
+        "duration_nanos": 286322458
+      },
+      {
+        "id": "final-validation-and-cleanup",
+        "kind": "hayaku",
+        "start_nanos": 11238816208,
+        "duration_nanos": 235875625
+      }
+    ],
+    "suites": [
+      {
+        "id": "./internal/graph",
+        "execution": "executed",
+        "outcome": "passed"
+      }
+    ]
+  },
+  "candidate": {
+    "context": {
+      "source_digest": "d1f1455513c3b7db2ad5b0e92ce981a16cc4cf057083a2a422544639bed224db",
+      "inputs_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "runner_digest": "e16504438ec87c64cba29eacfb042b0e4f4232cf51099370fa4a1bd680e7ce07",
+      "environment_digest": "64bdd021db1f8fb807450c5af398adf33eca1a5c4e1f1f94b7f28cdbdd31446f",
+      "platform": "darwin/arm64",
+      "suite_set_digest": "ef113ed7e4a98c070b3b76f29a9cd80764b2fb6557ededff3f0edf7b54f5e0ac"
+    },
+    "wall_nanos": 11150938083,
+    "phases": [
+      {
+        "id": "capture-and-compile",
+        "kind": "hayaku",
+        "start_nanos": 0,
+        "duration_nanos": 10883942417
+      },
+      {
+        "id": "capsule",
+        "kind": "hayaku",
+        "start_nanos": 10883942417,
+        "duration_nanos": 21155541
+      },
+      {
+        "id": "final-validation-and-cleanup",
+        "kind": "hayaku",
+        "start_nanos": 10905097958,
+        "duration_nanos": 245840125
+      }
+    ],
+    "suites": [
+      {
+        "id": "./internal/graph",
+        "execution": "hayaku-reused",
+        "outcome": "passed"
+      }
+    ]
+  },
+  "comparison": {
+    "valid": true,
+    "baseline": {
+      "wall_nanos": 11474691833,
+      "hayaku_overhead_nanos": 11188369375,
+      "runner_nanos": 286322458,
+      "executed": 1,
+      "hayaku_reused": 0,
+      "upstream_cached": 0,
+      "passed": 1,
+      "failed": 0,
+      "incomplete": 0
+    },
+    "candidate": {
+      "wall_nanos": 11150938083,
+      "hayaku_overhead_nanos": 11150938083,
+      "runner_nanos": 0,
+      "executed": 0,
+      "hayaku_reused": 1,
+      "upstream_cached": 0,
+      "passed": 1,
+      "failed": 0,
+      "incomplete": 0
+    },
+    "net_savings_nanos": 323753750,
+    "gross_runner_savings_nanos": 286322458
+  },
+  "baseline_result": {
+    "schema": 1,
+    "name": "./internal/graph",
+    "mode": "executed",
+    "key": "fc2319bfb7064735a295b3e4bd73d6a254ff1f3fce22c01075909915618b1f9f",
+    "module_digest": "4d3c49de4e6e120fc526fedc7c1a6e7ec3c474d2cd364c49bf2ab14bed1c5436",
+    "input_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "backend_digest": "a99eb2aca675486cf22a479a6fcd0f11a882fa5473374d0685ad334301535a70",
+    "complete": true,
+    "qualified": true,
+    "passed": true,
+    "exit_code": 0,
+    "reason": "complete-pass",
+    "gaps": [],
+    "input_files": 0,
+    "stdout_digest": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431",
+    "stderr_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_bytes": 5,
+    "stderr_bytes": 0,
+    "cache_status": "stored"
+  },
+  "candidate_result": {
+    "schema": 1,
+    "name": "./internal/graph",
+    "mode": "reused",
+    "key": "fc2319bfb7064735a295b3e4bd73d6a254ff1f3fce22c01075909915618b1f9f",
+    "module_digest": "4d3c49de4e6e120fc526fedc7c1a6e7ec3c474d2cd364c49bf2ab14bed1c5436",
+    "input_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "backend_digest": "a99eb2aca675486cf22a479a6fcd0f11a882fa5473374d0685ad334301535a70",
+    "complete": true,
+    "qualified": true,
+    "passed": true,
+    "exit_code": 0,
+    "reason": "authenticated-complete-pass",
+    "gaps": [],
+    "input_files": 0,
+    "stdout_digest": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431",
+    "stderr_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_bytes": 5,
+    "stderr_bytes": 0,
+    "cache_status": "hit"
+  }
+}
