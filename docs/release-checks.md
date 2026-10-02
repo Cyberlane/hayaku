@@ -35,15 +35,34 @@ explicit. Ten zero-fragment files were either the data-only model or tiny helper
 and fault fixtures below that floor. Earlier commit slices had their own complete
 reviews. No baseline, receipt, suppression or weakened coverage policy was added.
 
-## External acceptance
+## Published acceptance, 2026-10-03
 
-Publication requires the new Linux/macOS full test/race/vet, three-pair Vitest,
-installed native-runner and WASI pilot matrix; the actual run is separate from its
-workflow definition. The release then builds six archives, validates source/tag
-identity, checksums and license notices, and smoke-tests the extracted Linux CLI.
-Downloaded public archive acceptance and consumer version pins are recorded
-separately once publication completes. Windows has cross-compilation coverage;
-WASI receipt reuse remains disabled there. No native affected-only gate is enabled.
+The signed `v0.4.0` tag binds source
+`941d99d8ad5b0b31eb04bfcf1f9212966f8f4a62`.
+[Main CI](https://github.com/Cyberlane/hayaku/actions/runs/37036798768) passed
+all 12 jobs. The [release workflow](https://github.com/Cyberlane/hayaku/actions/runs/37037220777)
+independently passed its 12 verification jobs plus publication, including the
+three-pair Vitest matrix, installed Node/Python/Jest/Playwright/nextest fixtures,
+full Linux/macOS tests/races/vet and actual WASI execute/reuse pilots.
+The [public release](https://github.com/Cyberlane/hayaku/releases/tag/v0.4.0)
+is published with six archives, `SHA256SUMS` and `manifest.json`.
+
+All six downloaded public archives matched their checksum/size/source manifest
+and contained the expected documentation and Go/wazero/platform license notices.
+The extracted Darwin arm64 CLI reports 0.4.0, module version v0.4.0 and the exact
+unchanged tagged source in its embedded Go build information. Native downloaded
+checks passed catalog, real capsule execution/authenticated reuse/forced audit,
+changed-input invalidation and denied caught writes with unchanged host inputs.
+Its clean tagged-source self-pilot independently passed matching executed/reused
+outcomes with fresh compiler caches. Private raw reports are retained; these are
+functional acceptance samples, not representative savings.
+
+The publication job smoke-tested the extracted Linux amd64 CLI. Other targets
+have cross-compilation coverage; Windows WASI receipt reuse remains disabled.
+[Pages deployment](https://github.com/Cyberlane/hayaku/actions/runs/37036798657)
+passed, and the live website rendered v0.4.0 with its logo loaded, resolved local
+anchors and no mobile page overflow. Native affected-only gates remain disabled.
+Consumer activation and consumer CI acceptance are separate from this release.
 
 ## Historical v0.1.0 release checks
 
