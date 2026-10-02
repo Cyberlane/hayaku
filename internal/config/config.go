@@ -21,29 +21,48 @@ const MaxBytes = 1 << 20
 
 func Decode(r io.Reader) (model.Config, error) {
 	var c model.Config
-	b, err := io.ReadAll(io.LimitReader(r, MaxBytes+1))
-	if err != nil {
+	if err := DecodeValue(r, &c, MaxBytes); err != nil {
 		return c, err
-	}
-	if len(b) > MaxBytes {
-		return c, errors.New("configuration exceeds size limit")
-	}
-	// Duplicate keys are rejected rather than silently allowing policy replacement.
-	if err := uniqueKeys(json.NewDecoder(bytes.NewReader(b))); err != nil {
-		return c, err
-	}
-	d := json.NewDecoder(bytes.NewReader(b))
-	d.DisallowUnknownFields()
-	if err := d.Decode(&c); err != nil {
-		return c, fmt.Errorf("configuration: %w", err)
-	}
-	if err := d.Decode(new(any)); err != io.EOF {
-		return c, errors.New("configuration contains trailing JSON")
 	}
 	return c, Validate(c)
 }
 
+// DecodeValue applies the same duplicate-key, size, unknown-field and trailing
+// data policy to auxiliary configuration and measurement documents.
+func DecodeValue(r io.Reader, value any, maxBytes int64) error {
+	if maxBytes < 1 || maxBytes > 64<<20 {
+		return errors.New("invalid JSON document limit")
+	}
+	b, err := io.ReadAll(io.LimitReader(r, maxBytes+1))
+	if err != nil {
+		return err
+	}
+	if int64(len(b)) > maxBytes {
+		return errors.New("configuration exceeds size limit")
+	}
+	// Duplicate keys are rejected rather than silently allowing policy replacement.
+	if err := uniqueKeys(json.NewDecoder(bytes.NewReader(b))); err != nil {
+		return err
+	}
+	d := json.NewDecoder(bytes.NewReader(b))
+	d.DisallowUnknownFields()
+	if err := d.Decode(value); err != nil {
+		return fmt.Errorf("configuration: %w", err)
+	}
+	if err := d.Decode(new(any)); err != io.EOF {
+		return errors.New("configuration contains trailing JSON")
+	}
+	return nil
+}
+
 func uniqueKeys(d *json.Decoder) error {
+	return uniqueKeysDepth(d, 0)
+}
+
+func uniqueKeysDepth(d *json.Decoder, depth int) error {
+	if depth > 64 {
+		return errors.New("configuration nesting exceeds limit")
+	}
 	t, err := d.Token()
 	if err != nil {
 		return err
@@ -68,7 +87,7 @@ func uniqueKeys(d *json.Decoder) error {
 			}
 			seen[name] = true
 		}
-		if err := uniqueKeys(d); err != nil {
+		if err := uniqueKeysDepth(d, depth+1); err != nil {
 			return err
 		}
 	}
@@ -99,11 +118,11 @@ func Validate(c model.Config) error {
 			return fmt.Errorf("workspace %s requires an adapter", w.ID)
 		}
 		if w.NodeRuntime != nil {
-			if w.Adapter != "vitest" {
-				return errors.New("node_runtime is supported only for Vitest workspaces")
+			if w.Adapter != "vitest" && w.Adapter != "node-test" && w.Adapter != "jest" && w.Adapter != "playwright" {
+				return errors.New("node_runtime requires a supported native Node runner")
 			}
 			if len(w.Prerequisites) != 0 {
-				return errors.New("bound Vitest runtime does not support prerequisites or generated inputs")
+				return errors.New("bound native Node runtime does not support prerequisites or generated source inputs; use an independently captured envelope")
 			}
 			for _, path := range []string{w.NodeRuntime.Node, w.NodeRuntime.Modules} {
 				if !filepath.IsAbs(path) || filepath.Clean(path) != path || strings.ContainsAny(path, "\x00\n") {

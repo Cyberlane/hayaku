@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/Cyberlane/hayaku/internal/adapter"
+	"github.com/Cyberlane/hayaku/internal/catalog"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/evidence"
 	"github.com/Cyberlane/hayaku/internal/model"
@@ -24,12 +25,18 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-var Version = "0.3.0"
+var Version = "0.4.0"
 
 // Run returns a nonzero status for invalid policy, incomplete execution or misses.
 func Run(ctx context.Context, args []string, out, errout io.Writer) int {
+	if len(args) > 0 {
+		switch args[0] {
+		case "capsule", "inputs", "compare", "results", "pilot", "inventory":
+			return runTool(ctx, args, out, errout)
+		}
+	}
 	if len(args) == 0 {
-		fmt.Fprintln(errout, "usage: hayaku <init|doctor|plan|explain|run|shadow|observe|version> [options]")
+		fmt.Fprintln(errout, "usage: hayaku <init|doctor|catalog|plan|explain|run|shadow|observe|capsule|inputs|compare|results|inventory|pilot|version> [options]")
 		return 2
 	}
 	if args[0] == "version" {
@@ -41,7 +48,7 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 		return 0
 	}
 	if args[0] == "help" || args[0] == "--help" {
-		fmt.Fprintln(out, "hayaku init|doctor|plan|explain|run|shadow|observe|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\nPlans retain full suites. proposal_commands are experimental shadow inputs.")
+		fmt.Fprintln(out, "hayaku init|doctor|catalog|plan|explain|run|shadow|observe|capsule|inputs|compare|results|inventory|pilot|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\ncapsule --config capsule.json --cache-dir <private directory>\ninputs --config inputs.json [--destination <new directory>]\ncompare --baseline baseline.json --measurement candidate.json\nresults --format junit|trx|swift|libtest --inventory cases.json --report results.xml\ninventory --config hayaku.json --workspace <nextest workspace>\npilot --package ./internal/graph --cache-dir <private directory>\nNative plans retain full suites. proposal_commands are experimental shadow inputs.")
 		return 0
 	}
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
@@ -82,6 +89,9 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 	defer cancel()
 	if args[0] == "init" {
 		return initialize(rootabs, *cfgpath, out, errout)
+	}
+	if args[0] == "catalog" {
+		return writeResult(out, errout, *output, func(w io.Writer) error { return report.JSON(w, catalog.Runners()) })
 	}
 	c, err := readConfig(rootabs, *cfgpath)
 	if err != nil {

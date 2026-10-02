@@ -30,7 +30,20 @@ func validateVitestRunner(root string, w model.Workspace) error {
 	if err != nil {
 		return errors.New("configured Vitest runner is unavailable")
 	}
-	expected, err := filepath.EvalSymlinks(filepath.Join(w.NodeRuntime.Modules, "vitest", "vitest.mjs"))
+	entry := filepath.Join("vitest", "vitest.mjs")
+	switch w.Adapter {
+	case "jest":
+		entry = filepath.Join("jest", "bin", "jest.js")
+	case "playwright":
+		entry = filepath.Join("@playwright", "test", "cli.js")
+	case "node-test":
+		expected, err := filepath.EvalSymlinks(w.NodeRuntime.Node)
+		if err != nil || actual != expected {
+			return errors.New("configured Node runner differs from bound runtime")
+		}
+		return nil
+	}
+	expected, err := filepath.EvalSymlinks(filepath.Join(w.NodeRuntime.Modules, entry))
 	if err != nil || actual != expected {
 		return errors.New("configured Vitest runner differs from the bound installation")
 	}

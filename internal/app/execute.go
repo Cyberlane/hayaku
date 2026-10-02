@@ -7,15 +7,18 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/Cyberlane/hayaku/internal/adapter"
 	goprovider "github.com/Cyberlane/hayaku/internal/adapter/golang"
+	nativeprovider "github.com/Cyberlane/hayaku/internal/adapter/native"
 	vitestprovider "github.com/Cyberlane/hayaku/internal/adapter/vitest"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/process"
 	gorunner "github.com/Cyberlane/hayaku/internal/runner/golang"
+	nativerunner "github.com/Cyberlane/hayaku/internal/runner/native"
 	vitestRunner "github.com/Cyberlane/hayaku/internal/runner/vitest"
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
@@ -28,18 +31,20 @@ type CommandResult struct {
 	OutputBytes  int                   `json:"output_bytes"`
 	Go           *gorunner.Result      `json:"go,omitempty"`
 	Vitest       *vitestRunner.Result  `json:"vitest,omitempty"`
+	Native       *nativerunner.Result  `json:"native,omitempty"`
 	Complete     bool                  `json:"complete"`
 	RuntimeTrace *vitestprovider.Trace `json:"runtime_trace,omitempty"`
 }
 type Execution struct {
-	Schema        int             `json:"schema"`
-	Candidate     string          `json:"candidate"`
-	ContextDigest string          `json:"context_digest"`
-	Mode          string          `json:"mode"`
-	Commands      []CommandResult `json:"commands"`
-	Passed        bool            `json:"passed"`
-	ConfigDigest  string          `json:"config_digest"`
-	ToolsDigest   string          `json:"tools_digest"`
+	Schema         int               `json:"schema"`
+	Candidate      string            `json:"candidate"`
+	ContextDigest  string            `json:"context_digest"`
+	Mode           string            `json:"mode"`
+	Commands       []CommandResult   `json:"commands"`
+	Passed         bool              `json:"passed"`
+	ConfigDigest   string            `json:"config_digest"`
+	ToolsDigest    string            `json:"tools_digest"`
+	RunnerVersions map[string]string `json:"runner_versions,omitempty"`
 }
 
 func executionEnv(c model.Context) map[string]string {
@@ -70,7 +75,7 @@ func Observe(ctx context.Context, root string, c model.Config, p model.Plan) (Ex
 }
 
 func executeMode(ctx context.Context, root string, c model.Config, p model.Plan, observe bool) (Execution, error) {
-	result := Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "full", ConfigDigest: p.ConfigDigest, ToolsDigest: p.ToolsDigest, Commands: []CommandResult{}}
+	result := Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "full", ConfigDigest: p.ConfigDigest, ToolsDigest: p.ToolsDigest, RunnerVersions: nativeVersions(p), Commands: []CommandResult{}}
 	if observe {
 		result.Mode = "runtime-observation"
 	}
@@ -180,6 +185,12 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 				} else {
 					output, runErr = vitestprovider.Execute(ctx, root, w, c.Context, selected)
 				}
+			} else if i == len(commands)-1 && nativeResultRunner(w.Adapter) {
+				var selected []model.Unit
+				if proposal {
+					selected = workspaceUnits
+				}
+				output, runErr = nativeprovider.Execute(ctx, root, w, c.Context, selected)
 			} else if w.Adapter == "go" {
 				env, envErr := goprovider.ExecutionEnvironment(ctx, root, w, c.Context)
 				if envErr != nil {
@@ -220,6 +231,17 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 				}
 				if vitestResult.Failed && runErr == nil {
 					runErr = errors.New("Vitest results report failure")
+				}
+			}
+			if i == len(commands)-1 && nativeResultRunner(w.Adapter) {
+				nativeResult, reconcileErr := nativerunner.Reconcile(bytes.NewReader(output.Stdout), w.Adapter, result.RunnerVersions[w.ID], workspaceUnits)
+				entry.Native = &nativeResult
+				entry.Complete = reconcileErr == nil && output.Completed && (output.ExitCode == 0 || nativeResult.Failed)
+				if reconcileErr != nil && runErr == nil {
+					runErr = reconcileErr
+				}
+				if nativeResult.Failed && runErr == nil {
+					runErr = errors.New("native results report failure")
 				}
 			}
 			if result.Mode == "runtime-observation" && (runtimeTrace == nil || !runtimeTrace.Complete) {
@@ -279,8 +301,8 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		}
 	}()
 	for _, w := range c.Workspaces {
-		if w.Adapter != "go" && (w.Adapter != "vitest" || w.NodeRuntime == nil) {
-			return result, errors.New("shadow outcome reconciliation requires Go or runtime-bound Vitest workspaces")
+		if w.Adapter != "go" && (w.Adapter != "vitest" || w.NodeRuntime == nil) && !nativeResultRunner(w.Adapter) {
+			return result, errors.New("shadow requires a native outcome reconciler; keep other full gates")
 		}
 	}
 	if config.Digest(c) != p.ConfigDigest {
@@ -307,8 +329,8 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 	if err != nil {
 		return result, err
 	}
-	result.Proposal = Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "shadow-proposal", Commands: []CommandResult{}}
-	result.Full = Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "shadow-full", Commands: []CommandResult{}}
+	result.Proposal = Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "shadow-proposal", RunnerVersions: nativeVersions(p), Commands: []CommandResult{}}
+	result.Full = Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "shadow-full", RunnerVersions: nativeVersions(p), Commands: []CommandResult{}}
 	checkOriginal := func() error { return validateExecution(ctx, root, c, p) }
 	proposalErr := runWorkspaces(ctx, pair.BaseDir, c, p.Proposed, true, true, &result.Proposal, treeValidator(ctx, pair.BaseDir, c, proposalTree, checkOriginal))
 	result.Proposal.Passed = proposalErr == nil
@@ -413,6 +435,14 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 func outcomes(execution Execution) map[string]string {
 	result := map[string]string{}
 	for _, command := range execution.Commands {
+		if command.Native != nil {
+			for _, outcome := range command.Native.Units {
+				result[outcome.Unit] = outcome.Action
+			}
+			for _, outcome := range command.Native.Tests {
+				result[outcome.Unit+"/"+outcome.Test] = outcome.Action
+			}
+		}
 		if command.Vitest != nil {
 			for _, outcome := range command.Vitest.Files {
 				result[outcome.Unit] = outcome.Action
@@ -435,10 +465,33 @@ func outcomes(execution Execution) map[string]string {
 }
 
 func unitOutcomeID(unit model.Unit) string {
-	if unit.Kind == "vitest-file" {
+	if unit.Kind == "vitest-file" || strings.HasSuffix(unit.Kind, "-file") {
 		return unit.ID
 	}
 	return unit.Workspace + ":" + unit.Selector
+}
+
+func nativeResultRunner(id string) bool {
+	switch id {
+	case "node-test", "unittest", "pytest", "jest", "playwright":
+		return true
+	}
+	return false
+}
+
+func nativeVersions(p model.Plan) map[string]string {
+	versions := map[string]string{}
+	for _, e := range p.Evidence {
+		if !nativeResultRunner(e.Adapter) {
+			continue
+		}
+		for _, part := range strings.Split(e.Version, ";") {
+			if value, ok := strings.CutPrefix(part, e.Adapter+"="); ok {
+				versions[e.Workspace] = value
+			}
+		}
+	}
+	return versions
 }
 
 func validateExecution(ctx context.Context, root string, c model.Config, p model.Plan) error {
