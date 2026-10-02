@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "dependencies": {
+    "jest": "30.5.2",
+    "@playwright/test": "1.63.0"
+  }
+}
