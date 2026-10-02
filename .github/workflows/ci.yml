@@ -32,6 +32,8 @@ jobs:
         with:
           go-version: "1.27.1"
           cache: false
+      - name: Prepare checksum-pinned Go dependencies
+        run: GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
       - name: Check formatting
         run: |
           gofmt -l . > "$RUNNER_TEMP/gofmt.txt"
@@ -47,7 +49,45 @@ jobs:
         run: go vet ./...
 
   vitest:
-    name: Native Vitest ${{ matrix.runner }}
+    name: Native Vitest ${{ matrix.runtime }} / ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15]
+        runtime: [vitest-runtime, vitest-runtime-v3, vitest-runtime-v4-vite8]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Prepare checksum-pinned Go dependencies
+        run: GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.18.0"
+      - name: Prepare pinned native fixture outside source
+        shell: bash
+        run: |
+          mkdir "$RUNNER_TEMP/hayaku-vitest-runtime"
+          cp testdata/${{ matrix.runtime }}/package*.json "$RUNNER_TEMP/hayaku-vitest-runtime/"
+          npm ci --prefix "$RUNNER_TEMP/hayaku-vitest-runtime" --ignore-scripts --no-audit --no-fund
+          {
+            echo "HAYAKU_VITEST_NODE=$(command -v node)"
+            echo "HAYAKU_VITEST_MODULES=$RUNNER_TEMP/hayaku-vitest-runtime/node_modules"
+            echo "HAYAKU_VITEST_BINARY=$RUNNER_TEMP/hayaku-vitest-runtime/node_modules/.bin/vitest"
+          } >> "$GITHUB_ENV"
+      - name: Qualify native graph, execution and shadow results
+        run: go test -count=1 ./internal/adapter/vitest ./internal/app
+
+  native:
+    name: Native Node / Python / Jest / Playwright / Rust on ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
@@ -64,19 +104,84 @@ jobs:
         with:
           go-version: "1.27.1"
           cache: false
+      - name: Prepare checksum-pinned Go dependencies
+        run: GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "22.18.0"
-      - name: Prepare pinned native fixture outside source
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14.7"
+      - name: Prepare explicitly installed native fixtures
         shell: bash
         run: |
-          mkdir "$RUNNER_TEMP/hayaku-vitest-runtime"
-          cp testdata/vitest-runtime/package*.json "$RUNNER_TEMP/hayaku-vitest-runtime/"
-          npm ci --prefix "$RUNNER_TEMP/hayaku-vitest-runtime" --ignore-scripts --no-audit --no-fund
+          mkdir "$RUNNER_TEMP/hayaku-native-runtime"
+          cp testdata/native-runtime/package*.json "$RUNNER_TEMP/hayaku-native-runtime/"
+          npm ci --prefix "$RUNNER_TEMP/hayaku-native-runtime" --ignore-scripts --no-audit --no-fund
+          python -m venv "$RUNNER_TEMP/hayaku-pytest-runtime"
+          "$RUNNER_TEMP/hayaku-pytest-runtime/bin/pip" install pytest==9.0.2
           {
-            echo "HAYAKU_VITEST_NODE=$(command -v node)"
-            echo "HAYAKU_VITEST_MODULES=$RUNNER_TEMP/hayaku-vitest-runtime/node_modules"
-            echo "HAYAKU_VITEST_BINARY=$RUNNER_TEMP/hayaku-vitest-runtime/node_modules/.bin/vitest"
+            echo "HAYAKU_NATIVE_NODE=$(command -v node)"
+            echo "HAYAKU_NATIVE_MODULES=$RUNNER_TEMP/hayaku-native-runtime/node_modules"
+            echo "HAYAKU_NATIVE_PYTHON=$RUNNER_TEMP/hayaku-pytest-runtime/bin/python"
+            echo "HAYAKU_NATIVE_UNITTEST_PYTHON=$(command -v python)"
           } >> "$GITHUB_ENV"
-      - name: Qualify native graph, execution and shadow results
-        run: go test -count=1 ./internal/adapter/vitest ./internal/app
+      - name: Verify and prepare pinned nextest development fixture
+        shell: bash
+        run: |
+          mkdir "$RUNNER_TEMP/hayaku-nextest"
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            platform=universal-apple-darwin
+          else
+            platform=x86_64-unknown-linux-gnu
+          fi
+          archive="cargo-nextest-0.9.146-$platform.tar.gz"
+          release=https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-0.9.146
+          curl --fail --location --max-time 120 --output "$RUNNER_TEMP/hayaku-nextest/$archive" "$release/$archive"
+          curl --fail --location --max-time 120 --output "$RUNNER_TEMP/hayaku-nextest/checksum" "$release/cargo-nextest-0.9.146-$platform.sha256"
+          digest=$(awk '{print $1}' "$RUNNER_TEMP/hayaku-nextest/checksum")
+          printf '%s  %s\n' "$digest" "$RUNNER_TEMP/hayaku-nextest/$archive" | shasum -a 256 -c -
+          tar -xzf "$RUNNER_TEMP/hayaku-nextest/$archive" -C "$RUNNER_TEMP/hayaku-nextest"
+          echo "$RUNNER_TEMP/hayaku-nextest" >> "$GITHUB_PATH"
+          echo "HAYAKU_NEXTEST_REQUIRED=1" >> "$GITHUB_ENV"
+      - name: Verify native discovery, execution and outcomes
+        run: go test -race -count=1 ./internal/adapter/native ./internal/adapter/nextest ./internal/adapter/pytest ./internal/runner/native ./internal/app
+
+  capsule:
+    name: Hayaku WASI reuse pilot on ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Prepare checksum-pinned Go dependencies
+        run: GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
+      - name: Verify containment and authenticated reuse
+        run: go test -race -count=1 ./internal/capsule ./internal/inputbundle ./internal/metrics ./internal/pilot
+      - name: Measure the separate WASI suite contract
+        run: go run ./cmd/hayaku pilot --cache-dir "$RUNNER_TEMP/hayaku-pass-cache" --output "$RUNNER_TEMP/hayaku-pilot.json"
+      - name: Check actual complete reuse
+        run: |
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['RUNNER_TEMP'] + '/hayaku-pilot.json') as f:
+              p = json.load(f)
+          assert p['baseline_result']['mode'] == 'executed'
+          assert p['candidate_result']['mode'] == 'reused'
+          assert p['comparison']['valid'] and p['candidate_result']['passed']
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: wasi-pilot-${{ matrix.runner }}
+          path: ${{ runner.temp }}/hayaku-pilot.json

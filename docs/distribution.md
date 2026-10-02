@@ -1,57 +1,24 @@
 # Distribution and releases
 
-v0.3.0 adds diagnostic runtime observations to native Vitest graph, execution and
-shadow support, preserving the conservative
-planning foundation introduced in v0.1.0. Production affected-test omission remains disabled. Download binaries
-from [GitHub releases](https://github.com/Cyberlane/hayaku/releases); release notes
-describe features and maturity boundaries for each version.
+v0.4.0 adds deterministic WASI suite execution and authenticated whole-suite reuse, explicit generated/linked input envelopes, native runner integrations and cost comparison tools. Native affected-test proposals retain the original full suite; a WASI result does not qualify an equivalent native command. Download binaries from [GitHub releases](https://github.com/Cyberlane/hayaku/releases).
 
 ## Local archive builder
 
-From a clean committed checkout, build the local archive builder outside the
-repository, then choose a nonexisting output directory whose parent exists:
+From a clean committed checkout, build the archive builder outside the repository, then choose a new output directory whose parent exists:
 
 ```sh
 go build -o /tmp/hayaku-dist ./cmd/hayaku-dist
 /tmp/hayaku-dist --root "$PWD" --output /tmp/hayaku-archives
 ```
 
-The builder cross-compiles dependency-free Hayaku binaries for Darwin, Linux and
-Windows on amd64 and arm64 with CGO disabled. It rejects dirty tracked, untracked
-and ignored source inputs, records the exact commit and source timestamp, checks
-the embedded Go build information for source/platform identity, and revalidates
-the checkout after building. Go dependency fetching and toolchain installation
-are disabled. It creates archives in a private staging directory, then moves the
-completed output to the requested destination. Existing output is not replaced.
+The builder cross-compiles Darwin, Linux and Windows binaries on amd64 and arm64 with CGO disabled. It rejects dirty tracked, untracked and ignored source inputs, binds the exact commit and source timestamp, checks embedded Go build information, and revalidates the checkout after building. Pinned modules must already be available in the trusted build environment: dependency fetching and toolchain installation are disabled during archive construction. Output is built in private staging; an existing destination is not replaced.
 
-Archives include the CLI, README, safety/qualification/distribution documentation,
-the project's [MIT license](../LICENSE) and [Go runtime notices](../THIRD_PARTY_NOTICES.md).
-`manifest.json` records Go tool identity, plan schema, implementation versions,
-capabilities, platform and archive sizes/checksums. `SHA256SUMS` can be checked
-locally with `shasum -a 256 -c SHA256SUMS`. Archive ordering, modes and timestamps
-are fixed; timestamps derive from the source commit, also passed as
-`SOURCE_DATE_EPOCH`. Reproducibility assumes the same pinned Go toolchain, tagged source and
-module metadata. Use a fresh isolated `GOMODCACHE` for rebuild comparisons; an
-older offline pseudo-version cache can change embedded Go module metadata. Checksums are integrity evidence, not signatures or trust attestations.
+Archives include the CLI, README, capability and safety documentation, the [MIT license](../LICENSE) and [third-party notices](../THIRD_PARTY_NOTICES.md), including the Go runtime, wazero and platform support modules. `manifest.json` records tool identity, schema/implementation versions, capabilities, platform and archive sizes/checksums. Verify with `shasum -a 256 -c SHA256SUMS` after downloading all listed archives. Checksums are integrity evidence, not publisher signatures.
 
-Local cross-compilation and embedded build-info checks do not prove native
-execution on another platform or acceptance of a downloaded artifact. Verify
-the archive checksum, extraction, CLI version and representative native fixture
-commands on each advertised platform before calling it qualified. No signatures,
-public upload, release, deployment or CI rollout are performed by this command.
+Archive ordering, modes and timestamps are fixed. Timestamps derive from the source commit, also passed as `SOURCE_DATE_EPOCH`. Rebuild comparisons require the same pinned Go toolchain, tagged source and module metadata; use a fresh isolated `GOMODCACHE`. Cross-compilation and build-info checks do not prove native execution or downloaded-artifact acceptance on another platform.
 
 ## Public release workflow
 
-The prepared GitHub workflow accepts strict `vMAJOR.MINOR.PATCH` tags, runs the
-required CI checks and verifies that the CLI version matches the tag. A matching
-release note file is required. It builds all six archives from the exact clean
-committed tag with Go 1.27.1, checks every archive checksum, and smoke-tests the
-extracted Linux amd64 CLI version and bundled license notices. Publishing starts
-with a draft containing the complete assets, then makes that release public.
+The workflow accepts strict `vMAJOR.MINOR.PATCH` tags, runs required CI and verifies that the CLI version matches the tag. Matching release notes are required. It builds six archives from the exact clean tag with Go 1.27.1, checks their checksums, and smoke-tests the extracted Linux amd64 binary. The required CI matrix also exercises Linux amd64 and macOS arm64 source fixtures. Publication starts with a draft containing all assets before making the release public. See [release checks](release-checks.md) for actual remote acceptance evidence.
 
-Release verification runs on Linux amd64 and macOS arm64; other platforms have
-cross-compilation evidence only. This does not establish native downloaded-artifact
-acceptance for every target. Neither the local builder nor the public workflow
-signs or notarizes binaries. Checksums and the manifest provide integrity and
-source/build provenance; they are not publisher signatures. Release publication
-never enables production affected-test omission or enrolls a consumer's CI.
+Other advertised targets have cross-compilation evidence unless separately recorded. Binaries are not signed or notarized. Neither the local builder nor publication enrolls a consumer's CI or qualifies native omission. [Capsule reuse](capsules.md) applies only to its own deterministic WASI contract; Windows capsules execute without receipt caching until an independently qualified ACL backend exists.

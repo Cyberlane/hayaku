@@ -1,4 +1,40 @@
-# Historical local verification, 2026-09-30
+# Verification evidence
+
+## v0.4.0 source and native fixture checks
+
+This version separates original native full gates from deterministic WASI capsule
+reuse. Source tests, installed native fixtures, complete local checks and remote
+release acceptance are distinct evidence. Capsule `qualified` applies only to its
+own enforced contract and does not qualify equivalent native Go/Vitest commands.
+
+The input-envelope and cost packages passed scoped tests/race/vet, including
+explicit generated/linked input changes, source/copy mutation, path/link/collision
+rejection, strict saved manifests, limits, cancellation, cache attribution and
+negative savings. Vitest adapter race tests passed against all three exact pairs:
+3.2.7/6.4.3, 4.1.11/7.3.1 and 4.1.11/8.1.5 with Node 22.18.0. Existing native
+application cases covered discovery/execution/shadow and dynamic observations;
+v3 observation additionally verifies the private vite-node trace-loader allowance.
+Real Vite 8 context checks retained fork/thread support and reject custom/VM/
+browser/typecheck contexts.
+
+Input/cost and three-pair Vitest source/test Mori reviews were advisory. Reported
+similarity was inspected in both source contexts; independent containment,
+schema and observation contracts were retained where semantics differ. Mori
+scores are not runtime or qualification evidence.
+
+The v0.4.0 workflow requires full Go tests/race/vet, explicit installed native
+fixtures and deterministic capsule/pilot checks on Linux amd64 and macOS arm64.
+Native application fixtures requiring runtime variables visibly skip without
+them; release acceptance must exercise them. The self-pilot uses independent
+fresh compiler caches and includes capture/build/validation/cleanup cost.
+Actual measurements belong in [pilot results](pilot-results.md). Complete
+local/release check outcomes and downloaded-artifact acceptance are recorded in
+[release checks](release-checks.md); workflow definition alone is not a passed run.
+
+The historical sections below retain evidence for earlier versions and should
+not be read as proof for new adapters or the current release.
+
+## Historical local verification, 2026-09-30
 
 These observations concern private prepublication development revisions, rather
 than the public v0.1.0 source or downloaded release assets. The private source

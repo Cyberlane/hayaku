@@ -1,70 +1,33 @@
 # CI integration and rollout boundary
 
-`scripts/ci-shadow.sh` is a local reference integration. Set HAYAKU_BASE to a
-locally available comparison commit and HAYAKU_CANDIDATE to the exact tested
-commit. Select a fresh artifact directory under Git metadata for each matrix job.
-Keep original tests, lint, security, migrations and other gates in their normal
-pipeline. The script never makes a skipped/full failing suite green.
+Keep native tests, lint, security, migrations and other original gates. Native graph or collection evidence produces proposals for shadow comparison; it never grants an affected-only native CI run. Deterministic [WASI capsules](capsules.md) are a separate suite contract and can reuse a matching authenticated passing receipt.
 
-Shadow defaults on; HAYAKU_FORCE_FULL=1 suppresses the additional proposal challenge
-and still executes the full required suite. It cannot enable omissions. Native
-shadow reconciliation supports Go and explicitly runtime-bound Vitest 4.1.11
-workspaces. [Vitest setup](vitest.md) binds a user-installed Node/dependency tree,
-then uses separate copies and native outcomes. Only its exact declared ignored
-`node_modules` directory is admitted; other untracked/ignored/generated inputs
-still fail. Other ecosystems retain their original full runner alongside plans
-until their reconcilers and installed inputs are supported. A planning/discovery
-failure fails the integration rather than asserting that no tests are affected.
-An owner may run their original full command to recover
-without treating the invalid plan as a successful selector.
+## Native planning and shadow checks
 
-Do not infer the base from a branch name, PR title, HEAD~1 or an unavailable remote.
-A shallow checkout must provision the desired objects through normal CI checkout
-policy; Hayaku performs no fetch. Save plan, shadow/full outcomes, exact source and
-runner context with artifacts. Do not save secrets or raw diagnostic/source output.
-Artifacts are exclusive-created and should be access controlled.
+`scripts/ci-shadow.sh` is a reference integration. Set `HAYAKU_BASE` to a locally available comparison commit and `HAYAKU_CANDIDATE` to the exact tested commit. Use a fresh artifact directory under Git metadata for each matrix job. Shadow defaults on; `HAYAKU_FORCE_FULL=1` suppresses the additional proposal challenge and still executes the original full required suite. It cannot enable omissions.
 
-Saved plans bind all inherited and configured environment inputs privately. Shell
-launch bookkeeping can change between processes, particularly SHLVL and
-XPC_SERVICE_NAME on macOS. The Hayaku Darwin pilot configuration explicitly pins
-those two inputs for discovery and execution. For other runners, establish a
-consistent job environment or declare reviewed values in context.env; Hayaku does
-not silently exclude arbitrary environment variables from validation. Reports name
-changed plan fields without exposing their values.
+Native execution/collection support includes Go, the pinned [Vitest pairs](vitest.md) and supported [additional runners](runner-support.md). Native contexts remain unqualified for omission. Runner prerequisites, generated source and services that lack a supported immutable native boundary stay in the original pipeline. Planning failure must not become “no tests affected”; an owner can recover by running the original full command while retaining a failed planning gate.
 
-Production skip rollout is not enabled. Before adding it, review an adapter-specific
-sound algorithm and enforced input/isolation boundary, fix all shadow misses, define
-workload and net-cost thresholds, qualify native contexts, and retain scheduled
-full-suite audits and immediate force-full rollback. A mutation score or a clean
-sample cannot replace this boundary. Public release workflows verify and publish
-Hayaku itself; they do not enroll consumers or authorize test omission in their CI.
+Do not infer the base from a branch name, PR title, `HEAD~1` or an unavailable remote. Provision required Git objects through normal checkout policy; Hayaku does no fetch. Reports use exclusive-created files and should be access controlled. Save exact source/context identity, native full/shadow outcomes and costs without raw environment values, source contents or diagnostic output.
+
+Saved plans privately bind inherited and declared environment inputs. Shell launch bookkeeping can vary between processes, particularly `SHLVL` and `XPC_SERVICE_NAME` on macOS. Establish a consistent job environment or explicitly pin reviewed values in `context.env`; Hayaku does not silently ignore arbitrary variables.
+
+## Deterministic capsule gate
+
+Provision and verify the actual WASI module through trusted build steps. Bind its compilation/source context in `producer_identity`, declare all guest inputs and use a private receipt directory. Invoke `hayaku capsule --config capsule.json --cache-dir PRIVATE_CACHE`; a failure, incomplete execution or unsupported capability fails this gate. Reuse does not replace any native gate.
+
+Schedule `--no-reuse` audits. An audit invalidates the previous receipt before execution, so cancellation or failure cannot leave its earlier pass authorized. Changed audit output invalidates reuse. Retain the original native gates while evaluating the separate WASI suite and record matching-context [net costs](measurements.md).
+
+The receipt authority key belongs to the invoking user. Do not publish it or share writable cache authority with untrusted jobs, forked pull requests or guests. Cross-user/cache provenance and Windows ACL qualification are outside the current contract; unavailable caching causes fresh execution. Diagnostic plans, imported reports and manifests are not pass receipts.
+
+## Required development fixtures
+
+The reusable CI workflow defines Linux amd64 and macOS arm64 full Go test/race/vet jobs, three exact Vitest/Vite fixture pairs, installed Node/Python/Jest/Playwright checks, and capsule/input-envelope/metrics/pilot checks. Development dependencies are explicitly provisioned outside the checkout; Hayaku itself installs no runners. Browser-free Playwright fixtures do not establish browser or service isolation. Native application fixtures that require explicit runtime variables skip without them; release CI must supply them and exercise the required cases.
+
+The capsule pilot captures and compiles the same committed package independently for an uncached baseline and a reusable candidate. CI requires complete passing results and comparable metrics, not a minimum speedup. Remote job acceptance is recorded separately in [release checks](release-checks.md).
 
 ## Historical external consumer baseline
 
-During private prepublication development, a separate consumer received a locally
-committed command-adapter configuration, reviewed local binary pin, full-suite
-baseline wrapper and prepared CI artifact hook. It retained the exact original
-npm/Turbo full test command and all other CI gates, recorded planning/runtime/full
-result costs and enabled no omissions. Planning failure still ran the original
-suite and failed the added planning gate. The wrapper used an ordinary installed
-and generated checkout; it was explicitly an observation outside Hayaku's immutable
-execution and native shadow qualification.
+A private prepublication consumer trial kept its original npm/Turbo full command and all gates. It used an ordinary installed/generated checkout outside immutable native qualification. Eleven adversarial hook tests passed; on Node 22 all thirteen Turbo tasks passed with caching forced off. A Node 26 trial remained failed after frontend storage assertions failed.
 
-The real planner and eleven adversarial hook tests passed. On the pinned Node 22
-major, all thirteen Turbo tasks passed with caching forced off; a Node 26 run
-failed frontend storage assertions and correctly remained failed. Local observed
-planning overhead was 21.206 seconds and full-suite cost 63.920 seconds, so this
-baseline added work and claimed no selection savings. These observations used
-private development revisions, not the public v0.1.0 source or downloaded release
-assets. The consumer source and raw reports are not published; this is a historical
-summary, not a reproducible public dataset or live CI acceptance record. No remote
-consumer workflow activation or public installation was performed for that trial.
-
-## Native Vitest release checks
-
-The reusable CI workflow installs a pinned **development fixture** outside the
-checkout (Node 22.18.0, Vitest 4.1.11, Vite 7.3.1), then runs native adapter and
-application tests on Linux amd64 and macOS arm64. This explicit CI setup is separate
-from Hayaku, which never installs runners. Release publication depends on these
-checks and the Go test/race/vet matrix. Passing fixture checks does not enroll or
-qualify a consumer project.
+Observed planning overhead was 21.206 seconds and full-suite cost 63.920 seconds. That trial added work and claimed no selection savings. These private development observations are a historical summary, not a reproducible public dataset, live consumer CI acceptance or a result for v0.4.0 release artifacts. The [current pilot](pilot-results.md) measures a different, separate WASI contract.

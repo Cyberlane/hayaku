@@ -1,78 +1,33 @@
 # Implementation status
 
-This maps the development backlog to actual capabilities. "Implemented" means
-code and its specified bounded behavior exist; it does not grant production
-omission, native platform acceptance or qualification for a consumer's CI context.
-Every runner remains on full-suite required commands. Hayaku itself is the first
-local pilot. A separate private consumer has a locally committed full-suite
-baseline integration; additional projects require their own qualification.
+The source and tests define current behavior. “Native” below means installed-runner evidence and result handling, not complete runtime influence or permission to skip a native suite. Original native commands remain full. v0.4.0 permits whole-suite reuse only within the separately enforced [deterministic WASI contract](capsules.md).
 
-| Ticket | Local state | Remaining boundary |
+## Five improvement areas
+
+| Area | Implemented scope | Remaining boundary |
 | --- | --- | --- |
-| HYK-001 Safety contract | Implemented fail-closed contract | Review/enforce adapter assumptions before production omission |
-| HYK-002 Foundation | Go CLI, strict config, AGENTS, standard library | Native support matrix grows through qualification |
-| HYK-003 Snapshots | Committed Git pairs, raw diffs/bytes/modes, mutation validation | Staged/worktree modes; symlink/gitlink support intentionally rejected |
-| HYK-004 Contexts | Workspace commands, host context, native Go settings/tool-byte binding | Full external input/isolation and CI matrix qualification |
-| HYK-005 Contracts | Versioned shared evidence, gap, runner, report contracts | Public plugin API/version qualification |
-| HYK-006 Graph | Old/new union, deterministic closure, new/deleted units | Adapter completeness remains independent |
-| HYK-007 Uncertainty | Full required runs or explicit errors | Qualified isolation-scoped production narrowing |
-| HYK-008 Plans | JSON/human reasons, source/context/tool digests, argv/cwd | Production omission explanations follow a qualified algorithm |
-| HYK-009 Go adapter | Native package/test/import/embed/build-input evidence | Arbitrary runtime/cgo inputs unqualified |
-| HYK-010 Go runner | Commands and terminal package/test reconciliation | More flag/wrapper/version contexts independently qualify |
-| HYK-011 Fixtures | Native Git/Go/Cargo/Vitest, protocol pytest, five fault challenges | Broader framework/dispatch/FFI/service corpus |
-| HYK-012 Properties | Independent graph oracle, monotonicity, decoder/snapshot/qualification fuzzing | Extend as new algorithms/adapters arrive |
-| HYK-013 Shadow | Separate Go/Vitest source/runtime copies, misses and incomplete/mismatched outcomes | External-state isolation and other native reconcilers |
-| HYK-014 Performance | Complete-cost arithmetic, local pilot tooling and two warmed synthetic observations | Representative CI datasets, thresholds and accepted savings |
-| HYK-015 Cache | Private atomic advisory JSON, integrity/context/source/tool keys | No cached omission authority; measured storage-scale work |
-| HYK-016 Fault challenges | Five independent seeded Go regression oracles | Real incident datasets; native Stryker JS/.NET/Scala integration |
-| HYK-017 CI integration | Full-gated reference script, force-full override, private consumer baseline hook | Qualified skip mode and consumer CI acceptance |
-| HYK-018 Vitest | Configured Vite import influence, bound native execution/shadow and runtime observations for 4.1.11 | Runtime completeness, browser/typecheck/other versions and consumer qualification |
-| HYK-019 Bazel | Explicit original full-suite integration | Native configured target/action graph and pinned real fixtures |
-| HYK-020 Cross-language | Declared producer/input consumers add influence | Enforced generator/service/FFI contract evidence |
-| HYK-021 pytest | Native JSON collection bridge, whole files, conservative inputs | Installed native verification; runtime/dependency/fixture qualification |
-| HYK-022 Cargo | Native offline/locked workspace graph, package commands; native unit/integration/docs fixture | Build-script/proc-macro/runtime-input and results qualification |
-| HYK-023 JVM | Separate original Maven/Gradle/sbt full-suite adapters | Native configured module/suite metadata and result reconciliation |
-| HYK-024 .NET | Explicit original full-suite integration | SDK/VSTest/MTP/framework-specific native metadata and filters |
-| HYK-025 Apple | Explicit original Xcode/Swift full-suite integration | Native schemes/plans/destinations/XCTest/SwiftTesting result fixtures |
-| HYK-026 Fine cases | Qualification criteria and challenge/observation validators | Sound case-level algorithm; no case-level omission enabled |
-| HYK-027 Distribution | Six cross-build archives, checksums, source/build provenance, MIT/Go notices and versioned release automation | Native installed-artifact matrix and binary signing/notarization |
-| HYK-028 Setup | Init without overwrite, doctor capabilities/runner paths, honest gaps | Root Vitest manifest detection; richer multi-root and framework setup |
+| Enforced execution | WASI preview1 module validation, immutable virtual files, explicit args/env, logical clocks and seeded entropy; unsupported host capabilities trap | Native Go/JS/Python/Rust equivalence, arbitrary services/FFI/subprocesses and OS isolation are unqualified |
+| Actual reuse | Locally authenticated passing receipts bound to module, normalized inputs, producer, context, limits and backend; forced audits invalidate old receipts first | Windows ACL backend, distributed authority and native affected-only execution |
+| Generated and linked inputs | Explicit multi-root envelope capture, bounded verified materialization, stable link/mode/provenance digest; capsule bridge normalizes the captured view | No candidate-generated overlay into BASE; no broader native generated/linked runtime qualification |
+| Independent challenge/evidence | Existing fault corpus plus capsule capability/cache/audit adversaries, native inventory/result reconciliation and strict JUnit/TRX/Swift/libtest imports | Finite fixtures are not a soundness proof; more real incident and external-state workloads remain |
+| Honest performance | Per-suite executed/Hayaku-reused/upstream-cached evidence, phase costs, exact-context net comparisons and a self-pilot including capture/compile | Representative consumer savings, cold/warm workload policy and production acceptance |
 
-No installed pytest runner was available; that native test explicitly skips.
-Go/Cargo native fixtures ran locally. Vitest 4.1.11 file/project/filter fixtures
-ran using an existing externally installed executable on disposable sources only;
-the external project's source, configuration and tests were not run or changed.
-Bazel/.NET/Maven/Gradle/sbt tools were unavailable; their entries are full-suite
-fallbacks, not completed native adapters. Cross-compilation is not native runtime
-qualification. Hayaku does not add telemetry, credentials or automatic consumer
-CI enrollment. Public release automation does not enable affected-test omission.
+## Runner capabilities
 
-The first [local pilot observations](pilot-results.md) describe an earlier private
-prepublication source and raw costs. They do not establish accepted CI savings or
-production omission. Later context/path regressions are recorded separately from
-that dataset.
+| Integration | Implemented evidence | Assurance |
+| --- | --- | --- |
+| Go | Native package/import/embed/build inputs; execution and shadow challenges | Native runtime/cgo/external inputs unqualified |
+| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1 and 4.1.11/8.1.5 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected |
+| Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
+| Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
+| cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
+| JVM, .NET, Swift, Ruby, PHP, Dart, C/C++, Bun, Deno, Bazel | Explicit original full-scope command entries and applicable strict report imports | No claim of native framework discovery, filtering or runtime qualification for these entries |
+| Generic command | Preserved original structured command and exit status | Full scope only |
 
-A private consumer's prepared integration and native Node 22 workspace observation
-are described in [CI integration](ci.md#historical-external-consumer-baseline).
-This validates an original full command and adds measurement overhead; it does not establish
-Vitest shadow acceptance for that consumer, affected-test savings or live CI acceptance.
+`hayaku catalog` lists these distinctions. Report formats may require a runner-specific reporter/export step; an entry does not imply that every runner emits that dialect directly. [Runner support](runner-support.md) records exact fixture versions separately from accepted protocol ranges.
 
-## v0.2.0 Vitest implementation
+## Existing foundation
 
-The bound adapter uses native Vitest 4.1.11/Vite transforms for JS/TS proposals,
-retains broad config/setup/resource ownership and original full required scopes,
-and reconciles project/file/test results including duplicate names. Shadow detects
-a deliberately omitted filesystem-dependent failure; unhandled global errors
-invalidate comparison. Node and installed module bytes/modes/links are bound and
-revalidated, and source/runtime mutation cannot become a successful comparison.
-See [setup, qualification commands and limits](vitest.md). Legacy unbound file
-discovery remains available, with full proposal gaps and no native execution.
+Exact local Git revisions, old/new graph union, deleted/renamed/new input handling, structured argv/cwd, bounded process output/cancellation, strict schemas, immutable source copies, context/tool digests, full fallback reasons, setup without overwrite and portable archives remain supported. Native Vitest traces broaden proposals monotonically and cover observed dynamic reads/probes/directories. Unobserved influence remains a gap and cannot authorize skipping.
 
-## v0.3.0 runtime observations
-
-Bound Vitest diagnostics record supported dynamic filesystem operations and
-combine their influence monotonically with static proposals. The native hidden
-read regression is captured; missing files, directory additions/deletions and
-unsupported effects have strict fallback tests. Transport completeness is not
-runtime completeness. A qualified OS isolation backend, actual production skips
-and representative CI savings remain pending. See [runtime observations](runtime-observations.md).
+The source includes pinned development fixtures and CI matrices. Local fixture success, cross-compilation, remote release acceptance and consumer CI qualification are separate claims; see [verification](verification.md), [release checks](release-checks.md) and [pilot results](pilot-results.md). Published release notes describe bounded implemented capabilities, not completion of every language/framework on the catalog.

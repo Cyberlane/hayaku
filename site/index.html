@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Hayaku is a Go CLI for affected-test planning. Compare exact Git revisions, explain uncertainty, and evaluate proposals while full test suites remain the CI gate.">
+  <meta name="description" content="Hayaku plans affected native tests and reuses passing deterministic WASI suites. Compare exact revisions, enforce explicit inputs, and measure complete CI cost.">
   <meta name="theme-color" content="#0751ff">
   <title>Hayaku — Affected-test planning for careful CI</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -23,9 +23,9 @@
   <main id="main">
     <section class="hero wrap" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <a class="release-label" href="https://github.com/Cyberlane/hayaku/releases/latest"><span class="status-dot" aria-hidden="true"></span> v0.3.0 · Experimental <span aria-hidden="true">↗</span></a>
+        <a class="release-label" href="https://github.com/Cyberlane/hayaku/releases/latest"><span class="status-dot" aria-hidden="true"></span> v0.4.0 · Bounded reuse <span aria-hidden="true">↗</span></a>
         <h1 id="hero-title">Understand the change.<br><span>Keep the confidence.</span></h1>
-        <p class="hero-description">Affected-test planning for careful CI. Hayaku compares exact Git revisions, traces conservative influence, and makes uncertainty visible.</p>
+        <p class="hero-description">Plan affected native tests. Reuse passing deterministic WASI suites. Hayaku binds explicit inputs and measures the complete cost of keeping CI fast.</p>
         <div class="hero-actions">
           <a class="button primary" href="https://github.com/Cyberlane/hayaku/releases/latest">Download Hayaku <span aria-hidden="true">↓</span></a>
           <a class="button secondary" href="#get-started">Get started <span aria-hidden="true">→</span></a>
@@ -40,40 +40,42 @@
           <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Conservative influence</strong><span>Old and new graphs; explicit evidence gaps</span></div></div>
           <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Structured execution plan</strong><span>Original commands and execution context</span></div></div>
           <div class="plan-outcome"><span class="outcome-label">REQUIRED</span><strong>Full test suite</strong><span class="outcome-dot" aria-hidden="true"></span></div>
-          <p class="plan-note">Affected-test proposals stay in shadow evaluation.</p>
+          <p class="plan-note">Native proposals stay in shadow. Separate WASI suites can reuse unchanged passes.</p>
         </div>
-        <p class="illustration-caption">Illustrative flow · Current releases retain full suites</p>
+        <p class="illustration-caption">Illustrative native planning flow · Original native gates remain full</p>
       </div>
     </section>
 
     <div class="principle-bar"><div class="wrap"><span>Exact revisions</span><span>Explainable evidence</span><span>Fail-closed decisions</span><span>Local-first workflow</span></div></div>
 
     <section class="section wrap" id="how-it-works" aria-labelledby="how-title">
-      <div class="section-heading"><p class="eyebrow">A clearer path to faster CI</p><h2 id="how-title">Measure first. Narrow responsibly.</h2><p>Build evidence for test selection without trading away the checks you already trust.</p></div>
+      <div class="section-heading"><p class="eyebrow">A clearer path to faster CI</p><h2 id="how-title">Measure first. Reuse with confidence.</h2><p>Keep native gates, challenge proposals, and reuse suites whose execution boundary is enforced.</p></div>
       <div class="feature-grid">
         <article class="feature"><div class="feature-number">01 <span aria-hidden="true">↗</span></div><h3>Map the change</h3><p>Read exact, locally available Git commits. Compare both dependency graphs so deleted and renamed code remain part of the analysis.</p></article>
         <article class="feature"><div class="feature-number">02 <span aria-hidden="true">↗</span></div><h3>Explain the decision</h3><p>Inspect structured plans with workspace commands and evidence gaps. Unknown inputs retain the original suite or stop planning.</p></article>
-        <article class="feature"><div class="feature-number">03 <span aria-hidden="true">↗</span></div><h3>Evaluate in shadow</h3><p>Compare experimental Go and Vitest proposals with full runs in separate source copies. Find missed failures and incomplete comparisons before considering omission.</p></article>
+        <article class="feature"><div class="feature-number">03 <span aria-hidden="true">↗</span></div><h3>Reuse bounded suites</h3><p>Run a separate deterministic WASI suite with explicit inputs. Reuse its authenticated pass when the full context matches, and count every setup cost.</p></article>
       </div>
     </section>
 
     <section class="safety-section wrap" aria-labelledby="safety-title">
       <div><p class="eyebrow">The safety contract</p><h2 id="safety-title">Uncertainty broadens a run.</h2><p>Native dependency metadata cannot capture every file read, service, subprocess, or shared state. Hayaku makes those limits explicit.</p></div>
-      <div class="safety-detail"><p><strong>Full suites remain the CI gate.</strong> Production test omission is disabled in this release. Shadow comparisons are finite evidence, and do not establish complete runtime influence.</p><a class="text-link" href="https://github.com/Cyberlane/hayaku/blob/main/docs/safety.md">Read the selection contract <span aria-hidden="true">→</span></a></div>
+      <div class="safety-detail"><p><strong>Native gates remain full.</strong> A separate WASI contract enforces copied inputs and denied host capabilities before allowing pass reuse. It does not certify an equivalent native, browser, or service suite.</p><a class="text-link" href="https://github.com/Cyberlane/hayaku/blob/main/docs/safety.md">Read the selection contract <span aria-hidden="true">→</span></a></div>
     </section>
 
     <section class="section wrap adapters-section" aria-labelledby="adapters-title">
       <div class="section-heading"><p class="eyebrow">Ecosystem adapters</p><h2 id="adapters-title">A shared core. Honest boundaries.</h2><p>Discovery support and permission to skip tests are separate capabilities.</p></div>
       <div class="adapter-table" role="region" aria-label="Adapter availability" tabindex="0">
-        <table><thead><tr><th scope="col">Ecosystem</th><th scope="col">Current capability</th><th scope="col">Production omission</th></tr></thead><tbody>
-          <tr><th scope="row">Go</th><td>Native package graph and experimental shadow comparison</td><td><span class="disabled-badge">Disabled</span></td></tr>
-          <tr><th scope="row">Cargo</th><td>Native offline, locked package metadata</td><td><span class="disabled-badge">Disabled</span></td></tr>
-          <tr><th scope="row">Vitest 4.1.11</th><td>Configured Vite graph, native results and experimental shadow comparison</td><td><span class="disabled-badge">Disabled</span></td></tr>
-          <tr><th scope="row">pytest</th><td>Native collection bridge; qualification remains incomplete</td><td><span class="disabled-badge">Disabled</span></td></tr>
-          <tr><th scope="row">Other frameworks</th><td>Original configured full-suite commands</td><td><span class="disabled-badge">Disabled</span></td></tr>
+        <table><thead><tr><th scope="col">Ecosystem</th><th scope="col">Current capability</th><th scope="col">Execution assurance</th></tr></thead><tbody>
+          <tr><th scope="row">WASI capsules</th><td>Enforced deterministic suite, explicit input envelopes and authenticated passes</td><td><span class="disabled-badge">Bounded reuse</span></td></tr>
+          <tr><th scope="row">Go</th><td>Native package graph and experimental shadow comparison</td><td><span class="disabled-badge">Full native gate</span></td></tr>
+          <tr><th scope="row">Cargo / nextest</th><td>Offline package graph and pinned native binary/case metadata</td><td><span class="disabled-badge">Full native gate</span></td></tr>
+          <tr><th scope="row">Vitest 3 / 4</th><td>Three exact Vitest/Vite pairs, native results, shadow and additive runtime traces</td><td><span class="disabled-badge">Full native gate</span></td></tr>
+          <tr><th scope="row">Node / Python</th><td>Native node:test, unittest and pytest collection/results</td><td><span class="disabled-badge">Full native gate</span></td></tr>
+          <tr><th scope="row">Jest / Playwright</th><td>Native file/project collection and terminal results; browser services unqualified</td><td><span class="disabled-badge">Full native gate</span></td></tr>
+          <tr><th scope="row">Other frameworks</th><td>Original full commands and strict imports for supported report dialects</td><td><span class="disabled-badge">Full native gate</span></td></tr>
         </tbody></table>
       </div>
-      <p class="table-note">Installed ecosystem tools are required for native discovery. Hayaku does not download runners. <a href="https://github.com/Cyberlane/hayaku/blob/main/docs/qualification.md">See qualification details.</a></p>
+      <p class="table-note">Installed ecosystem tools are required for native discovery. Hayaku does not download runners. Windows capsule reuse awaits ACL qualification. <a href="https://github.com/Cyberlane/hayaku/blob/main/docs/runner-support.md">See runner boundaries.</a></p>
     </section>
 
     <section class="get-started wrap" id="get-started" aria-labelledby="start-title">

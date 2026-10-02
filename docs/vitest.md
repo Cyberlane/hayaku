@@ -1,22 +1,26 @@
 # Vitest support
 
-Hayaku supports the **Vitest 4.1.11 native API** for configured Vite import
-influence, experimental JS/TS file/project proposals, full execution and shadow
-comparison. Production test omission remains disabled. Jest, Mocha, Node's test
-runner, Playwright and Cypress still use configured full-suite fallback commands.
+Hayaku uses installed Vitest/Vite APIs for configured JS/TS import influence, file/project proposals, native outcomes and shadow comparison. Required native execution retains the original full scope. Runtime observations broaden proposals; they do not authorize omission.
+
+## Exact compatibility matrix
+
+| Vitest | Vite | Development fixture |
+| --- | --- | --- |
+| 3.2.7 | 6.4.3 | `testdata/vitest-runtime-v3` |
+| 4.1.11 | 7.3.1 | `testdata/vitest-runtime` |
+| 4.1.11 | 8.1.5 | `testdata/vitest-runtime-v4-vite8` |
+
+These exact pairs are accepted; missing, mismatched, prerelease or other versions are rejected. The bridge resolves Vite from the installed Vitest package, binds both versions into its protocol, and verifies the returned pair in Go. v3 uses its `init`/vite-node SSR APIs; v4 uses standalone SSR environments. Current upstream documentation can describe a different version: the pinned installed API and fixture tests are the compatibility evidence.
+
+Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for all three pairs. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
 
 ## Configure an existing installation
 
-Install your project's locked dependencies through your normal trusted setup;
-Hayaku does not install packages, run npm scripts or fetch revisions. Use a plain
-`vitest run` command and an explicit Node executable. Root `package.json` Vitest
-(development or runtime) dependencies are recognized by `init`; it never interprets
-shell scripts. Review all original flags, roots and project selection.
+Install locked dependencies through your normal trusted setup. Hayaku does not install packages, run npm scripts or fetch revisions. Use a plain `vitest run` command and an explicit Node executable; review roots, flags and project selection. `init` recognizes root `package.json` Vitest dependencies without interpreting shell scripts.
 
 ```sh
-# Keeps host-specific absolute runtime paths under Git metadata.
 hayaku init --config .git/hayaku-vitest.json
-# Review/edit the generated configuration before continuing.
+# Review generated commands, runtime paths and context before continuing.
 hayaku doctor --config .git/hayaku-vitest.json
 hayaku plan --base BASE_COMMIT --candidate HEAD \
   --config .git/hayaku-vitest.json --output .git/vitest-plan.json
@@ -26,107 +30,49 @@ hayaku run --plan .git/vitest-plan.json \
   --config .git/hayaku-vitest.json --output .git/vitest-full.json
 ```
 
-For an explicit root workspace, the configuration shape is:
+A root workspace uses this shape; substitute real absolute paths and host values:
 
 ```json
 {
   "schema": 1,
-  "context": { "id": "node22-linux", "os": "linux", "arch": "amd64", "env": { "CI": "true" } },
+  "context": {"id": "node22-linux", "os": "linux", "arch": "amd64", "env": {"CI": "true"}},
   "workspaces": [{
     "id": "js", "root": ".", "adapter": "vitest",
-    "command": {
-      "cwd": ".", "executable": "node_modules/.bin/vitest",
-      "argv": ["run", "--config", "vitest.config.ts"]
-    },
-    "node_runtime": {
-      "node": "/absolute/path/to/node",
-      "modules": "/absolute/path/to/repository/node_modules"
-    }
+    "command": {"cwd": ".", "executable": "node_modules/.bin/vitest", "argv": ["run", "--config", "vitest.config.ts"]},
+    "node_runtime": {"node": "/absolute/path/to/node", "modules": "/absolute/path/to/repository/node_modules"}
   }]
 }
 ```
 
-Bound Vitest requires effective `CI=true`, supplied by the job environment or
-explicitly reviewed in `context.env`; missing or contradictory values are rejected.
-`init` declares this value for review. Configured Vite roots are preserved; discovered
-files must remain within the configured command workspace.
+Effective `CI=true` is required; missing or contradictory values reject. The configured executable must resolve to that installation's `vitest/vitest.mjs`; wrappers or a different global installation reject. Node is invoked explicitly. Modules can be external or the exact ignored `node_modules` directory at the command cwd. All other dirty/untracked/ignored source inputs remain rejected, and committed module directories cannot be overwritten.
 
-Replace the absolute paths and host context with actual runner values. The
-configured executable must resolve to that installation's `vitest/vitest.mjs`;
-a wrapper or different global installation is rejected. Node is invoked explicitly
-rather than through an ambient shebang. Modules can be external, or the exact
-`node_modules` directory at the configured command cwd. An in-checkout installation
-must be ignored by Git. All other dirty/untracked/ignored inputs remain rejected;
-committed module directories cannot be overwritten by an injected runtime.
-
-Configuration under Git metadata is still privately digest-bound and reconstructed
-before execution. Keep portable policy in version control and generate/review these
-host paths per CI matrix job. Saved plans cannot be transferred between differing
-Node/dependency/environment contexts. Reports must use fresh filenames. On macOS,
-launch bookkeeping such as SHLVL can differ between commands; establish consistent
-job context or explicitly pin reviewed values in `context.env`.
+Host-specific configuration under Git metadata is still privately digest-bound and reconstructed before execution. Plans cannot move between different Node/module/environment contexts. Use fresh report filenames. Establish consistent process environment or explicitly pin reviewed values such as macOS launch bookkeeping in `context.env`.
 
 ## Evidence and execution
 
-The embedded bridge loads installed Vitest and asks each configured Vite SSR
-environment to transform imports. It uses native resolution, including aliases
-and TypeScript transformations. It does not parse source imports with regexes or
-use `vitest related` as proof. Dependency ownership is an **experimental proposal**.
+Native transforms preserve configured roots, aliases and TypeScript resolution. Config/setup/global-setup dependencies, resources and unmapped paths retain broad ownership. Incomplete transforms broaden proposals. Old/new influence is unioned, new tests enter proposals and deleted units are not executed. Arbitrary computed imports, filesystem reads, services, subprocesses, plugin effects and shared state remain explicit gaps.
 
-Configuration files and their captured dependencies, setup/global setup, resources,
-and unmapped source files retain broad ownership. Incomplete transforms broaden
-all proposals. Old/new evidence is unioned; new tests enter proposals, deleted
-units are not executed, and unknown changed paths broaden execution. Arbitrary
-computed imports, filesystem reads, services, subprocesses, plugin effects and
-shared state remain explicit runtime gaps. A retained native counterexample shows
-an omitted file failing through a hidden filesystem dependency.
+Node bytes and the installed module tree are privately hashed, including file modes and internal link targets, then copied into separate disposable sources. The native runtime-copy boundary supports internal npm links; escaping workspace/pnpm-store links, special files and broken links fail. Its limits are 250k entries /2 GiB. The separate [input envelope](inputs.md) supports explicitly declared linked roots for capture and normalized capsule inputs; it does not silently expand this native boundary or overlay candidate inputs into BASE.
 
-Node bytes and the entire installed module tree are privately hashed, including
-file modes and internal symlink targets. Dependencies are verified and copied into
-separate disposable sources for discovery and execution. Internal npm links work;
-links escaping the installed tree (including linked workspace packages and external
-pnpm stores), special files and broken links fail. Limits are 250k entries /2 GiB;
-process output is bounded and cancellation cannot be a successful result.
+Shadow compares exact native project/file specifications against the independent full scope. Stable identities include project, file, full name and duplicate-name occurrence. Missing/unexpected/nonterminal/malformed outcomes invalidate execution. Failures, skips and hooks retain native outcomes; unhandled global errors invalidate comparison. Emitted CLI filters can broaden matches, which does not grant native CI omission.
 
-Full execution preserves the configured test scope. Shadow runs exact native
-project/file specifications for the proposal and all configured specifications for
-the independent full run. Emitted CLI file filters may match extra files/projects;
-that broadening does not grant production omission. Stable test identities include
-project, file, full name and duplicate-name occurrence. Missing, unexpected,
-nonterminal or malformed results invalidate execution; failures and skipped tests
-retain their native outcomes. Unhandled global errors fail execution and invalidate
-comparison because they have no reliable per-test attribution.
+Runs disable Vitest result caching and use private Vite caches. A newly created empty bundler scratch directory may be restored before revalidation; unexpected/preexisting entries remain mutation evidence. Source/runtime are checked before and after commands. This is not a sandbox or transient-write detector.
 
-Runs disable Vitest result caching and use private Vite caches. Bundled configuration
-loading is preserved; only a newly created, empty Vite bundler scratch directory
-inside a private copied installation is removed before identity revalidation.
-Preexisting entries or unexpected files/modes are retained and cause mutation
-checks to fail. Source and runtime are checked before/after commands; this is not
-a sandbox, transient-write detector or isolation from services/external state.
+## Supported contexts
 
-## Supported boundary
+Only ordinary whole-file `run` scopes with `forks` or `threads` pools are supported. Custom pools, Cloudflare/workerd worker contexts, VM pools, browser mode, typechecking and `poolMatchGlobs` reject. Vite 8 compatibility does not qualify the Cloudflare worker pool. Coverage output, snapshot updating, changed/related scopes, shards, bail, test-name/tag selection and ignored-unhandled-error modes reject.
 
-Initial native fixtures use Node **22.18.0**, Vitest **4.1.11**, Vite **7.3.1** on
-Linux amd64 and macOS arm64 in release CI. Other contexts require independent
-acceptance; Windows Node execution is experimental and not qualified.
+Prerequisites that generate source/build inputs remain outside bound native execution. Keep service-dependent or unsupported suites in their original pipeline. Unbound legacy file discovery retains full proposal gaps and cannot use native execution/shadow reconciliation.
 
-Only ordinary whole-file `run` scopes are supported. Browser mode, typechecking,
-coverage output, snapshot updating, changed/related scopes, shards, bail,
-test-name/tag selection and ignored-unhandled-error modes are rejected.
-Prerequisites that generate source/build inputs are unsupported for bound Vitest
-workspaces. Keep those gates in your existing CI pipeline. Unbound legacy Vitest
-file discovery remains available but retains full proposal gaps and cannot use
-native `run`/`shadow` reconciliation.
+[Runtime observations](runtime-observations.md) record supported dynamic file reads, missing probes and directory membership. For v3, the private trace setup file is explicitly allowed by vite-node's loader; this diagnostic allowance is not an enforced runtime boundary. Observation runs are instrumented/serial and separate from the original required command.
 
 ## Native development checks
 
-The Go core remains standard-library-only. Pinned npm dependencies in
-`testdata/vitest-runtime/` are **development fixtures**, not Hayaku's runtime or
-bundled release dependencies. Prepare them outside the checkout:
+The locked npm packages are development fixtures, not bundled Hayaku runner dependencies. Select one matrix directory and prepare it outside the checkout with Node 22.18.0:
 
 ```sh
 mkdir /tmp/hayaku-vitest-runtime
-cp testdata/vitest-runtime/package*.json /tmp/hayaku-vitest-runtime/
+cp testdata/vitest-runtime-v3/package*.json /tmp/hayaku-vitest-runtime/
 npm ci --prefix /tmp/hayaku-vitest-runtime --ignore-scripts --no-audit --no-fund
 export HAYAKU_VITEST_NODE="$(command -v node)"
 export HAYAKU_VITEST_MODULES=/tmp/hayaku-vitest-runtime/node_modules
@@ -136,19 +82,6 @@ go test -race -count=1 ./...
 go vet ./...
 ```
 
-Use Node 22.18.0 and canonical absolute paths (on macOS `/private/tmp` resolves
-`/tmp`). Without explicit runtime variables, native application fixtures skip;
-protocol, graph, runtime-copy and snapshot regressions still run. CI sets the
-variables and requires the native fixtures. Tests cover aliases, setup/resources,
-new/deleted tests, multiple projects, duplicate names, hooks, hidden dependencies,
-unhandled errors, installed-input drift, dirty source, cache mutation and cancellation.
-No representative CI speedup or production omission is claimed.
+Repeat with a fresh directory for each other pair. Use canonical absolute paths; macOS `/tmp` resolves to `/private/tmp`. Without explicit runtime variables, installed native application fixtures skip visibly; protocol/copy/snapshot tests still run. Required CI supplies the variables. Fixtures challenge aliases, setup/resources, multiple projects, duplicate names, pass/fail/skip/hooks, new/deleted tests, hidden dependencies, dynamic observations, version/pool rejection, input drift and cancellation.
 
-Primary references: [Vitest API](https://vitest.dev/api/advanced/vitest.html),
-[CLI](https://vitest.dev/guide/cli.html), and
-[reported tasks](https://vitest.dev/api/advanced/test-module.html). Current upstream
-pages may describe newer versions; the implementation explicitly binds 4.1.11.
-
-For dynamic filesystem observations that broaden the static envelope, see
-[runtime observations](runtime-observations.md). These are separate diagnostics,
-not an enforced execution backend or authorization to skip.
+Primary references: [Vitest advanced API](https://vitest.dev/api/advanced/vitest.html), [CLI](https://vitest.dev/guide/cli.html) and [test modules](https://vitest.dev/api/advanced/test-module.html). Version claims above are deliberately narrower than upstream ranges.
