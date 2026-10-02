@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "contract": "separate-deterministic-go-wasi-suite-v1",
+  "compiler_cache": "independent-fresh",
+  "baseline": {
+    "context": {
+      "source_digest": "376da606d5d3dd5147d59967606847a428909d806c766258eb92430d5e940f9d",
+      "inputs_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "runner_digest": "eee68706a4b85986f25b6cf3ab3f23ab7fcccd3ee154b6b58d3c66d2e08ae70b",
+      "environment_digest": "64bdd021db1f8fb807450c5af398adf33eca1a5c4e1f1f94b7f28cdbdd31446f",
+      "platform": "darwin/arm64",
+      "suite_set_digest": "ef113ed7e4a98c070b3b76f29a9cd80764b2fb6557ededff3f0edf7b54f5e0ac"
+    },
+    "wall_nanos": 8359275250,
+    "phases": [
+      {
+        "id": "capture-and-compile",
+        "kind": "hayaku",
+        "start_nanos": 0,
+        "duration_nanos": 7931660334
+      },
+      {
+        "id": "capsule",
+        "kind": "runner",
+        "start_nanos": 7931660334,
+        "duration_nanos": 243873541
+      },
+      {
+        "id": "final-validation-and-cleanup",
+        "kind": "hayaku",
+        "start_nanos": 8175533875,
+        "duration_nanos": 183741375
+      }
+    ],
+    "suites": [
+      {
+        "id": "./internal/graph",
+        "execution": "executed",
+        "outcome": "passed"
+      }
+    ]
+  },
+  "candidate": {
+    "context": {
+      "source_digest": "376da606d5d3dd5147d59967606847a428909d806c766258eb92430d5e940f9d",
+      "inputs_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "runner_digest": "eee68706a4b85986f25b6cf3ab3f23ab7fcccd3ee154b6b58d3c66d2e08ae70b",
+      "environment_digest": "64bdd021db1f8fb807450c5af398adf33eca1a5c4e1f1f94b7f28cdbdd31446f",
+      "platform": "darwin/arm64",
+      "suite_set_digest": "ef113ed7e4a98c070b3b76f29a9cd80764b2fb6557ededff3f0edf7b54f5e0ac"
+    },
+    "wall_nanos": 8537283833,
+    "phases": [
+      {
+        "id": "capture-and-compile",
+        "kind": "hayaku",
+        "start_nanos": 0,
+        "duration_nanos": 8270836333
+      },
+      {
+        "id": "capsule",
+        "kind": "hayaku",
+        "start_nanos": 8270836333,
+        "duration_nanos": 23940208
+      },
+      {
+        "id": "final-validation-and-cleanup",
+        "kind": "hayaku",
+        "start_nanos": 8294776541,
+        "duration_nanos": 242507292
+      }
+    ],
+    "suites": [
+      {
+        "id": "./internal/graph",
+        "execution": "hayaku-reused",
+        "outcome": "passed"
+      }
+    ]
+  },
+  "comparison": {
+    "valid": true,
+    "baseline": {
+      "wall_nanos": 8359275250,
+      "hayaku_overhead_nanos": 8115401709,
+      "runner_nanos": 243873541,
+      "executed": 1,
+      "hayaku_reused": 0,
+      "upstream_cached": 0,
+      "passed": 1,
+      "failed": 0,
+      "incomplete": 0
+    },
+    "candidate": {
+      "wall_nanos": 8537283833,
+      "hayaku_overhead_nanos": 8537283833,
+      "runner_nanos": 0,
+      "executed": 0,
+      "hayaku_reused": 1,
+      "upstream_cached": 0,
+      "passed": 1,
+      "failed": 0,
+      "incomplete": 0
+    },
+    "net_savings_nanos": -178008583,
+    "gross_runner_savings_nanos": 243873541
+  },
+  "baseline_result": {
+    "schema": 1,
+    "name": "./internal/graph",
+    "mode": "executed",
+    "key": "1ed2c85d483206442d0b427cca9a354ba419214f0b3ce7f41027ed6685650332",
+    "module_digest": "4d3c49de4e6e120fc526fedc7c1a6e7ec3c474d2cd364c49bf2ab14bed1c5436",
+    "input_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "backend_digest": "df9608d101dd5c74f67c6cc04951a7325d72734440e5fec69e92535f5946f2ec",
+    "complete": true,
+    "qualified": true,
+    "passed": true,
+    "exit_code": 0,
+    "reason": "complete-pass",
+    "gaps": [],
+    "input_files": 0,
+    "stdout_digest": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431",
+    "stderr_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_bytes": 5,
+    "stderr_bytes": 0,
+    "cache_status": "stored"
+  },
+  "candidate_result": {
+    "schema": 1,
+    "name": "./internal/graph",
+    "mode": "reused",
+    "key": "1ed2c85d483206442d0b427cca9a354ba419214f0b3ce7f41027ed6685650332",
+    "module_digest": "4d3c49de4e6e120fc526fedc7c1a6e7ec3c474d2cd364c49bf2ab14bed1c5436",
+    "input_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "backend_digest": "df9608d101dd5c74f67c6cc04951a7325d72734440e5fec69e92535f5946f2ec",
+    "complete": true,
+    "qualified": true,
+    "passed": true,
+    "exit_code": 0,
+    "reason": "authenticated-complete-pass",
+    "gaps": [],
+    "input_files": 0,
+    "stdout_digest": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431",
+    "stderr_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_bytes": 5,
+    "stderr_bytes": 0,
+    "cache_status": "hit"
+  }
+}

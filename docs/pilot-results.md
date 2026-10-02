@@ -31,6 +31,16 @@ contributes to the difference. One shared-desktop pair is not a representative
 CI saving, statistical confidence interval or performance threshold. Negative
 savings remain valid results; the tool never rounds them into a win.
 
+A second local acceptance pair used the **downloaded public v0.4.0 CLI** against
+its clean tagged source `941d99d8ad5b0b31eb04bfcf1f9212966f8f4a62`.
+Both functional outcomes passed and reuse was authenticated, but total cost
+**increased by 0.178009 seconds**: 8.359275 seconds executed versus 8.537284
+seconds reused. Capture/compile alone took 7.931660 versus 8.270836 seconds.
+The [downloaded-CLI raw report](https://github.com/Cyberlane/hayaku/blob/main/docs/pilot-downloaded-v040.json)
+retains that negative net result. This illustrates why small-suite runner reuse
+alone is insufficient to claim a CI win; the two source/artifact contexts must
+not be pooled into a matched performance comparison.
+
 DocPulse's required baseline retains the complete original command and Turbo
 policy. Advisory diagnostics are opt-in so routine CI avoids planning/provisioning
 cost. Its independently forced-fresh local full command passed all 13 Turbo tasks
