@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Hayaku plans affected native tests and reuses passing deterministic WASI suites. Compare exact revisions, enforce explicit inputs, and measure complete CI cost.">
+  <meta name="description" content="See how your changes affect your tests. Hayaku compares Git commits, explains its recommendations, and keeps your full test suite in place.">
   <meta name="theme-color" content="#0751ff">
-  <title>Hayaku — Affected-test planning for careful CI</title>
+  <title>Hayaku — See how your changes affect your tests</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <script src="workflow.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -23,74 +24,118 @@
   <main id="main">
     <section class="hero wrap" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <a class="release-label" href="https://github.com/Cyberlane/hayaku/releases/latest"><span class="status-dot" aria-hidden="true"></span> v0.4.0 · Bounded reuse <span aria-hidden="true">↗</span></a>
-        <h1 id="hero-title">Understand the change.<br><span>Keep the confidence.</span></h1>
-        <p class="hero-description">Plan affected native tests. Reuse passing deterministic WASI suites. Hayaku binds explicit inputs and measures the complete cost of keeping CI fast.</p>
+        <a class="release-label" href="https://github.com/Cyberlane/hayaku/releases/latest"><span class="status-dot" aria-hidden="true"></span> v0.4.0 · Explore the release <span aria-hidden="true">↗</span></a>
+        <h1 id="hero-title">See how your changes<br><span>affect your tests.</span></h1>
+        <p class="hero-description">Hayaku compares Git commits, identifies tests that may be affected, and explains its recommendations. It runs locally and works with your existing test tools.</p>
         <div class="hero-actions">
           <a class="button primary" href="https://github.com/Cyberlane/hayaku/releases/latest">Download Hayaku <span aria-hidden="true">↓</span></a>
           <a class="button secondary" href="#get-started">Get started <span aria-hidden="true">→</span></a>
         </div>
-        <p class="hero-footnote">A standalone Go CLI. No service account. No automatic runner installs.</p>
+        <p class="hero-footnote">One command-line tool. No account or background service needed.</p>
       </div>
-      <div class="plan-card" aria-label="Illustrative planning flow">
-        <div class="plan-header"><span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>from change to evidence</span><span class="terminal-mark" aria-hidden="true">↗</span></div>
-        <div class="plan-body">
-          <p class="terminal-command"><span aria-hidden="true">$</span> hayaku plan --base BASE --candidate HEAD</p>
-          <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Exact source snapshots</strong><span>Committed bytes, modes, and revisions</span></div></div>
-          <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Conservative influence</strong><span>Old and new graphs; explicit evidence gaps</span></div></div>
-          <div class="plan-step"><span class="step-check" aria-hidden="true">✓</span><div><strong>Structured execution plan</strong><span>Original commands and execution context</span></div></div>
-          <div class="plan-outcome"><span class="outcome-label">REQUIRED</span><strong>Full test suite</strong><span class="outcome-dot" aria-hidden="true"></span></div>
-          <p class="plan-note">Native proposals stay in shadow. Separate WASI suites can reuse unchanged passes.</p>
-        </div>
-        <p class="illustration-caption">Illustrative native planning flow · Original native gates remain full</p>
-      </div>
+      <figure class="workflow" aria-labelledby="workflow-caption">
+        <div class="workflow-header"><span><span class="speed-mark" aria-hidden="true">///</span> A change, explained</span><button class="replay" type="button" hidden><span aria-hidden="true">↻</span> Replay</button></div>
+        <svg class="workflow-graphic" viewBox="0 0 480 290" role="img" aria-labelledby="workflow-title workflow-description">
+          <title id="workflow-title">From a changed file to tests that may be affected</title>
+          <desc id="workflow-description">An illustrative repository: price.go changes and links to price_test.go and cart_test.go. account_test.go is also kept in the full test run. Recommendations do not authorize skipping tests.</desc>
+          <text class="diagram-label" x="26" y="31">YOUR CODE</text><text class="diagram-label" x="300" y="31">YOUR TESTS</text>
+          <path class="diagram-branch" d="M15 80V237M15 86H26M15 165H26M15 237H26"/>
+          <path class="change-link" pathLength="1" d="M171 92H220L252 88H300"/>
+          <path class="change-link second-link" pathLength="1" d="M171 92H205L257 161H300"/>
+          <g class="changed-file">
+            <rect class="diagram-node accent-node" x="26" y="64" width="145" height="56" rx="9"/>
+            <path class="file-icon" d="M42 79H52L57 84V103H42ZM52 79V85H57M46 91H53M46 96H53"/>
+            <text class="diagram-code" x="68" y="87">price.go</text><text class="diagram-small accent-text" x="68" y="105">Changed</text>
+          </g>
+          <g><rect class="diagram-node" x="26" y="143" width="145" height="44" rx="9"/><text class="diagram-code muted-text" x="42" y="170">account.go</text></g>
+          <g><rect class="diagram-node" x="26" y="215" width="145" height="44" rx="9"/><text class="diagram-code muted-text" x="42" y="242">shipping.go</text></g>
+          <g class="affected-test"><rect class="diagram-node accent-node" x="300" y="64" width="154" height="48" rx="9"/><circle class="test-dot" cx="316" cy="88" r="4"/><text class="diagram-code" x="328" y="93">price_test.go</text></g>
+          <g class="affected-test second-test"><rect class="diagram-node accent-node" x="300" y="137" width="154" height="48" rx="9"/><circle class="test-dot" cx="316" cy="161" r="4"/><text class="diagram-code" x="328" y="166">cart_test.go</text></g>
+          <g><rect class="diagram-node" x="300" y="210" width="154" height="48" rx="9"/><circle class="test-dot muted-dot" cx="316" cy="234" r="4"/><text class="diagram-code muted-text" x="328" y="239">account_test.go</text></g>
+        </svg>
+        <figcaption id="workflow-caption">These tests may depend on the changed code.</figcaption>
+        <div class="workflow-outcome"><span class="outcome-icon" aria-hidden="true">✓</span><div><strong>Full suite required</strong><span>Your normal tests still run in full.</span></div></div>
+        <p class="illustration-caption">Example workflow · Recommendations help you understand the change.</p>
+      </figure>
     </section>
 
-    <div class="principle-bar"><div class="wrap"><span>Exact revisions</span><span>Explainable evidence</span><span>Fail-closed decisions</span><span>Local-first workflow</span></div></div>
+    <aside class="current-support wrap" aria-label="What Hayaku can do today"><strong>What it can do today</strong><p>Your normal test suite still runs in full. Result reuse is available for separate WASI suites with unchanged code, inputs, and execution settings. <a href="#result-reuse">How reuse works <span aria-hidden="true">→</span></a></p></aside>
+
+    <div class="principle-bar"><div class="wrap"><span>Compare Git commits</span><span>Understand the decision</span><span>Keep the full test run</span><span>Run locally</span></div></div>
 
     <section class="section wrap" id="how-it-works" aria-labelledby="how-title">
-      <div class="section-heading"><p class="eyebrow">A clearer path to faster CI</p><h2 id="how-title">Measure first. Reuse with confidence.</h2><p>Keep native gates, challenge proposals, and reuse suites whose execution boundary is enforced.</p></div>
+      <div class="section-heading"><p class="eyebrow">How it works</p><h2 id="how-title">From a code change to a clear plan.</h2><p>See what changed, which tests may be affected, and why Hayaku recommends a particular run.</p></div>
       <div class="feature-grid">
-        <article class="feature"><div class="feature-number">01 <span aria-hidden="true">↗</span></div><h3>Map the change</h3><p>Read exact, locally available Git commits. Compare both dependency graphs so deleted and renamed code remain part of the analysis.</p></article>
-        <article class="feature"><div class="feature-number">02 <span aria-hidden="true">↗</span></div><h3>Explain the decision</h3><p>Inspect structured plans with workspace commands and evidence gaps. Unknown inputs retain the original suite or stop planning.</p></article>
-        <article class="feature"><div class="feature-number">03 <span aria-hidden="true">↗</span></div><h3>Reuse bounded suites</h3><p>Run a separate deterministic WASI suite with explicit inputs. Reuse its authenticated pass when the full context matches, and count every setup cost.</p></article>
+        <article class="feature"><div class="feature-number">01 <span aria-hidden="true">↗</span></div><h3>Compare two commits</h3><p>Hayaku reads the code before and after your change. Deleted files and renamed code stay part of the picture.</p></article>
+        <article class="feature"><div class="feature-number">02 <span aria-hidden="true">↗</span></div><h3>Review the recommendation</h3><p>See which tests may be affected, the commands to run, and anything Hayaku could not establish. Missing information keeps the full suite or stops planning.</p></article>
+        <article class="feature"><div class="feature-number">03 <span aria-hidden="true">↗</span></div><h3>Compare with a full run</h3><p>Use shadow mode to check experimental recommendations against a separate full test run. Your original test suite remains required.</p></article>
       </div>
     </section>
 
-    <section class="safety-section wrap" aria-labelledby="safety-title">
-      <div><p class="eyebrow">The safety contract</p><h2 id="safety-title">Uncertainty broadens a run.</h2><p>Native dependency metadata cannot capture every file read, service, subprocess, or shared state. Hayaku makes those limits explicit.</p></div>
-      <div class="safety-detail"><p><strong>Native gates remain full.</strong> A separate WASI contract enforces copied inputs and denied host capabilities before allowing pass reuse. It does not certify an equivalent native, browser, or service suite.</p><a class="text-link" href="https://github.com/Cyberlane/hayaku/blob/main/docs/safety.md">Read the selection contract <span aria-hidden="true">→</span></a></div>
+    <section class="explanation-grid wrap" aria-label="How Hayaku handles uncertainty and result reuse">
+      <article class="explanation-card">
+        <p class="eyebrow">Handling uncertainty</p><h2>When something is unclear, include more tests.</h2>
+        <p>Code can read files, call services, or share state that dependency lists do not show. Hayaku makes those gaps visible and keeps your full test run in place.</p>
+        <svg class="support-graphic" viewBox="0 0 440 170" role="img" aria-labelledby="uncertainty-title uncertainty-description">
+          <title id="uncertainty-title">Unknown inputs widen the test recommendation</title>
+          <desc id="uncertainty-description">Two known test connections lead to an unknown input. The recommendation expands to include all six illustrated tests.</desc>
+          <text class="diagram-label" x="16" y="24">KNOWN LINKS</text><text class="diagram-label" x="151" y="24">UNKNOWN INPUT</text><text class="diagram-label" x="295" y="24">MORE TESTS</text>
+          <rect class="diagram-node accent-node" x="16" y="57" width="70" height="32" rx="6"/><rect class="diagram-node accent-node" x="16" y="101" width="70" height="32" rx="6"/>
+          <path class="mini-check" d="M42 72L48 78L60 66M42 116L48 122L60 110"/>
+          <path class="diagram-branch" d="M86 73H113L147 95M86 117H113L147 95M221 95H276"/>
+          <circle class="unknown-node" cx="184" cy="95" r="35"/><text class="unknown-mark" x="184" y="104" text-anchor="middle">?</text>
+          <rect class="test-envelope" x="283" y="47" width="141" height="96" rx="12"/>
+          <g class="test-tiles"><rect x="297" y="61" width="31" height="28" rx="5"/><rect x="338" y="61" width="31" height="28" rx="5"/><rect x="379" y="61" width="31" height="28" rx="5"/><rect x="297" y="101" width="31" height="28" rx="5"/><rect x="338" y="101" width="31" height="28" rx="5"/><rect x="379" y="101" width="31" height="28" rx="5"/></g>
+        </svg>
+        <a class="text-link" href="https://github.com/Cyberlane/hayaku/blob/main/docs/safety.md">How Hayaku decides what to run <span aria-hidden="true">→</span></a>
+      </article>
+      <article class="explanation-card reuse-card" id="result-reuse">
+        <p class="eyebrow">Result reuse · WASI suites only</p><h2>Same inputs. Reuse the passing result.</h2>
+        <p>A WASI suite runs as WebAssembly with controlled inputs and restricted access to your computer. Hayaku can reuse its verified passing result when the code, inputs, and execution settings match.</p>
+        <svg class="support-graphic" viewBox="0 0 440 170" role="img" aria-labelledby="reuse-title reuse-description">
+          <title id="reuse-title">Reuse unchanged WASI results; run again after a change</title>
+          <desc id="reuse-description">Matching code, inputs and execution settings allow reuse of a verified passing result. A changed input requires a new run.</desc>
+          <rect class="diagram-node" x="16" y="28" width="245" height="48" rx="8"/><text class="diagram-body" x="31" y="48">Same code, inputs</text><text class="diagram-body" x="31" y="65">and execution settings</text>
+          <path class="change-link" d="M261 52H306M297 43L306 52L297 61"/>
+          <rect class="diagram-node accent-node" x="317" y="28" width="107" height="48" rx="8"/><text class="diagram-body accent-text" x="370" y="57" text-anchor="middle">Reuse pass</text>
+          <rect class="diagram-node" x="16" y="104" width="245" height="48" rx="8"/><text class="diagram-body" x="31" y="133">An input changes</text>
+          <path class="diagram-branch" d="M261 128H306M297 119L306 128L297 137"/>
+          <rect class="diagram-node" x="317" y="104" width="107" height="48" rx="8"/><text class="diagram-body" x="370" y="133" text-anchor="middle">Run again</text>
+        </svg>
+        <p class="explanation-note">This is a separate test suite. It does not replace your normal Go, JavaScript, Python, browser, or service tests.</p>
+        <a class="text-link" href="https://github.com/Cyberlane/hayaku/blob/main/docs/capsules.md">Explore WASI result reuse <span aria-hidden="true">→</span></a>
+      </article>
     </section>
 
     <section class="section wrap adapters-section" aria-labelledby="adapters-title">
-      <div class="section-heading"><p class="eyebrow">Ecosystem adapters</p><h2 id="adapters-title">A shared core. Honest boundaries.</h2><p>Discovery support and permission to skip tests are separate capabilities.</p></div>
-      <div class="adapter-table" role="region" aria-label="Adapter availability" tabindex="0">
-        <table><thead><tr><th scope="col">Ecosystem</th><th scope="col">Current capability</th><th scope="col">Execution assurance</th></tr></thead><tbody>
-          <tr><th scope="row">WASI capsules</th><td>Enforced deterministic suite, explicit input envelopes and authenticated passes</td><td><span class="disabled-badge">Bounded reuse</span></td></tr>
-          <tr><th scope="row">Go</th><td>Native package graph and experimental shadow comparison</td><td><span class="disabled-badge">Full native gate</span></td></tr>
-          <tr><th scope="row">Cargo / nextest</th><td>Offline package graph and pinned native binary/case metadata</td><td><span class="disabled-badge">Full native gate</span></td></tr>
-          <tr><th scope="row">Vitest 3 / 4</th><td>Three exact Vitest/Vite pairs, native results, shadow and additive runtime traces</td><td><span class="disabled-badge">Full native gate</span></td></tr>
-          <tr><th scope="row">Node / Python</th><td>Native node:test, unittest and pytest collection/results</td><td><span class="disabled-badge">Full native gate</span></td></tr>
-          <tr><th scope="row">Jest / Playwright</th><td>Native file/project collection and terminal results; browser services unqualified</td><td><span class="disabled-badge">Full native gate</span></td></tr>
-          <tr><th scope="row">Other frameworks</th><td>Original full commands and strict imports for supported report dialects</td><td><span class="disabled-badge">Full native gate</span></td></tr>
+      <div class="section-heading"><p class="eyebrow">Current support</p><h2 id="adapters-title">Supported test tools.</h2><p>Here is what Hayaku can inspect today, and what still needs to run.</p></div>
+      <div class="adapter-table" role="region" aria-label="Supported test tools" tabindex="0">
+        <table><thead><tr><th scope="col">Test tool</th><th scope="col">What Hayaku supports</th><th scope="col">What runs today</th></tr></thead><tbody>
+          <tr><th scope="row">WASI suites</th><td>Controlled execution and verified passing results</td><td><span class="status-badge reuse-badge">Reuse when unchanged</span></td></tr>
+          <tr><th scope="row">Go</th><td>Package dependencies and comparisons with a full test run</td><td><span class="status-badge">Full test suite</span></td></tr>
+          <tr><th scope="row">Cargo / nextest</th><td>Package dependencies, test lists, and result reports</td><td><span class="status-badge">Full test suite</span></td></tr>
+          <tr><th scope="row">Vitest 3 / 4</th><td>Dependencies, test results, full-run comparisons, and observed file reads for supported versions</td><td><span class="status-badge">Full test suite</span></td></tr>
+          <tr><th scope="row">Node / Python</th><td>Test lists and results from node:test, unittest, and pytest</td><td><span class="status-badge">Full test suite</span></td></tr>
+          <tr><th scope="row">Jest / Playwright</th><td>Test file and project lists, plus completed test results</td><td><span class="status-badge">Full test suite</span></td></tr>
+          <tr><th scope="row">Other frameworks</th><td>Your configured full test command and supported result reports</td><td><span class="status-badge">Full test suite</span></td></tr>
         </tbody></table>
       </div>
-      <p class="table-note">Installed ecosystem tools are required for native discovery. Hayaku does not download runners. Windows capsule reuse awaits ACL qualification. <a href="https://github.com/Cyberlane/hayaku/blob/main/docs/runner-support.md">See runner boundaries.</a></p>
+      <p class="table-note">Your test tools must already be installed; Hayaku does not download them. WASI result reuse is currently disabled on Windows. <a href="https://github.com/Cyberlane/hayaku/blob/main/docs/runner-support.md">See supported versions and limitations.</a></p>
     </section>
 
     <section class="get-started wrap" id="get-started" aria-labelledby="start-title">
-      <div><p class="eyebrow">Start with a trusted repository</p><h2 id="start-title">A small CLI.<br>A visible decision.</h2><p>Download a release archive for your platform and verify its SHA-256 checksum. Review the generated workspace commands before planning.</p><a class="text-link" href="https://github.com/Cyberlane/hayaku#readme">Read the full setup guide <span aria-hidden="true">→</span></a></div>
+      <div><p class="eyebrow">Get started</p><h2 id="start-title">Try Hayaku in your repository.</h2><p>Download Hayaku for your platform and check the file against the release checksum. Then create a configuration, review the test commands, and compare two commits.</p><a class="text-link" href="https://github.com/Cyberlane/hayaku#readme">Follow the setup guide <span aria-hidden="true">→</span></a></div>
       <div class="quickstart"><div class="code-label">In your repository</div><pre><code><span class="code-comment"># Generate and review hayaku.json</span>
 hayaku init
 hayaku doctor
 
-<span class="code-comment"># Both commits must already exist locally</span>
+<span class="code-comment"># Compare two commits already on your computer</span>
 hayaku plan --base BASE --candidate HEAD \
   --output .git/hayaku-plan.json
-hayaku explain --plan .git/hayaku-plan.json</code></pre><p>Replace <code>BASE</code> with your comparison commit. Native discovery can execute project code; use trusted repositories.</p></div>
+hayaku explain --plan .git/hayaku-plan.json</code></pre><p>Replace <code>BASE</code> with the commit to compare against. Planning reads committed code. Inspecting tests can execute project code, so use a repository you trust.</p></div>
     </section>
   </main>
 
-  <footer class="footer wrap"><p>Hayaku <span aria-hidden="true">/</span> Thoughtful test selection, built in the open.</p><div><a href="https://github.com/Cyberlane/hayaku">Source</a><a href="https://github.com/Cyberlane/hayaku/releases">Releases</a><a href="https://github.com/Cyberlane/hayaku/issues">Issues</a></div></footer>
+  <footer class="footer wrap"><p>Hayaku <span aria-hidden="true">/</span> Understand your test runs. Built in the open.</p><div><a href="https://github.com/Cyberlane/hayaku">Source</a><a href="https://github.com/Cyberlane/hayaku/releases">Releases</a><a href="https://github.com/Cyberlane/hayaku/issues">Issues</a></div></footer>
 </body>
 </html>
