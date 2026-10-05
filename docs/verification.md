@@ -2,7 +2,7 @@
 
 ## v0.5.0 Apple and generic Node checks
 
-New regression fixtures cover verified dependency drift, independent SwiftPM target ownership, full versus proposed XCTest runs, runtime influence misses, new/deleted resources, skipped cases, native assertion failures and unchanged source. Xcode fixtures use a committed generated macOS project, independent enumeration and strict xcresulttool schema 0.4.0 reconciliation. Adversarial parser fixtures reject missing, duplicate, unexpected, repeated and conflicting results. Installed Apple fixtures are explicitly enabled by the release CI Apple job; they skip visibly without their runtime variables. See [release checks](release-checks.md) for actual completed acceptance and [Apple integration](apple.md) for unsupported contexts.
+New regression fixtures cover verified dependency drift, independent SwiftPM target ownership, full versus proposed XCTest runs, runtime influence misses, new/deleted resources, skipped cases, native assertion failures and unchanged source. Xcode fixtures use a committed generated macOS project, independent enumeration and strict installed Xcode 26.3/27.0 xcresulttool exports reconciliation. Adversarial parser fixtures reject missing, duplicate, unexpected, repeated and conflicting results. Installed Apple fixtures are explicitly enabled by the release CI Apple job; they skip visibly without their runtime variables. See [release checks](release-checks.md) for actual completed acceptance and [Apple integration](apple.md) for unsupported contexts.
 
 ## v0.4.0 source and native fixture checks
 

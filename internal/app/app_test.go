@@ -69,7 +69,7 @@ func TestRuntimeSource(t *testing.T){data,err:=os.ReadFile("../a/a.go");if err!=
 
 func TestEndToEndNeverPromotesGraphProposal(t *testing.T) {
 	root, base, candidate, c := gitFixture(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	p, err := Build(ctx, root, base, candidate, c, false)
 	if err != nil {

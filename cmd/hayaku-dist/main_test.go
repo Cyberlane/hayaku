@@ -107,6 +107,7 @@ func TestDocumentationPreservesLinkedFilesAndRequiresLicenseNotices(t *testing.T
 		"docs/releases/v0.2.1.md":                        "Vitest scope correction notes\n",
 		"docs/releases/v0.3.0.md":                        "Runtime observation release notes\n",
 		"docs/apple.md":                                  "Apple XCTest setup\n",
+		"docs/releases/v0.5.1.md":                        "Xcode 26.3 compatibility release notes\n",
 		"docs/releases/v0.5.0.md":                        "Apple and generic runtime release notes\n",
 		"docs/releases/v0.4.0.md":                        "Strict WASI reuse release notes\n",
 		"docs/capsules.md":                               "WASI suite contract\n",

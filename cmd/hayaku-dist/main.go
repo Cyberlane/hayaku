@@ -230,7 +230,7 @@ func documentation(root string) ([]archiveEntry, error) {
 		"assets/branding/hayaku-logo.png",
 		"docs/apple.md", "docs/architecture.md", "docs/ci.md", "docs/distribution.md",
 		"docs/implementation-status.md", "docs/pilot-methodology.md", "docs/pilot-results.md",
-		"docs/qualification.md", "docs/release-checks.md", "docs/releases/v0.1.0.md", "docs/releases/v0.2.0.md", "docs/releases/v0.2.1.md", "docs/releases/v0.3.0.md", "docs/releases/v0.4.0.md", "docs/releases/v0.5.0.md", "docs/runtime-observations.md", "docs/vitest.md",
+		"docs/qualification.md", "docs/release-checks.md", "docs/releases/v0.1.0.md", "docs/releases/v0.2.0.md", "docs/releases/v0.2.1.md", "docs/releases/v0.3.0.md", "docs/releases/v0.4.0.md", "docs/releases/v0.5.0.md", "docs/releases/v0.5.1.md", "docs/runtime-observations.md", "docs/vitest.md",
 		"docs/capsules.md", "docs/inputs.md", "docs/measurements.md", "docs/runner-support.md", "docs/v0.4-development.md",
 		"docs/research/README.md", "docs/research/2026-09-30-design-and-safety.md",
 		"docs/research/2026-09-30-framework-adapters.md", "docs/research/2026-09-30-meta-predictive-test-selection.md",

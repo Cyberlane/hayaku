@@ -44,7 +44,7 @@ type xcodeNode struct {
 	Children []xcodeNode `json:"children"`
 }
 
-// ReconcileXCResult consumes xcresulttool schema 0.4.0 exports. All diagnostic
+// ReconcileXCResult consumes installed Xcode 26.3/27.0 xcresulttool exports exports. All diagnostic
 // text, device identifiers and source locations are discarded before reporting.
 func ReconcileXCResult(tests, summary []byte, expected []Case) (Result, error) {
 	a, err := newCases(expected)

@@ -22,7 +22,7 @@ The source and tests define current behavior. “Native” below means installed
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
 | SwiftPM XCTest | Installed Darwin Swift 6.0–6.4 target graph, conservative target proposals, independent case collection and serial terminal outcomes; shadow comparisons | XCTest only; full suite required, no parallel/plugin/macro/binary support |
-| Xcode XCTest | Independent full test enumeration and xcresulttool schema 0.4.0 case/summary reconciliation | Full single-plan/device/configuration scope; no filtering, repetition or Swift Testing |
+| Xcode XCTest | Independent full test enumeration and installed Xcode 26.3/27.0 xcresulttool exports case/summary reconciliation | Full single-plan/device/configuration scope; no filtering, repetition or Swift Testing |
 | JVM, .NET, Ruby, PHP, Dart, C/C++, Bun, Deno, Bazel | Explicit original full-scope command entries and applicable strict report imports | No claim of native framework discovery, filtering or runtime qualification for these entries |
 | Generic command | Preserved original structured command and exit status; optional verified installed Node dependency tree | Full scope only; custom Cloudflare pools stay generic |
 

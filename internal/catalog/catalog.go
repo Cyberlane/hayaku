@@ -32,7 +32,7 @@ func Runners() []Runner {
 		{"sbt", "Scala", "ScalaTest/MUnit", "sbt", "full-scope", "junit", "suite", "native-runtime-unqualified"},
 		{"dotnet", "C#/F#", "xUnit/NUnit/MSTest", "dotnet", "full-scope", "trx/junit", "suite", "native-runtime-unqualified"},
 		{"swift", "Swift", "SwiftPM XCTest", "swift", "native", "darwin-xctest-console", "test-target", "native-runtime-unqualified"},
-		{"xcode", "Swift/Objective-C", "XCTest", "xcodebuild", "full-scope", "xcresult-0.4.0", "suite", "native-runtime-unqualified"},
+		{"xcode", "Swift/Objective-C", "XCTest", "xcodebuild", "full-scope", "xcresult-xcode26.3/27.0", "suite", "native-runtime-unqualified"},
 		{"rspec", "Ruby", "RSpec", "rspec", "full-scope", "junit", "suite", "native-runtime-unqualified"},
 		{"minitest", "Ruby", "Minitest", "ruby", "full-scope", "junit", "suite", "native-runtime-unqualified"},
 		{"phpunit", "PHP", "PHPUnit", "phpunit", "full-scope", "junit", "suite", "native-runtime-unqualified"},

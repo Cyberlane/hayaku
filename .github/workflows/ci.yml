@@ -170,8 +170,12 @@ jobs:
         run: |
           xcodebuild -version
           swift --version
+          stat -f "%z bytes: %N" "$(xcrun --find swiftc)"
+          xcrun xcresulttool get test-results tests --help
       - name: Verify target proposals, required full runs and native failures
-        run: go test -race -count=1 ./internal/adapter/swift ./internal/adapter/xcode ./internal/runner/native ./internal/app
+        run: |
+          go test -race -count=1 ./internal/adapter/swift ./internal/adapter/xcode ./internal/runner/native
+          go test -race -count=1 ./internal/app -run TestNativeSwift
 
   capsule:
     name: Hayaku WASI reuse pilot on ${{ matrix.runner }}

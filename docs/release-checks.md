@@ -1,4 +1,4 @@
-# v0.5.0 release checks
+# v0.5.1 release checks
 
 ## Local source acceptance, 2026-10-05
 
@@ -32,7 +32,15 @@ files were analyzed, with 12 focused groups / 15 location pairs, no warnings,
 complete analysis and passed advisory policy. Working-tree and untracked
 inclusion were false. No finding was suppressed or acknowledged.
 
-Publication and downloaded-artifact acceptance will be recorded after release.
+The initial v0.5.0 tag did not publish: the new Xcode 26.3 job rejected a newer
+xcresulttool option and a compiler above the original executable-size limit.
+v0.5.1 corrects both and keeps that failed tag immutable. Publication and
+downloaded-artifact acceptance will be recorded after the corrected release.
+The v0.5.1 compatibility patch again passed full tests/races/vet and the native
+Xcode race fixture locally. Its Mori changed-code scan covered 8/8 supported
+changed files and 119/119 supported files with zero focused groups, no warnings
+or parsing diagnostics, and no truncation.
+
 Neiro consumer activation and CI acceptance remain separate checks.
 
 # Historical v0.4.0 release checks

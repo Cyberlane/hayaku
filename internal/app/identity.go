@@ -51,11 +51,11 @@ func toolIdentityAt(executable, dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !info.Mode().IsRegular() || info.Size() > 256<<20 || (runtime.GOOS != "windows" && info.Mode().Perm()&0111 == 0) {
+	if !info.Mode().IsRegular() || info.Size() > 1<<30 || (runtime.GOOS != "windows" && info.Mode().Perm()&0111 == 0) {
 		return "", errors.New("unsupported executable type or size")
 	}
 	h := sha256.New()
-	n, err := io.Copy(h, io.LimitReader(f, 256<<20+1))
+	n, err := io.Copy(h, io.LimitReader(f, 1<<30+1))
 	if err != nil {
 		return "", err
 	}

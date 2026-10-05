@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -60,9 +61,13 @@ func Collect(ctx context.Context, root string, w model.Workspace, c model.Contex
 }
 
 func ReadResult(ctx context.Context, bundle string, expected []native.Case, c model.Context) (native.Result, error) {
+	version, err := process.Run(ctx, model.Command{Dir: ".", Executable: "/usr/bin/xcodebuild", Args: []string{"-version"}}, filepath.Dir(bundle), c.Env)
+	if err != nil || !regexp.MustCompile(`^Xcode (26\.3|27\.0)\n`).Match(version.Stdout) {
+		return native.Result{}, errors.New("Xcode result reconciliation requires installed Xcode 26.3 or 27.0")
+	}
 	var data [][]byte
 	for _, kind := range []string{"tests", "summary"} {
-		out, err := process.Run(ctx, model.Command{Dir: ".", Executable: "/usr/bin/xcrun", Args: []string{"xcresulttool", "get", "test-results", kind, "--schema-version", "0.4.0", "--path", bundle, "--compact"}}, filepath.Dir(bundle), c.Env)
+		out, err := process.Run(ctx, model.Command{Dir: ".", Executable: "/usr/bin/xcrun", Args: []string{"xcresulttool", "get", "test-results", kind, "--path", bundle, "--compact"}}, filepath.Dir(bundle), c.Env)
 		if err != nil || !out.Completed {
 			return native.Result{}, errors.New("xcresulttool export failed (native diagnostics withheld)")
 		}
