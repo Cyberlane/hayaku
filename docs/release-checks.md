@@ -33,8 +33,9 @@ complete analysis and passed advisory policy. Working-tree and untracked
 inclusion were false. No finding was suppressed or acknowledged.
 
 The initial v0.5.0 tag did not publish: the new Xcode 26.3 job rejected a newer
-xcresulttool option and a compiler above the original executable-size limit.
-v0.5.1 corrects both and keeps that failed tag immutable. Publication and
+xcresulttool schema and a compiler above the original executable-size limit.
+v0.5.1 corrects both, prepares bound empty Xcode package/workspace metadata
+directories and keeps that failed tag immutable. Publication and
 downloaded-artifact acceptance will be recorded after the corrected release.
 The v0.5.1 compatibility patch again passed full tests/races/vet and the native
 Xcode race fixture locally. Its Mori changed-code scan covered 8/8 supported

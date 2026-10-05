@@ -99,6 +99,13 @@ func executeMode(ctx context.Context, root string, c model.Config, p model.Plan,
 		if err := prepareNodeRuntimes(ctx, executionRoot, c); err != nil {
 			return result, err
 		}
+		for _, w := range c.Workspaces {
+			if w.Adapter == "xcode" {
+				if err := xcodeprovider.PrepareSnapshot(ctx, executionRoot, w); err != nil {
+					return result, err
+				}
+			}
+		}
 		original, err := executionTreeDigest(ctx, executionRoot, c)
 		if err != nil {
 			return result, err
@@ -175,15 +182,15 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 			var runtimeTrace *vitestprovider.Trace
 			var output process.Output
 			var runErr error
-			var swiftResult *nativerunner.Result
+			var appleResult *nativerunner.Result
 			if i == len(commands)-1 && w.Adapter == "xcode" {
 				var sr nativerunner.Result
 				output, sr, runErr = xcodeprovider.Execute(ctx, root, w, c.Context)
-				swiftResult = &sr
+				appleResult = &sr
 			} else if i == len(commands)-1 && w.Adapter == "swift" {
 				var sr nativerunner.Result
 				output, sr, runErr = swiftprovider.Execute(ctx, root, w, c.Context, workspaceUnits, proposal)
-				swiftResult = &sr
+				appleResult = &sr
 			} else if i == len(commands)-1 && w.Adapter == "vitest" {
 				var selected []model.Unit
 				if proposal {
@@ -212,9 +219,9 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 				output, runErr = process.Run(ctx, cmd, dir, executionEnv(c.Context))
 			}
 			entry := CommandResult{Workspace: w.ID, Command: cmd, ExitCode: output.ExitCode, Duration: output.Duration, OutputBytes: len(output.Stdout) + len(output.Stderr), Complete: runErr == nil, RuntimeTrace: runtimeTrace}
-			if swiftResult != nil {
-				entry.Native = swiftResult
-				entry.Complete = output.Completed && swiftResult.Complete && (output.ExitCode == 0 || swiftResult.Failed)
+			if appleResult != nil {
+				entry.Native = appleResult
+				entry.Complete = output.Completed && appleResult.Complete && (output.ExitCode == 0 || appleResult.Failed)
 			}
 			if i == len(commands)-1 && w.Adapter == "go" {
 				expected := []string{}

@@ -65,6 +65,9 @@ func TestNativeXcodeInventoryAndTerminalResults(t *testing.T) {
 	w := model.Workspace{ID: "x", Root: ".", Adapter: "xcode", Command: model.Command{Dir: ".", Executable: tool, Args: []string{"-project", "Fixture.xcodeproj", "-scheme", "Fixture", "-destination", "platform=macOS", "-derivedDataPath", t.TempDir(), "-parallel-testing-enabled", "NO", "CODE_SIGNING_ALLOWED=NO", "test"}}}
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
+	if err := PrepareSnapshot(ctx, root, w); err != nil {
+		t.Fatal(err)
+	}
 	before, err := snapshot.Digest(ctx, root)
 	if err != nil {
 		t.Fatal(err)
@@ -97,5 +100,43 @@ func TestNativeXcodeInventoryAndTerminalResults(t *testing.T) {
 	_, result, err = Execute(ctx, root, w, model.Context{})
 	if err == nil || !result.Complete || !result.Failed {
 		t.Fatal("native assertion failure lost", result, err)
+	}
+}
+
+func TestPreparedPackageMetadataRemainsBound(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "Packages", "Local")
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "Package.swift"), []byte("// fixture"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, "Fixture.xcodeproj", "project.xcworkspace"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	w := model.Workspace{Root: "."}
+	if err := PrepareSnapshot(context.Background(), root, w); err != nil {
+		t.Fatal(err)
+	}
+	before, err := snapshot.Digest(context.Background(), root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := PrepareSnapshot(context.Background(), root, w); err != nil {
+		t.Fatal(err)
+	}
+	unchanged, err := snapshot.Digest(context.Background(), root)
+	if err != nil || before != unchanged {
+		t.Fatal("metadata preparation is unstable", err)
+	}
+	// Contents in prepared output directories must still invalidate the source
+	// binding; this is not a general SwiftPM cache exclusion.
+	if err := os.WriteFile(filepath.Join(dir, ".swiftpm", "configuration", "mirrors.json"), []byte("changed"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	after, err := snapshot.Digest(context.Background(), root)
+	if err != nil || before == after {
+		t.Fatal("package metadata mutation became invisible", err)
 	}
 }
