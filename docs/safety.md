@@ -42,6 +42,12 @@ enforced guest interface; it does not establish equivalence with a native Go,
 Vitest, Python, browser or service command. Required native suites remain full
 fallback even when a separate capsule passes or reuses.
 
+The unreleased `suite` coordinator applies this same contract independently to
+each configured WASI group. A group may reuse only its own complete unchanged
+authenticated pass; another group's pass or graph proposal is not authority.
+Incomplete, failed, unqualified or live-drifted groups prevent aggregate success.
+See [shared execution](shared-execution.md). Native full gates remain unchanged.
+
 Guests receive copied in-memory regular files, fixed directory inventory and
 metadata, explicit arguments/environment, empty stdin, logical clocks and seeded
 entropy. There is no ambient host filesystem, inherited environment, network or

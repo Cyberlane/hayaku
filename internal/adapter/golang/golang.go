@@ -38,7 +38,7 @@ type listedPackage struct {
 // Discover invokes only the installed Go tool, with network/toolchain downloads
 // disabled. Native graph evidence remains a shadow proposal, never omission proof.
 func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, execution model.Context) (model.Evidence, error) {
-	e := model.Evidence{Adapter: "go", Version: "go-native-v1", Workspace: w.ID, Inputs: map[string][]string{}, Gaps: []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "Go metadata does not establish runtime file, service, subprocess or shared-state influence"}}}
+	e := model.Evidence{Adapter: "go", Version: "go-native-v2-effects-v1", Workspace: w.ID, Inputs: map[string][]string{}, Gaps: []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "Go metadata does not establish runtime file, service, subprocess or shared-state influence"}}}
 	flags, patterns, err := commandParts(w)
 	if err != nil {
 		return e, err
@@ -123,6 +123,8 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, execu
 		e.Inputs[rel] = append(e.Inputs[rel], owner)
 	}
 	count := 0
+	scanned := map[string]bool{}
+	directories := map[string]string{}
 	for {
 		var p listedPackage
 		if err := dec.Decode(&p); errors.Is(err, io.EOF) {
@@ -151,6 +153,7 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, execu
 		if !within(root, p.Dir) {
 			continue
 		}
+		directories[owner] = p.Dir
 		if p.ForTest != "" {
 			original := id(p.ForTest)
 			nodes[original] = true
@@ -167,6 +170,19 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, execu
 		for _, files := range [][]string{p.GoFiles, p.CgoFiles, p.CFiles, p.CXXFiles, p.MFiles, p.HFiles, p.FFiles, p.SFiles, p.SwigFiles, p.SwigCXXFiles, p.SysoFiles, p.IgnoredGoFiles, p.IgnoredOtherFiles, p.TestGoFiles, p.XTestGoFiles, p.EmbedFiles, p.TestEmbedFiles, p.XTestEmbedFiles} {
 			for _, f := range files {
 				addInput(filepath.Join(p.Dir, f), owner)
+				filename := filepath.Join(p.Dir, f)
+				key := filename + "\x00" + owner
+				if strings.HasSuffix(f, ".go") && !scanned[key] {
+					scanned[key] = true
+					effects, err := sourceEffects(ctx, root, filename, owner)
+					if err != nil {
+						return e, err
+					}
+					if len(e.Effects)+len(effects) > 100000 {
+						return e, errors.New("Go effect inventory exceeds limit")
+					}
+					e.Effects = append(e.Effects, effects...)
+				}
 			}
 		}
 		if p.Module != nil {
@@ -179,6 +195,55 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, execu
 	if count == 0 || len(units) == 0 {
 		return e, errors.New("Go discovery returned no runnable packages")
 	}
+	// A library resource call uses its calling test package's cwd, which need
+	// not be the library source directory. Include every possible local test cwd
+	// rather than treating a source-relative path as complete runtime influence.
+	effectSet := map[model.Effect]bool{}
+	for _, effect := range e.Effects {
+		effectSet[effect] = true
+	}
+	comparisonBudget := 1000000
+	for _, effect := range e.Effects {
+		if effect.Path == "" {
+			continue
+		}
+		relative, err := filepath.Rel(directories[effect.Owner], filepath.Join(root, filepath.FromSlash(effect.Path)))
+		if err != nil {
+			return e, errors.New("cannot establish Go resource source directory")
+		}
+		for owner := range units {
+			comparisonBudget--
+			if comparisonBudget < 0 {
+				return e, errors.New("Go resource cwd comparison limit exceeded")
+			}
+			if err := ctx.Err(); err != nil {
+				return e, err
+			}
+			candidate := effect
+			resolved := filepath.Join(directories[owner], relative)
+			if !within(root, resolved) {
+				candidate.Kind, candidate.Path = "unknown", ""
+			} else {
+				path, err := filepath.Rel(root, resolved)
+				if err != nil {
+					return e, err
+				}
+				candidate.Path = filepath.ToSlash(path)
+			}
+			effectSet[candidate] = true
+			if len(effectSet) > 100000 {
+				return e, errors.New("Go resource cwd envelope exceeds limit")
+			}
+		}
+	}
+	e.Effects = nil
+	for effect := range effectSet {
+		e.Effects = append(e.Effects, effect)
+	}
+	sort.Slice(e.Effects, func(i, j int) bool {
+		a, b := e.Effects[i], e.Effects[j]
+		return a.Owner+"\x00"+a.Kind+"\x00"+a.Path < b.Owner+"\x00"+b.Kind+"\x00"+b.Path
+	})
 	// Changes to workspace/module graph definitions affect every discovered unit.
 	for ancestor := dir; within(root, ancestor); ancestor = filepath.Dir(ancestor) {
 		for _, name := range []string{"go.mod", "go.sum", "go.work", "go.work.sum"} {

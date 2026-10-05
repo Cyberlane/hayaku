@@ -2,6 +2,21 @@
 
 The source and tests define current behavior. “Native” below means installed-runner evidence and result handling, not complete runtime influence or permission to skip a native suite. Original native commands remain full. v0.4.0 permits whole-suite reuse only within the separately enforced [deterministic WASI contract](capsules.md).
 
+## Unreleased shared execution work
+
+- Shared analysis/runner composition, entrypoint/environment binding and normalized
+  outcome validation are integrated into native execution and shadow comparison.
+- Normalized file/directory/probe effects supplement the common old/new graph;
+  Go AST resource observations broaden proposals without qualifying native omission.
+- `hayaku suite` can independently execute/reuse configured WASI groups, with
+  complete per-group context binding and live invocation revalidation.
+- Shared core/decoder scenarios and real Go/Node/Vitest/unittest/pytest fault fixtures
+  exercise the integration boundaries. See [shared execution](shared-execution.md).
+- Native enforced isolation, native affected-only qualification, additional
+  language effect analyzers and representative consumer CI savings remain unfinished.
+
+These source capabilities are not a published release or production acceptance.
+
 ## Five improvement areas
 
 | Area | Implemented scope | Remaining boundary |

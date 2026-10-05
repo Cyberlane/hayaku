@@ -72,6 +72,14 @@ type Options struct {
 	NoReuse bool
 }
 
+// ValidateRequest checks the complete request shape before a batch executes any
+// group. It grants no reuse authority; Run additionally validates the actual
+// module interfaces, enforces execution, and authenticates previous passes.
+func ValidateRequest(ctx context.Context, request Request, limits Limits) error {
+	_, _, err := normalize(ctx, request, limits)
+	return err
+}
+
 func DefaultLimits() Limits {
 	return Limits{Timeout: 30 * time.Second, MemoryPages: 4096, OutputBytes: 1 << 20}
 }

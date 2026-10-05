@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 	"errors"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/Cyberlane/hayaku/internal/adapter"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/noderuntime"
@@ -14,40 +14,7 @@ import (
 )
 
 func validateVitestRunner(root string, w model.Workspace) error {
-	name := w.Command.Executable
-	if !filepath.IsAbs(name) {
-		if strings.ContainsAny(name, "/\\") {
-			name = filepath.Join(root, w.Root, w.Command.Dir, name)
-		} else {
-			var err error
-			name, err = exec.LookPath(name)
-			if err != nil {
-				return errors.New("configured Vitest runner is unavailable")
-			}
-		}
-	}
-	actual, err := filepath.EvalSymlinks(name)
-	if err != nil {
-		return errors.New("configured Vitest runner is unavailable")
-	}
-	entry := filepath.Join("vitest", "vitest.mjs")
-	switch w.Adapter {
-	case "jest":
-		entry = filepath.Join("jest", "bin", "jest.js")
-	case "playwright":
-		entry = filepath.Join("@playwright", "test", "cli.js")
-	case "node-test", "command":
-		expected, err := filepath.EvalSymlinks(w.NodeRuntime.Node)
-		if err != nil || actual != expected {
-			return errors.New("configured Node runner differs from bound runtime")
-		}
-		return nil
-	}
-	expected, err := filepath.EvalSymlinks(filepath.Join(w.NodeRuntime.Modules, entry))
-	if err != nil || actual != expected {
-		return errors.New("configured Vitest runner differs from the bound installation")
-	}
-	return nil
+	return adapter.ValidateNodeRuntime(root, w)
 }
 
 func moduleDestination(w model.Workspace) string {

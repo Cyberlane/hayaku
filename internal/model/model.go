@@ -90,6 +90,31 @@ type Evidence struct {
 	Edges     []Edge              `json:"edges"`
 	Units     []Unit              `json:"units"`
 	Gaps      []Gap               `json:"gaps"`
+	Effects   []Effect            `json:"effects,omitempty"`
+}
+
+// Effect is additional influence, never proof that other effects are absent.
+// Paths are repository-relative; unsupported/unknown effects have no path.
+type Effect struct {
+	Owner string `json:"owner"`
+	Kind  string `json:"kind"`
+	Path  string `json:"path,omitempty"`
+}
+
+// Outcome identities are normalized by the runner bridge. The shared engine
+// validates them against its independently collected inventory.
+type Outcome struct {
+	Unit   string `json:"unit"`
+	Test   string `json:"test,omitempty"`
+	Action string `json:"action"`
+}
+
+type Outcomes struct {
+	Complete bool      `json:"complete"`
+	Failed   bool      `json:"failed"`
+	Errors   int       `json:"errors"`
+	Units    []Outcome `json:"units"`
+	Tests    []Outcome `json:"tests"`
 }
 
 type Reason struct {

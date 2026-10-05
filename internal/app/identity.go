@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	goprovider "github.com/Cyberlane/hayaku/internal/adapter/golang"
 	swiftprovider "github.com/Cyberlane/hayaku/internal/adapter/swift"
 	"io"
 	"os"
@@ -14,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/Cyberlane/hayaku/internal/adapter"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/noderuntime"
@@ -132,19 +132,14 @@ func EffectiveContextDigest(ctx context.Context, root string, c model.Config) (s
 	}
 	native := map[string][]string{}
 	for _, w := range c.Workspaces {
-		if w.Adapter != "go" {
-			continue
-		}
-		env, err := goprovider.ExecutionEnvironment(ctx, root, w, c.Context)
+		env, err := adapter.EnvironmentIdentity(ctx, root, w, c.Context)
 		if err != nil {
 			return "", err
 		}
-		for i, pair := range env {
-			key, value, _ := strings.Cut(pair, "=")
-			if key == "GOWORK" && strings.HasPrefix(value, root+string(filepath.Separator)) {
-				env[i] = key + "=<repository>" + strings.TrimPrefix(value, root)
-			}
+		if env == nil {
+			continue
 		}
+
 		native[w.ID] = env
 	}
 	return config.Digest(struct {

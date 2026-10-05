@@ -22,7 +22,7 @@ func TestRunnerIdentityCannotUseAnotherVitestInstallation(t *testing.T) {
 	if err := os.WriteFile(entry, []byte("native runner"), 0700); err != nil {
 		t.Fatal(err)
 	}
-	w := model.Workspace{Root: ".", Command: model.Command{Dir: ".", Executable: entry}, NodeRuntime: &model.NodeRuntime{Modules: modules}}
+	w := model.Workspace{Root: ".", Adapter: "vitest", Command: model.Command{Dir: ".", Executable: entry}, NodeRuntime: &model.NodeRuntime{Modules: modules}}
 	if err := validateVitestRunner(root, w); err != nil {
 		t.Fatal(err)
 	}

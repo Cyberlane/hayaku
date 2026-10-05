@@ -1,24 +1,17 @@
 package app
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/Cyberlane/hayaku/internal/adapter"
-	goprovider "github.com/Cyberlane/hayaku/internal/adapter/golang"
-	nativeprovider "github.com/Cyberlane/hayaku/internal/adapter/native"
-	swiftprovider "github.com/Cyberlane/hayaku/internal/adapter/swift"
 	vitestprovider "github.com/Cyberlane/hayaku/internal/adapter/vitest"
-	xcodeprovider "github.com/Cyberlane/hayaku/internal/adapter/xcode"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
-	"github.com/Cyberlane/hayaku/internal/process"
 	gorunner "github.com/Cyberlane/hayaku/internal/runner/golang"
 	nativerunner "github.com/Cyberlane/hayaku/internal/runner/native"
 	vitestRunner "github.com/Cyberlane/hayaku/internal/runner/vitest"
@@ -36,6 +29,7 @@ type CommandResult struct {
 	Native       *nativerunner.Result  `json:"native,omitempty"`
 	Complete     bool                  `json:"complete"`
 	RuntimeTrace *vitestprovider.Trace `json:"runtime_trace,omitempty"`
+	Outcomes     *model.Outcomes       `json:"outcomes,omitempty"`
 }
 type Execution struct {
 	Schema         int               `json:"schema"`
@@ -49,17 +43,6 @@ type Execution struct {
 	RunnerVersions map[string]string `json:"runner_versions,omitempty"`
 }
 
-func executionEnv(c model.Context) map[string]string {
-	env := map[string]string{}
-	for key, value := range c.Env {
-		env[key] = value
-	}
-	for key, value := range map[string]string{"GOTOOLCHAIN": "local", "GOPROXY": "off", "GOSUMDB": "off", "GOVCS": "*:off", "GONOPROXY": "", "GOTELEMETRY": "off", "GOFLAGS": "", "GOENV": "off", "GOOS": c.OS, "GOARCH": c.Arch, "CARGO_NET_OFFLINE": "true", "RUSTUP_AUTO_INSTALL": "0"} {
-		env[key] = value
-	}
-	return env
-}
-
 // Execute is used only after fresh plan reconstruction, and enforces identity
 // again here so callers cannot accidentally execute an unvalidated saved plan.
 func Execute(ctx context.Context, root string, c model.Config, p model.Plan) (Execution, error) {
@@ -69,7 +52,7 @@ func Execute(ctx context.Context, root string, c model.Config, p model.Plan) (Ex
 // Observe is a full-inventory diagnostic run, separate from required execution.
 func Observe(ctx context.Context, root string, c model.Config, p model.Plan) (Execution, error) {
 	for _, w := range c.Workspaces {
-		if w.Adapter != "vitest" || w.NodeRuntime == nil {
+		if !adapter.SupportsObserve(w) {
 			return Execution{}, errors.New("observe requires bound Vitest workspaces; preserve other full suite gates")
 		}
 	}
@@ -100,10 +83,8 @@ func executeMode(ctx context.Context, root string, c model.Config, p model.Plan,
 			return result, err
 		}
 		for _, w := range c.Workspaces {
-			if w.Adapter == "xcode" {
-				if err := xcodeprovider.PrepareSnapshot(ctx, executionRoot, w); err != nil {
-					return result, err
-				}
+			if err := adapter.PrepareSnapshot(ctx, executionRoot, w); err != nil {
+				return result, err
 			}
 		}
 		original, err := executionTreeDigest(ctx, executionRoot, c)
@@ -149,16 +130,9 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 			}
 			command.Dir = w.Command.Dir
 		}
-		if w.Adapter == "go" {
-			copyWorkspace := w
-			copyWorkspace.Command = command
-			command, err = goprovider.Execution(copyWorkspace)
-			if err != nil {
-				return err
-			}
-			if fresh {
-				command.Args = append(command.Args, "-count=1")
-			}
+		command, err = adapter.PrepareCommand(w, command, fresh)
+		if err != nil {
+			return err
 		}
 		commands = append(commands, command)
 		for i, cmd := range commands {
@@ -179,99 +153,12 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 			if err != nil || !config.Relative(filepath.ToSlash(rel)) {
 				return errors.New("execution cwd resolves outside repository")
 			}
-			var runtimeTrace *vitestprovider.Trace
-			var output process.Output
-			var runErr error
-			var appleResult *nativerunner.Result
-			if i == len(commands)-1 && w.Adapter == "xcode" {
-				var sr nativerunner.Result
-				output, sr, runErr = xcodeprovider.Execute(ctx, root, w, c.Context)
-				appleResult = &sr
-			} else if i == len(commands)-1 && w.Adapter == "swift" {
-				var sr nativerunner.Result
-				output, sr, runErr = swiftprovider.Execute(ctx, root, w, c.Context, workspaceUnits, proposal)
-				appleResult = &sr
-			} else if i == len(commands)-1 && w.Adapter == "vitest" {
-				var selected []model.Unit
-				if proposal {
-					selected = workspaceUnits
-				}
-				if result.Mode == "runtime-observation" {
-					var trace vitestprovider.Trace
-					output, trace, runErr = vitestprovider.Observe(ctx, root, w, c.Context)
-					runtimeTrace = &trace
-				} else {
-					output, runErr = vitestprovider.Execute(ctx, root, w, c.Context, selected)
-				}
-			} else if i == len(commands)-1 && nativeResultRunner(w.Adapter) {
-				var selected []model.Unit
-				if proposal {
-					selected = workspaceUnits
-				}
-				output, runErr = nativeprovider.Execute(ctx, root, w, c.Context, selected)
-			} else if w.Adapter == "go" {
-				env, envErr := goprovider.ExecutionEnvironment(ctx, root, w, c.Context)
-				if envErr != nil {
-					return envErr
-				}
-				output, runErr = process.RunEnvironment(ctx, cmd, dir, env)
-			} else {
-				output, runErr = process.Run(ctx, cmd, dir, executionEnv(c.Context))
-			}
-			entry := CommandResult{Workspace: w.ID, Command: cmd, ExitCode: output.ExitCode, Duration: output.Duration, OutputBytes: len(output.Stdout) + len(output.Stderr), Complete: runErr == nil, RuntimeTrace: runtimeTrace}
-			if appleResult != nil {
-				entry.Native = appleResult
-				entry.Complete = output.Completed && appleResult.Complete && (output.ExitCode == 0 || appleResult.Failed)
-			}
-			if i == len(commands)-1 && w.Adapter == "go" {
-				expected := []string{}
-				for _, u := range workspaceUnits {
-					if u.Kind == "go-package" {
-						expected = append(expected, u.Selector)
-					}
-				}
-				sort.Strings(expected)
-				goResult, reconcileErr := gorunner.Reconcile(bytes.NewReader(output.Stdout), expected)
-				entry.Go = &goResult
-				entry.Complete = reconcileErr == nil && output.Completed && (output.ExitCode == 0 || goResult.Failed)
-				if reconcileErr != nil {
-					entry.Complete = false
-					if runErr == nil {
-						runErr = reconcileErr
-					}
-				}
-				if goResult.Failed && runErr == nil {
-					runErr = errors.New("Go results report failure")
-				}
-			}
-			if i == len(commands)-1 && w.Adapter == "vitest" {
-				vitestResult, reconcileErr := vitestRunner.Reconcile(bytes.NewReader(output.Stdout), workspaceUnits)
-				entry.Vitest = &vitestResult
-				entry.Complete = reconcileErr == nil && output.Completed && (output.ExitCode == 0 || vitestResult.Failed)
-				if reconcileErr != nil && runErr == nil {
-					runErr = reconcileErr
-				}
-				if vitestResult.Failed && runErr == nil {
-					runErr = errors.New("Vitest results report failure")
-				}
-			}
-			if i == len(commands)-1 && nativeResultRunner(w.Adapter) {
-				nativeResult, reconcileErr := nativerunner.Reconcile(bytes.NewReader(output.Stdout), w.Adapter, result.RunnerVersions[w.ID], workspaceUnits)
-				entry.Native = &nativeResult
-				entry.Complete = reconcileErr == nil && output.Completed && (output.ExitCode == 0 || nativeResult.Failed)
-				if reconcileErr != nil && runErr == nil {
-					runErr = reconcileErr
-				}
-				if nativeResult.Failed && runErr == nil {
-					runErr = errors.New("native results report failure")
-				}
-			}
-			if result.Mode == "runtime-observation" && (runtimeTrace == nil || !runtimeTrace.Complete) {
-				entry.Complete = false
-				if runErr == nil {
-					runErr = errors.New("runtime observation transport incomplete")
-				}
-			}
+			run, runErr := adapter.Run(ctx, root, dir, w, c.Context, cmd, workspaceUnits, adapter.RunOptions{
+				Proposal: proposal, Observe: result.Mode == "runtime-observation", Prerequisite: i != len(commands)-1, Version: result.RunnerVersions[w.ID],
+			})
+			entry := CommandResult{Workspace: w.ID, Command: cmd, ExitCode: run.Output.ExitCode, Duration: run.Output.Duration,
+				OutputBytes: len(run.Output.Stdout) + len(run.Output.Stderr), Complete: run.Complete, Outcomes: run.Outcomes,
+				Go: run.Go, Vitest: run.Vitest, Native: run.Native, RuntimeTrace: run.RuntimeTrace}
 			result.Commands = append(result.Commands, entry)
 			if revalidate != nil {
 				if err := revalidate(); err != nil {
@@ -323,7 +210,7 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		}
 	}()
 	for _, w := range c.Workspaces {
-		if w.Adapter != "go" && w.Adapter != "swift" && (w.Adapter != "vitest" || w.NodeRuntime == nil) && !nativeResultRunner(w.Adapter) {
+		if !adapter.SupportsShadow(w) {
 			return result, errors.New("shadow requires a native outcome reconciler; keep other full gates")
 		}
 	}
@@ -385,39 +272,16 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		}
 	}
 	for _, cmd := range result.Full.Commands {
-		if cmd.Native != nil {
-			for _, test := range cmd.Native.Tests {
-				if proposedPackages[test.Unit] {
-					id := test.Unit + "/" + test.Test
-					if _, seen := selected[id]; !seen {
-						result.Inconsistencies = append(result.Inconsistencies, id)
-					}
-				}
-			}
-		}
-		if cmd.Vitest != nil {
-			for _, test := range cmd.Vitest.Tests {
-				if proposedPackages[test.Unit] {
-					id := test.Unit + "/" + test.Test
-					if _, seen := selected[id]; !seen {
-						result.Inconsistencies = append(result.Inconsistencies, id)
-					}
-				}
-			}
-		}
-		if cmd.Go == nil {
-			continue
-		}
-		for _, test := range cmd.Go.Tests {
-			key := cmd.Workspace + ":" + test.Package
-			if proposedPackages[key] {
-				id := key + "/" + test.Test
+		for _, test := range commandOutcomes(cmd).Tests {
+			if proposedPackages[test.Unit] {
+				id := test.Unit + "/" + test.Test
 				if _, seen := selected[id]; !seen {
 					result.Inconsistencies = append(result.Inconsistencies, id)
 				}
 			}
 		}
 	}
+
 	sort.Strings(result.ObservedMisses)
 	sort.Strings(result.Inconsistencies)
 	result.ComparisonValid = len(result.Inconsistencies) == 0
@@ -428,10 +292,7 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 			}
 			// Global native errors cannot be attributed to a stable file/test
 			// identity. They fail the run and invalidate the comparison.
-			if command.Vitest != nil && command.Vitest.UnhandledErrors > 0 {
-				result.ComparisonValid = false
-			}
-			if command.Go == nil && !command.Complete {
+			if commandOutcomes(command).Errors > 0 {
 				result.ComparisonValid = false
 			}
 		}
@@ -467,41 +328,18 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 func outcomes(execution Execution) map[string]string {
 	result := map[string]string{}
 	for _, command := range execution.Commands {
-		if command.Native != nil {
-			for _, outcome := range command.Native.Units {
-				result[outcome.Unit] = outcome.Action
-			}
-			for _, outcome := range command.Native.Tests {
-				result[outcome.Unit+"/"+outcome.Test] = outcome.Action
-			}
+		common := commandOutcomes(command)
+		for _, item := range common.Units {
+			result[item.Unit] = item.Action
 		}
-		if command.Vitest != nil {
-			for _, outcome := range command.Vitest.Files {
-				result[outcome.Unit] = outcome.Action
-			}
-			for _, outcome := range command.Vitest.Tests {
-				result[outcome.Unit+"/"+outcome.Test] = outcome.Action
-			}
-		}
-		if command.Go == nil {
-			continue
-		}
-		for _, outcome := range command.Go.Packages {
-			result[command.Workspace+":"+outcome.Package] = outcome.Action
-		}
-		for _, outcome := range command.Go.Tests {
-			result[command.Workspace+":"+outcome.Package+"/"+outcome.Test] = outcome.Action
+		for _, item := range common.Tests {
+			result[item.Unit+"/"+item.Test] = item.Action
 		}
 	}
 	return result
 }
 
-func unitOutcomeID(unit model.Unit) string {
-	if unit.Kind == "vitest-file" || unit.Kind == "swift-target" || strings.HasSuffix(unit.Kind, "-file") {
-		return unit.ID
-	}
-	return unit.Workspace + ":" + unit.Selector
-}
+func unitOutcomeID(unit model.Unit) string { return unit.ID }
 
 func hasApple(c model.Config) bool {
 	for _, w := range c.Workspaces {
@@ -512,24 +350,11 @@ func hasApple(c model.Config) bool {
 	return false
 }
 
-func nativeResultRunner(id string) bool {
-	switch id {
-	case "node-test", "unittest", "pytest", "jest", "playwright":
-		return true
-	}
-	return false
-}
-
 func nativeVersions(p model.Plan) map[string]string {
 	versions := map[string]string{}
 	for _, e := range p.Evidence {
-		if !nativeResultRunner(e.Adapter) {
-			continue
-		}
-		for _, part := range strings.Split(e.Version, ";") {
-			if value, ok := strings.CutPrefix(part, e.Adapter+"="); ok {
-				versions[e.Workspace] = value
-			}
+		if version := adapter.ResultVersion(e.Adapter, e.Version); version != "" {
+			versions[e.Workspace] = version
 		}
 	}
 	return versions

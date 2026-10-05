@@ -89,6 +89,24 @@ func TestDiscoveryFailsClosed(t *testing.T) {
 		t.Fatal("cancel ignored")
 	}
 }
+
+func TestLibraryResourceIncludesCallingTestDirectory(t *testing.T) {
+	root, w := fixture(t)
+	if err := os.WriteFile(filepath.Join(root, "lib/lib.go"), []byte("package lib\nimport \"os\"\nfunc Value() int { _,_ = os.ReadFile(\"data.txt\"); return 1 }\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	e, err := Discover(context.Background(), root, w, model.Context{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := model.Effect{Owner: "fixture:example.test/fixture/lib", Kind: "read", Path: "app/data.txt"}
+	for _, effect := range e.Effects {
+		if effect == want {
+			return
+		}
+	}
+	t.Fatal("library read omitted resource under caller test cwd")
+}
 func TestProposalPreservesFlags(t *testing.T) {
 	w := model.Workspace{ID: "w", Command: model.Command{Dir: "nested", Executable: "go", Args: []string{"test", "-race", "-count=1", "-timeout", "1m", "./..."}}}
 	command, err := Proposal(w, []model.Unit{{ID: "w:b", Workspace: "w", Selector: "example.test/b", Kind: "go-package"}, {ID: "w:a", Workspace: "w", Selector: "example.test/a", Kind: "go-package"}})

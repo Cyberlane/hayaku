@@ -12,6 +12,7 @@ import (
 
 	vitestprovider "github.com/Cyberlane/hayaku/internal/adapter/vitest"
 	"github.com/Cyberlane/hayaku/internal/config"
+	"github.com/Cyberlane/hayaku/internal/influence"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/report"
 )
@@ -127,10 +128,7 @@ func BroadenFromObservations(ctx context.Context, p *model.Plan, c model.Config,
 					if changed == "" {
 						continue
 					}
-					affected := changed == observation.Path
-					if observation.Operation == "directory" || observation.Operation == "metadata" || observation.Operation == "exists" {
-						affected = affected || observation.Path == "." || strings.HasPrefix(changed, observation.Path+"/")
-					}
+					affected := influence.Affected(model.Effect{Kind: observation.Operation, Path: observation.Path}, changed)
 					if affected {
 						add(command.Workspace, observation.Owner, "runtime-observed-influence")
 					}

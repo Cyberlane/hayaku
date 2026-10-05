@@ -61,6 +61,7 @@ else:
             self.actions = {}
             self.subcounts = {}
             self.subresults = []
+            self.unhandled_errors = 0
         def addSuccess(self, test):
             super().addSuccess(test)
             self.actions.setdefault(test.id(), 'pass')
@@ -70,6 +71,8 @@ else:
         def addError(self, test, err):
             super().addError(test, err)
             self.actions[test.id()] = 'fail'
+            if test.id() not in seen:
+                self.unhandled_errors += 1
         def addSkip(self, test, reason):
             super().addSkip(test, reason)
             self.actions[test.id()] = 'skip'
@@ -112,7 +115,7 @@ else:
         units.append({'selector': module, 'action': action})
     # Class/module setup errors use synthetic ErrorHolder IDs not in inventory;
     # they are reported as errors and completeness remains false.
-    errors = len(result.errors)
+    errors = result.unhandled_errors
     success = result.wasSuccessful() and complete
     payload = {'schema': 1, 'runner': 'unittest', 'version': version, 'complete': complete,
                'errors': errors, 'units': units, 'tests': tests}

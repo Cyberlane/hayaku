@@ -133,6 +133,11 @@ saved passing results with a private authentication key; this trusts the user
 running Hayaku and the executable. If the cache is invalid or unavailable, the
 suite runs again. Reports omit guest logs, source contents, and raw environment values.
 
+The unreleased `hayaku suite --config suites.json --cache-dir .git/hayaku-passes`
+command coordinates multiple independent WASI groups, rerunning groups whose
+envelopes changed and reusing unchanged passes. See the
+[shared execution design and configuration](docs/shared-execution.md).
+
 You can try Hayaku's own pilot, which compiles its graph tests from committed
 code into a separate WASI suite and compares a fresh run with result reuse:
 

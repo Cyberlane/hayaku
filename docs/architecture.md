@@ -5,6 +5,13 @@ placing framework branches in graph logic. `internal/model` owns versioned confi
 evidence, unit, gap, reason and command schemas. CLI/config use the standard
 library. There is no service, telemetry, AI model, credential requirement or DB.
 
+The unreleased [shared execution implementation](shared-execution.md) composes
+analysis and runner bridges through one table, validates normalized outcomes in
+`internal/runner`, handles normalized effects in `internal/influence`, and runs
+independent qualified WASI groups in `internal/suite`. Native full gates remain
+required. The platform/backend boundary is the existing capsule implementation;
+there is no qualified native isolation backend.
+
 - `snapshot`: resolves exact commit objects, inventories NUL-delimited changes,
   copies raw blobs, bounds resources and rejects unsupported entry types.
 - `config`: strict schema/fields, duplicate-key rejection, context and path checks.

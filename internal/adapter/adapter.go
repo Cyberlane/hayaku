@@ -8,13 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/Cyberlane/hayaku/internal/adapter/cargo"
-	"github.com/Cyberlane/hayaku/internal/adapter/golang"
-	"github.com/Cyberlane/hayaku/internal/adapter/native"
 	"github.com/Cyberlane/hayaku/internal/adapter/nextest"
-	"github.com/Cyberlane/hayaku/internal/adapter/pytest"
 	swiftprovider "github.com/Cyberlane/hayaku/internal/adapter/swift"
-	"github.com/Cyberlane/hayaku/internal/adapter/vitest"
 	"github.com/Cyberlane/hayaku/internal/catalog"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
@@ -40,21 +35,8 @@ func Capabilities() []Capability {
 }
 
 func Discover(ctx context.Context, root string, w model.Workspace, c model.Context) (model.Evidence, error) {
-	switch w.Adapter {
-	case "go":
-		return golang.Discover(ctx, root, w, c)
-	case "cargo":
-		return cargo.Discover(ctx, root, w, c)
-	case "nextest":
-		return nextest.Discover(ctx, root, w, c)
-	case "pytest":
-		return pytest.Discover(ctx, root, w, c)
-	case "vitest":
-		return vitest.Discover(ctx, root, w, c)
-	case "swift":
-		return swiftprovider.Describe(ctx, root, w, c)
-	case "node-test", "unittest", "jest", "playwright":
-		return native.Discover(ctx, root, w, c)
+	if provider, ok := providers[w.Adapter]; ok && provider.analyze != nil {
+		return provider.analyze(ctx, root, w, c)
 	}
 	for _, capability := range Capabilities() {
 		if capability.ID == w.Adapter {
@@ -105,28 +87,12 @@ func fullSuite(ctx context.Context, root string, w model.Workspace) (model.Evide
 }
 
 func Proposal(w model.Workspace, units []model.Unit) (model.Command, error) {
-	var cmd model.Command
+	cmd := w.Command
 	var err error
-	switch w.Adapter {
-	case "go":
-		cmd, err = golang.Proposal(w, units)
-	case "cargo":
-		cmd, err = cargo.Proposal(w, units)
-	case "nextest":
-		cmd, err = nextest.Proposal(w, units)
-	case "pytest":
-		cmd, err = pytest.Proposal(w, units)
-	case "vitest":
-		cmd, err = vitest.Proposal(w, units)
-	case "swift":
-		cmd, err = swiftprovider.Proposal(w, units)
-	case "node-test", "unittest", "jest", "playwright":
-		cmd, err = native.Proposal(w, units)
-	default:
-		if len(units) == 0 {
-			return model.Command{}, fmt.Errorf("empty full-suite proposal")
-		}
-		cmd = w.Command
+	if provider, ok := providers[w.Adapter]; ok && provider.selectCommand != nil {
+		cmd, err = provider.selectCommand(w, units)
+	} else if len(units) == 0 {
+		return model.Command{}, fmt.Errorf("empty full-suite proposal")
 	}
 	cmd.Dir = filepath.ToSlash(filepath.Join(w.Root, cmd.Dir))
 	return cmd, err
@@ -139,8 +105,12 @@ func Normalize(e *model.Evidence) {
 		sort.Strings(owners)
 		e.Inputs[input] = owners
 	}
+	sort.Slice(e.Effects, func(i, j int) bool {
+		a, b := e.Effects[i], e.Effects[j]
+		return a.Owner+"\x00"+a.Kind+"\x00"+a.Path < b.Owner+"\x00"+b.Kind+"\x00"+b.Path
+	})
 }
 
 func ImplementationVersions() map[string]string {
-	return map[string]string{"go": "go-native-v1", "cargo": "cargo-native-v1", "nextest": nextest.Version, "pytest": "pytest-native-v1", "vitest": "vitest-vite-graph-v1", "swift": swiftprovider.Version, "xcode": "xcode-xctest-v1", "node-test": "native-files-v1", "unittest": "native-files-v1", "jest": "native-files-v1", "playwright": "native-files-v1", "fallback": "full-suite-v1"}
+	return map[string]string{"go": "go-native-v2-effects-v1", "cargo": "cargo-native-v1", "nextest": nextest.Version, "pytest": "pytest-native-v1", "vitest": "vitest-vite-graph-v1", "swift": swiftprovider.Version, "xcode": "xcode-xctest-v1", "node-test": "native-files-v1", "unittest": "native-files-v1", "jest": "native-files-v1", "playwright": "native-files-v1", "fallback": "full-suite-v1"}
 }

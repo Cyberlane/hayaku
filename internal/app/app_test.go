@@ -36,7 +36,7 @@ func gitFixture(t *testing.T) (string, string, string, model.Config) {
 	write("a/a.go", "package a\nfunc Value() int { return 1 }\n")
 	write("a/a_test.go", "package a\nimport \"testing\"\nfunc TestValue(t *testing.T){if Value()<1{t.Fatal(\"bad\")}}\n")
 	// This independent package reads another package's source at runtime. The
-	// native graph omits that edge, so the shadow proposal must expose a miss.
+	// compiler graph omits that edge; AST resource evidence must recover it.
 	write("b/b.go", "package b\nconst Value=1\n")
 	write("b/b_test.go", `package b
 import("testing";"os";"bytes")
@@ -75,15 +75,15 @@ func TestEndToEndNeverPromotesGraphProposal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(p.Proposed) != 1 || p.Proposed[0].Selector != "example.test/fixture/a" || len(p.Selected) != 2 || p.Mode != "full-fallback" {
-		t.Fatalf("bad envelope %+v", p)
+	if len(p.Proposed) != 2 || len(p.Selected) != 2 || p.Mode != "full-fallback" {
+		t.Fatalf("resource influence lost: proposed=%d selected=%d mode=%s", len(p.Proposed), len(p.Selected), p.Mode)
 	}
 	if len(p.Commands) != 1 || strings.Join(p.Commands[0].Args, " ") != "test ./..." {
 		t.Fatal("required command narrowed")
 	}
 	result, err := Shadow(ctx, root, c, p)
-	if err == nil || len(result.ObservedMisses) == 0 {
-		t.Fatalf("miss not detected: %+v err=%v", result, err)
+	if err == nil || !result.ComparisonValid || len(result.ObservedMisses) != 0 || result.Proposal.Passed || result.Full.Passed {
+		t.Fatalf("AST resource influence did not preserve failure: comparison=%t misses=%v err=%v", result.ComparisonValid, result.ObservedMisses, err)
 	}
 	resultRun, err := Execute(ctx, root, c, p)
 	if err == nil || resultRun.Passed {

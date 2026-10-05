@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Cyberlane/hayaku/internal/graph"
+	"github.com/Cyberlane/hayaku/internal/influence"
 	"github.com/Cyberlane/hayaku/internal/model"
 )
 
@@ -19,6 +20,7 @@ type inventory struct {
 	workspaces map[string]bool
 	edges      []model.Edge
 	gaps       []model.Gap
+	effects    []model.Effect
 }
 
 // Build never authorizes omitted tests. Proposed is an experimental, possibly
@@ -72,7 +74,7 @@ func Build(base, candidate []model.Evidence, changes []model.Change, config mode
 	}
 	sort.Strings(nodeIDs)
 	edges := append(append([]model.Edge(nil), old.edges...), current.edges...)
-	influence, err := graph.New(nodeIDs, edges)
+	dependencyGraph, err := graph.New(nodeIDs, edges)
 	if err != nil {
 		return plan, err
 	}
@@ -119,7 +121,7 @@ func Build(base, candidate []model.Evidence, changes []model.Change, config mode
 						inputs[contract.Input] = append(inputs[contract.Input], id)
 					}
 				}
-			} else if influence.Has(consumer) {
+			} else if dependencyGraph.Has(consumer) {
 				inputs[contract.Input] = append(inputs[contract.Input], consumer)
 			} else {
 				return plan, fmt.Errorf("contract references unknown consumer %q", consumer)
@@ -148,6 +150,14 @@ func Build(base, candidate []model.Evidence, changes []model.Change, config mode
 	}
 	seeds := make(map[string]bool)
 	seedInputs := make(map[string]string)
+	effects := append(append([]model.Effect(nil), old.effects...), current.effects...)
+	for _, effect := range effects {
+		if influence.Unbounded(effect) {
+			seeds[effect.Owner] = true
+			plan.Gaps = append(plan.Gaps, model.Gap{Code: "unbounded-effect", Workspace: nodes[effect.Owner], Detail: "Unsupported runtime influence retains containing workspace"})
+		}
+	}
+	comparisonBudget := 1000000
 	for _, change := range plan.Changes {
 		if !validInput(change.Path) || change.Status == "" || strings.ContainsRune(change.Status, 0) {
 			return plan, fmt.Errorf("invalid change inventory")
@@ -160,7 +170,18 @@ func Build(base, candidate []model.Evidence, changes []model.Change, config mode
 			paths = append(paths, change.OldPath)
 		}
 		for _, input := range paths {
-			owners, known := inputs[input]
+			owners := append([]string(nil), inputs[input]...)
+			known := len(owners) != 0
+			for _, effect := range effects {
+				comparisonBudget--
+				if comparisonBudget < 0 {
+					return plan, fmt.Errorf("effect influence comparison limit exceeded")
+				}
+				if !influence.Unbounded(effect) && influence.Affected(effect, input) {
+					owners = append(owners, effect.Owner)
+					known = true
+				}
+			}
 			if !known || len(owners) == 0 {
 				plan.Gaps = append(plan.Gaps, model.Gap{Code: "unknown-input", Detail: input})
 				continue
@@ -177,7 +198,7 @@ func Build(base, candidate []model.Evidence, changes []model.Change, config mode
 	for seed := range seeds {
 		orderedSeeds = append(orderedSeeds, seed)
 	}
-	reached, err := influence.Closure(orderedSeeds)
+	reached, err := dependencyGraph.Closure(orderedSeeds)
 	if err != nil {
 		return plan, err
 	}
@@ -205,7 +226,7 @@ func Build(base, candidate []model.Evidence, changes []model.Change, config mode
 					scopeSeeds = append(scopeSeeds, node)
 				}
 			}
-			scoped, err = influence.Closure(scopeSeeds)
+			scoped, err = dependencyGraph.Closure(scopeSeeds)
 			if err != nil {
 				return plan, err
 			}
@@ -295,8 +316,17 @@ func inspect(evidence []model.Evidence, workspaces map[string]bool) (inventory, 
 		}
 		result.edges = append(result.edges, item.Edges...)
 		result.gaps = append(result.gaps, item.Gaps...)
+		if len(result.effects)+len(item.Effects) > 100000 {
+			return result, fmt.Errorf("effect inventory limit exceeded")
+		}
+		result.effects = append(result.effects, item.Effects...)
 	}
 	for _, item := range evidence {
+		for _, effect := range item.Effects {
+			if result.nodes[effect.Owner] != item.Workspace {
+				return result, fmt.Errorf("effect owner is outside its evidence workspace")
+			}
+		}
 		for input, owners := range item.Inputs {
 			if !validInput(input) || len(owners) == 0 {
 				return result, fmt.Errorf("invalid or ownerless evidence input")
@@ -312,6 +342,14 @@ func inspect(evidence []model.Evidence, workspaces map[string]bool) (inventory, 
 	for id, unit := range result.units {
 		if result.nodes[id] != unit.Workspace {
 			return result, fmt.Errorf("unit %q is absent from its workspace node inventory", id)
+		}
+	}
+	for _, effect := range result.effects {
+		if err := influence.Validate(effect); err != nil {
+			return result, err
+		}
+		if _, found := result.nodes[effect.Owner]; !found {
+			return result, fmt.Errorf("effect references unknown owner")
 		}
 	}
 	for _, gap := range result.gaps {

@@ -31,12 +31,12 @@ var Version = "0.5.1"
 func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 	if len(args) > 0 {
 		switch args[0] {
-		case "capsule", "inputs", "compare", "results", "pilot", "inventory":
+		case "capsule", "suite", "inputs", "compare", "results", "pilot", "inventory":
 			return runTool(ctx, args, out, errout)
 		}
 	}
 	if len(args) == 0 {
-		fmt.Fprintln(errout, "usage: hayaku <init|doctor|catalog|plan|explain|run|shadow|observe|capsule|inputs|compare|results|inventory|pilot|version> [options]")
+		fmt.Fprintln(errout, "usage: hayaku <init|doctor|catalog|plan|explain|run|shadow|observe|capsule|suite|inputs|compare|results|inventory|pilot|version> [options]")
 		return 2
 	}
 	if args[0] == "version" {
@@ -48,7 +48,7 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 		return 0
 	}
 	if args[0] == "help" || args[0] == "--help" {
-		fmt.Fprintln(out, "hayaku init|doctor|catalog|plan|explain|run|shadow|observe|capsule|inputs|compare|results|inventory|pilot|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\ncapsule --config capsule.json --cache-dir <private directory>\ninputs --config inputs.json [--destination <new directory>]\ncompare --baseline baseline.json --measurement candidate.json\nresults --format junit|trx|swift|libtest --inventory cases.json --report results.xml\ninventory --config hayaku.json --workspace <nextest workspace>\npilot --package ./internal/graph --cache-dir <private directory>\nNative plans retain full suites. proposal_commands are experimental shadow inputs.")
+		fmt.Fprintln(out, "hayaku init|doctor|catalog|plan|explain|run|shadow|observe|capsule|suite|inputs|compare|results|inventory|pilot|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\ncapsule --config capsule.json --cache-dir <private directory>\nsuite --config suites.json --cache-dir <private directory>\ninputs --config inputs.json [--destination <new directory>]\ncompare --baseline baseline.json --measurement candidate.json\nresults --format junit|trx|swift|libtest --inventory cases.json --report results.xml\ninventory --config hayaku.json --workspace <nextest workspace>\npilot --package ./internal/graph --cache-dir <private directory>\nNative plans retain full suites. proposal_commands are experimental shadow inputs.")
 		return 0
 	}
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)

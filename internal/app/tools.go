@@ -3,8 +3,6 @@ package app
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"sort"
 	"time"
 
 	"github.com/Cyberlane/hayaku/internal/adapter/nextest"
@@ -25,6 +22,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/report"
 	nativerunner "github.com/Cyberlane/hayaku/internal/runner/native"
 	"github.com/Cyberlane/hayaku/internal/snapshot"
+	"github.com/Cyberlane/hayaku/internal/suite"
 )
 
 type capsuleConfig struct {
@@ -99,7 +97,7 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 	case "pilot":
 		allowed["cache-dir"] = true
 		allowed["package"] = true
-	case "capsule":
+	case "capsule", "suite":
 		for _, k := range []string{"config", "cache-dir", "no-reuse"} {
 			allowed[k] = true
 		}
@@ -201,73 +199,71 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 		if err := readToolJSON(abs, *configuration, &c); err != nil {
 			return failure(errout, err)
 		}
-		if c.Schema != 1 || !config.Relative(c.Module) {
-			return failure(errout, errors.New("invalid capsule configuration"))
-		}
-		module, err := capsule.LoadFiles(ctx, abs, []string{c.Module})
+		loaded, err := loadCapsule(ctx, abs, c)
 		if err != nil {
 			return failure(errout, err)
 		}
-		var files []capsule.File
-		var bundle *inputbundle.Bundle
-		producer := c.ProducerIdentity
-		if c.InputEnvelope != nil {
-			if len(c.Inputs) != 0 || c.InputEnvelope.Schema != 1 {
-				return failure(errout, errors.New("capsule input envelope and regular input list are mutually exclusive"))
-			}
-			decoded, err := hex.DecodeString(producer)
-			if err != nil || len(decoded) != 32 || hex.EncodeToString(decoded) != producer {
-				return failure(errout, errors.New("invalid capsule producer identity"))
-			}
-			request := inputRequest(abs, *c.InputEnvelope)
-			bundle, err = inputbundle.Capture(ctx, request)
-			if err != nil {
-				return failure(errout, err)
-			}
-			files, err = capsule.CapsuleFiles(ctx, bundle)
-			if err != nil {
-				return failure(errout, err)
-			}
-			manifest := bundle.Manifest().Digest
-			digest := sha256.Sum256([]byte(producer + ":" + manifest))
-			producer = hex.EncodeToString(digest[:])
-		} else {
-			files, err = capsule.LoadFiles(ctx, abs, c.Inputs)
-			if err != nil {
-				return failure(errout, err)
-			}
-		}
-		env := make([]capsule.Variable, 0, len(c.Env))
-		for key, value := range c.Env {
-			env = append(env, capsule.Variable{Key: key, Value: value})
-		}
-		sort.Slice(env, func(i, j int) bool { return env[i].Key < env[j].Key })
 		cachePath := *cache
 		if cachePath != "" && !filepath.IsAbs(cachePath) {
 			cachePath = filepath.Join(abs, cachePath)
 		}
-		r, err := capsule.Run(ctx, capsule.Request{Name: c.Name, Module: module[0].Data, Files: files, Args: c.Args, Env: env, ProducerIdentity: producer, Seed: c.Seed}, capsule.Options{CacheDir: cachePath, Limits: c.Limits, NoReuse: *audit})
-		// Results refer to the captured contract. A changed live invocation must
-		// not be reported as a successful result for its current source inputs.
+		r, runErr := capsule.Run(ctx, loaded.request, capsule.Options{CacheDir: cachePath, Limits: c.Limits, NoReuse: *audit})
 		var current capsuleConfig
-		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current)
-		currentModule, moduleErr := capsule.LoadFiles(ctx, abs, []string{c.Module})
-		stable = stable && moduleErr == nil && len(currentModule) == 1 && bytes.Equal(module[0].Data, currentModule[0].Data)
-		if bundle != nil {
-			stable = stable && bundle.VerifySources(ctx) == nil
-		} else {
-			currentFiles, inputErr := capsule.LoadFiles(ctx, abs, c.Inputs)
-			stable = stable && inputErr == nil && reflect.DeepEqual(files, currentFiles)
-		}
+		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current) && loaded.verify(ctx, abs) == nil
 		if !stable {
-			r.Complete = false
-			r.Qualified = false
-			r.Passed = false
-			r.Reason = "live-inputs-changed"
-			r.Gaps = append(r.Gaps, "live-inputs-changed")
+			invalidateCapsuleResult(&r)
 		}
 		value = r
-		unsuccessful = err != nil || !r.Complete || !r.Qualified || !r.Passed
+		unsuccessful = runErr != nil || !r.Complete || !r.Qualified || !r.Passed
+	case "suite":
+		start := time.Now()
+		var c suiteConfig
+		if err := readToolJSON(abs, *configuration, &c); err != nil {
+			return failure(errout, err)
+		}
+		if c.Schema != 1 || len(c.Groups) == 0 || len(c.Groups) > suite.MaxGroups {
+			return failure(errout, errors.New("invalid suite inventory"))
+		}
+		var loaded []loadedCapsule
+		var groups []suite.Group
+		totalBytes := 0
+		for _, group := range c.Groups {
+			item, err := loadCapsule(ctx, abs, group)
+			if err != nil {
+				return failure(errout, err)
+			}
+			totalBytes += len(item.request.Module)
+			for _, file := range item.request.Files {
+				totalBytes += len(file.Data)
+			}
+			if totalBytes > suite.MaxBatchBytes {
+				return failure(errout, errors.New("suite input envelope exceeds bound"))
+			}
+			loaded = append(loaded, item)
+			groups = append(groups, suite.Group{Request: item.request, Limits: group.Limits})
+		}
+		cachePath := *cache
+		if cachePath != "" && !filepath.IsAbs(cachePath) {
+			cachePath = filepath.Join(abs, cachePath)
+		}
+		r, runErr := suite.Run(ctx, groups, suite.Options{CacheDir: cachePath, NoReuse: *audit})
+		var current suiteConfig
+		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current)
+		for _, item := range loaded {
+			if item.verify(ctx, abs) != nil {
+				stable = false
+			}
+		}
+		if !stable {
+			r.Complete, r.Passed = false, false
+			for i := range r.Groups {
+				invalidateCapsuleResult(&r.Groups[i])
+			}
+		}
+		unsuccessful = runErr != nil || !r.Complete || !r.Passed
+		r.Duration = time.Since(start)
+		value = r
+
 	case "inputs":
 		var c inputsConfig
 		if err := readToolJSON(abs, *configuration, &c); err != nil {

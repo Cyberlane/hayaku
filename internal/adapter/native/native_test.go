@@ -188,6 +188,40 @@ func TestUnittestLoadTestsAndFailFastIncomplete(t *testing.T) {
 		t.Fatal("assertion values leaked")
 	}
 }
+
+func TestUnittestKnownExceptionsAndSetupErrors(t *testing.T) {
+	for _, kind := range []string{"test", "subtest", "setup"} {
+		t.Run(kind, func(t *testing.T) {
+			body := " def test_value(self):\n  raise RuntimeError('private exception')\n"
+			if kind == "subtest" {
+				body = " def test_value(self):\n  with self.subTest(value=1):\n   raise RuntimeError('private exception')\n"
+			}
+			if kind == "setup" {
+				body = " @classmethod\n def setUpClass(cls):\n  raise RuntimeError('private exception')\n def test_value(self): pass\n"
+			}
+			root, w := nativeFixture(t, "unittest", map[string]string{"test_errors.py": "import unittest\nclass Errors(unittest.TestCase):\n" + body}, []string{"-m", "unittest", "test_errors"})
+			e, err := Discover(context.Background(), root, w, model.Context{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			out, runErr := Execute(context.Background(), root, w, model.Context{}, nil)
+			if runErr == nil || out.ExitCode == 0 {
+				t.Fatal("exception became a pass")
+			}
+			result, err := nativerunner.Reconcile(bytes.NewReader(out.Stdout), "unittest", resultVersion(e), e.Units)
+			if kind == "setup" {
+				if err == nil {
+					t.Fatal("setup failure claimed complete test inventory")
+				}
+			} else if err != nil || !result.Failed {
+				t.Fatalf("known case exception not complete failure: %v", err)
+			}
+			if bytes.Contains(out.Stdout, []byte("private exception")) {
+				t.Fatal("exception contents leaked")
+			}
+		})
+	}
+}
 func TestCollectionRejectsUnknownFlagsPathsAndContext(t *testing.T) {
 	for runner, commands := range map[string][][]string{"node-test": {{"--test"}, {"--test", "--watch", "a.mjs"}, {"--test", "../a.mjs"}, {"--test", "--test-concurrency=0", "a.mjs"}}, "unittest": {{"-m", "unittest", "--locals"}, {"-m", "unittest", "discover", "tests"}, {"-m", "unittest", "--unknown"}}, "jest": {{"--watch"}, {"--testNamePattern"}}, "playwright": {{"test", "--ui"}, {"test", "--shard=1/2"}}} {
 		tool := map[string]string{"node-test": "node", "unittest": "python3", "jest": "jest", "playwright": "playwright"}[runner]
