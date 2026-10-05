@@ -107,7 +107,7 @@ func TestFailedAuditInvalidatesPreviouslyAuthenticatedPass(t *testing.T) {
 	if err := cache.store(context.Background(), stale); err != nil {
 		t.Fatal(err)
 	}
-	cache.root.Close()
+	cache.cache.Close()
 	options.NoReuse = true
 	audit, err := Run(context.Background(), request, options)
 	if err != nil || audit.Passed || audit.Mode != "executed" || audit.ExitCode != 1 {

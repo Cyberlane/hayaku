@@ -8,7 +8,7 @@ of a minimal set or of software correctness.
 
 Current native metadata does not establish complete runtime influence.
 Programs can read files, use services, invoke subprocesses or share state.
-Consequently native planning produces **shadow proposals** and executable
+Consequently ordinary native planning produces **shadow proposals** and executable
 **full-run commands**. There is no native skip-anyway switch, confidence threshold,
 configuration declaration or mutation score that enables production omission.
 Unknown paths, old/new graph gaps, discovery errors and unqualified adapters
@@ -67,6 +67,29 @@ Audit mode removes the previous receipt before execution. Failed/interrupted
 audits cannot leave the prior pass authorized; output-digest mismatch invalidates
 qualification. A cache hit certifies the functional outcome of this bounded
 contract, not host-load timing or another command. See [capsules](capsules.md).
+
+## Separate restricted native group contract
+
+The unreleased `native` command adds actual Linux Go package reuse for a
+statically checked pure subset. The shared backend enforces copied files,
+explicit args/env, Landlock/seccomp and container restrictions. A fresh platform
+probe is required even when every test group reuses. Only the provider's full
+source whitelist can supply a qualification proof; no declaration, trace or
+coverage threshold does so. Unsupported code/platforms run complete original-host
+package commands. Incomplete native evidence broadens to those commands;
+cancellation/source drift prevents aggregate success. Failed assertions are failures.
+
+Native clocks, entropy and metadata probes are not virtualized. Containment alone
+cannot qualify arbitrary programs. The Go subset excludes observable access to
+those inputs; trusted runtime/testing internals remain part of its contract.
+Receipts bind compiled bytes, proof, exact case inventory, args/env, backend and
+live platform identities. Only complete all-cases-passed outcomes mint them.
+Invocation-wide audit revokes the native receipt domain before capture/build.
+
+This separate contract does not authorize omission from existing native plans,
+claim equivalence with arbitrary runner commands or provide independent production
+acceptance. Other native languages and imported Go dependency closures remain
+unqualified. See [native groups](native-groups.md) for exact scope and limitations.
 
 ## Monorepo provenance and report evidence
 

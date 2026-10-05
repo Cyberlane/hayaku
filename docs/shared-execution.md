@@ -1,7 +1,7 @@
 # Shared analysis, runner integration and group execution
 
-This describes unreleased local implementation. It does not grant native
-affected-only execution or establish consumer CI acceptance.
+This describes unreleased local implementation. It does not grant omission from ordinary native
+plans or establish consumer CI acceptance.
 
 Hayaku shares graph selection and effect handling across languages, and process
 completion and normalized outcome validation across runners. Language semantics,
@@ -128,5 +128,13 @@ remains disabled pending ACL qualification.
 
 The existing graph oracle, monotonicity fuzzing, fault corpus and capsule capability
 adversaries remain required. Finite fixture success does not establish arbitrary
-language/runtime soundness. Native omission still needs an independently reviewed
+language/runtime soundness. General native omission still needs an independently reviewed
 algorithm, enforced native input/isolation boundaries and runner/context acceptance.
+
+The unreleased [restricted native groups](native-groups.md) command adds a
+framework-independent Linux enforcement/receipt engine. Its Go boundary owns
+source qualification, compilation, inventory and native result decoding. The
+platform worker has no runner-specific logic. The private authenticated receipt
+store is common to this backend and WASI, with separate domains. This adds actual
+native reuse for the supported pure Go subset; it leaves ordinary native plan
+full gates and other language qualification unchanged.

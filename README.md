@@ -20,6 +20,11 @@ suites run with controlled inputs and restricted access to your computer. Reuse
 requires unchanged code, inputs, and execution settings; it does not replace or
 prove the result of your normal test suite.
 
+**Unreleased source work adds restricted native Go group reuse.** `hayaku native`
+can reuse unchanged passes for a statically checked pure subset under a Linux
+input boundary. Unsupported groups execute in full. This does not replace normal
+native CI gates; see [native groups](docs/native-groups.md).
+
 ## Install
 
 Download an archive from [Releases](https://github.com/Cyberlane/hayaku/releases/latest).

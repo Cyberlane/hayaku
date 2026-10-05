@@ -40,7 +40,7 @@ func Run(ctx context.Context, request Request, options Options) (Result, error) 
 	result := Result{Schema: 1, Name: request.Name, Mode: "executed", Key: key, ModuleDigest: digest(request.Module), InputDigest: inputs, BackendDigest: backend, InputFiles: len(request.Files), Gaps: []string{}, Reason: "execution-incomplete"}
 	cache, cacheErr := openPassCache(options.CacheDir)
 	if cache != nil {
-		defer cache.root.Close()
+		defer cache.cache.Close()
 	}
 	previous, status := cache.load(result, limits.OutputBytes)
 	if cacheErr != nil {

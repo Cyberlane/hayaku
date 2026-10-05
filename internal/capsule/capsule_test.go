@@ -211,7 +211,7 @@ func TestCacheTamperingForeignAuthorityAndAudit(t *testing.T) {
 	if err := cache.store(ctx, wrong); err != nil {
 		t.Fatal(err)
 	}
-	cache.root.Close()
+	cache.cache.Close()
 	audit, err = Run(ctx, request, options)
 	if err == nil || audit.Passed || audit.Qualified || audit.Reason != "audit-outcome-mismatch" {
 		t.Fatalf("mismatched audit=%+v err=%v", audit, err)
