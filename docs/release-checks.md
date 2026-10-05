@@ -11,7 +11,7 @@ source immutability and malformed/conflicting native results. Generic Node
 checks preserve full execution and reject interpreter/dependency drift.
 
 Release CI explicitly selects installed Xcode 26.3 for Apple fixtures, matching
-Neiro's intended CI line. Its workflow definition is not remote acceptance.
+Neiro's intended CI line. Published workflow results are recorded below.
 Actionlint and diff/format checks pass. Native omission remains disabled.
 
 Mori 0.35.0 (65f1dba5fde6, schema23/normalization14) supplied advisory review:
@@ -35,14 +35,41 @@ inclusion were false. No finding was suppressed or acknowledged.
 The initial v0.5.0 tag did not publish: the new Xcode 26.3 job rejected a newer
 xcresulttool schema and a compiler above the original executable-size limit.
 v0.5.1 corrects both, prepares bound empty Xcode package/workspace metadata
-directories and keeps that failed tag immutable. Publication and
-downloaded-artifact acceptance will be recorded after the corrected release.
+directories and keeps that failed tag immutable.
 The v0.5.1 compatibility patch again passed full tests/races/vet and the native
 Xcode race fixture locally. Its Mori changed-code scan covered 8/8 supported
 changed files and 119/119 supported files with zero focused groups, no warnings
 or parsing diagnostics, and no truncation.
 
-Neiro consumer activation and CI acceptance remain separate checks.
+The final metadata correction again passed full tests/races/vet and installed
+Apple fixtures. Mori covered 3/3 changed supported files and 119/119 supported
+files with zero focused groups, no warnings or parsing diagnostics, complete
+analysis and passed immutable staged advisory policy.
+
+## Published acceptance, 2026-10-05
+
+The signed `v0.5.1` tag binds source
+`2e1eca85736eda5d55f7a50bd08a200aa0b829f3`.
+[Main CI](https://github.com/Cyberlane/hayaku/actions/runs/37275495026) passed
+all 13 jobs. The [release workflow](https://github.com/Cyberlane/hayaku/actions/runs/37276129391)
+independently passed all 13 verification jobs and publication, including installed
+Xcode 26.3 / Swift 6.2 fixtures, full tests/races/vet and the existing native
+runner/WASI checks. The [public release](https://github.com/Cyberlane/hayaku/releases/tag/v0.5.1)
+contains six archives, `SHA256SUMS` and `manifest.json`.
+
+All six downloaded public archives matched their checksum/size/source manifest
+and contained Apple documentation and license notices. Neiro's checksum-pinned
+installer extracted the public Darwin arm64 CLI; its embedded Go build information
+reports module v0.5.1, the exact tagged source and `vcs.modified=false`. Version and
+catalog checks passed. Publication smoke-tested the extracted Linux amd64 CLI;
+other platforms have cross-compilation coverage rather than native acceptance.
+
+Local committed-Neiro source acceptance on Darwin arm64 / Xcode 27.0 reconciled
+253 Swift XCTest cases across 11 test targets, all 34 app/UI cases (20 app, 14 UI)
+on iPhone 16 Pro Max / iOS 26.3, and four full service/protocol commands with bound
+Node 26.5.0 inputs. These source-CLI checks retain full suites and do not establish
+native omission, representative savings or hosted Neiro CI acceptance. Neiro's
+public-binary wrapper acceptance is a separate consumer check.
 
 # Historical v0.4.0 release checks
 

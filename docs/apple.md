@@ -1,6 +1,6 @@
 # Apple XCTest integration
 
-Hayaku 0.5.1 supports installed Darwin Swift 6.0–6.4 XCTest and Xcode's installed Xcode 26.3/27.0 xcresulttool exports. It never installs a toolchain or fetches dependencies. Native full suites remain required; target proposals and shadow results are diagnostic.
+Hayaku 0.5.1 supports installed Darwin Swift 6.0–6.4 XCTest and installed Xcode 26.3/27.0 xcresulttool exports. It never installs a toolchain or fetches dependencies. Native full suites remain required; target proposals and shadow results are diagnostic.
 
 ## SwiftPM
 
