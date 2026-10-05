@@ -36,7 +36,7 @@ func validateVitestRunner(root string, w model.Workspace) error {
 		entry = filepath.Join("jest", "bin", "jest.js")
 	case "playwright":
 		entry = filepath.Join("@playwright", "test", "cli.js")
-	case "node-test":
+	case "node-test", "command":
 		expected, err := filepath.EvalSymlinks(w.NodeRuntime.Node)
 		if err != nil || actual != expected {
 			return errors.New("configured Node runner differs from bound runtime")

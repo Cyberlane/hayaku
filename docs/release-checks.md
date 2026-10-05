@@ -1,4 +1,41 @@
-# v0.4.0 release checks
+# v0.5.0 release checks
+
+## Local source acceptance, 2026-10-05
+
+Full `go test -count=1 ./...`, `go test -race -count=1 ./...` and
+`go vet ./...` passed on Darwin arm64 with Go 1.27.1. Installed Apple
+fixture checks use Xcode 27.0 / Apple Swift 6.4 and explicitly enabled native
+SwiftPM/Xcode tests. Independent cases cover target impact, full commands,
+shadow runtime misses, new/deleted resources, skipped cases, assertion failures,
+source immutability and malformed/conflicting native results. Generic Node
+checks preserve full execution and reject interpreter/dependency drift.
+
+Release CI explicitly selects installed Xcode 26.3 for Apple fixtures, matching
+Neiro's intended CI line. Its workflow definition is not remote acceptance.
+Actionlint and diff/format checks pass. Native omission remains disabled.
+
+Mori 0.35.0 (65f1dba5fde6, schema23/normalization14) supplied advisory review:
+`mori scan --profile review --threshold 0.85 --min-tokens 40 --max-groups 250
+--max-occurrences 10 --require-coverage --changed-since HEAD --format agent
+--output REPORT.json .`. `.gitignore` was honored with no project config,
+baseline or suppression. All 119 supported files and 22 changed supported files
+were analyzed: 12 focused groups, 90 total location pairs, no warnings or parse
+diagnostics, and no truncation. Seventeen distinct source ranges were inspected;
+fixture/Git helpers are intentional small similarities, and Swift/Cargo walks
+have independent ownership and containment contracts. Thirteen files have no
+retained fragments (one type-only file, twelve below the token floor). Unsupported
+Markdown, workflows and Xcode project assets were checked separately.
+
+The canonical immutable staged Mori check used the same bounds with
+`review staged check --policy advisory`: all 119 supported files and 24 changed
+files were analyzed, with 12 focused groups / 15 location pairs, no warnings,
+complete analysis and passed advisory policy. Working-tree and untracked
+inclusion were false. No finding was suppressed or acknowledged.
+
+Publication and downloaded-artifact acceptance will be recorded after release.
+Neiro consumer activation and CI acceptance remain separate checks.
+
+# Historical v0.4.0 release checks
 
 ## Local source acceptance, 2026-10-03
 

@@ -13,7 +13,9 @@ import (
 	"github.com/Cyberlane/hayaku/internal/adapter"
 	goprovider "github.com/Cyberlane/hayaku/internal/adapter/golang"
 	nativeprovider "github.com/Cyberlane/hayaku/internal/adapter/native"
+	swiftprovider "github.com/Cyberlane/hayaku/internal/adapter/swift"
 	vitestprovider "github.com/Cyberlane/hayaku/internal/adapter/vitest"
+	xcodeprovider "github.com/Cyberlane/hayaku/internal/adapter/xcode"
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/process"
@@ -87,7 +89,7 @@ func executeMode(ctx context.Context, root string, c model.Config, p model.Plan,
 	}
 	executionRoot := root
 	revalidate := func() error { return validateExecution(ctx, root, c, p) }
-	if hasNodeRuntime(c) {
+	if hasNodeRuntime(c) || hasApple(c) {
 		pair, err := snapshot.Capture(ctx, root, p.Candidate, p.Candidate)
 		if err != nil {
 			return result, err
@@ -173,7 +175,16 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 			var runtimeTrace *vitestprovider.Trace
 			var output process.Output
 			var runErr error
-			if i == len(commands)-1 && w.Adapter == "vitest" {
+			var swiftResult *nativerunner.Result
+			if i == len(commands)-1 && w.Adapter == "xcode" {
+				var sr nativerunner.Result
+				output, sr, runErr = xcodeprovider.Execute(ctx, root, w, c.Context)
+				swiftResult = &sr
+			} else if i == len(commands)-1 && w.Adapter == "swift" {
+				var sr nativerunner.Result
+				output, sr, runErr = swiftprovider.Execute(ctx, root, w, c.Context, workspaceUnits, proposal)
+				swiftResult = &sr
+			} else if i == len(commands)-1 && w.Adapter == "vitest" {
 				var selected []model.Unit
 				if proposal {
 					selected = workspaceUnits
@@ -201,6 +212,10 @@ func runWorkspaces(ctx context.Context, root string, c model.Config, units []mod
 				output, runErr = process.Run(ctx, cmd, dir, executionEnv(c.Context))
 			}
 			entry := CommandResult{Workspace: w.ID, Command: cmd, ExitCode: output.ExitCode, Duration: output.Duration, OutputBytes: len(output.Stdout) + len(output.Stderr), Complete: runErr == nil, RuntimeTrace: runtimeTrace}
+			if swiftResult != nil {
+				entry.Native = swiftResult
+				entry.Complete = output.Completed && swiftResult.Complete && (output.ExitCode == 0 || swiftResult.Failed)
+			}
 			if i == len(commands)-1 && w.Adapter == "go" {
 				expected := []string{}
 				for _, u := range workspaceUnits {
@@ -301,7 +316,7 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		}
 	}()
 	for _, w := range c.Workspaces {
-		if w.Adapter != "go" && (w.Adapter != "vitest" || w.NodeRuntime == nil) && !nativeResultRunner(w.Adapter) {
+		if w.Adapter != "go" && w.Adapter != "swift" && (w.Adapter != "vitest" || w.NodeRuntime == nil) && !nativeResultRunner(w.Adapter) {
 			return result, errors.New("shadow requires a native outcome reconciler; keep other full gates")
 		}
 	}
@@ -363,6 +378,16 @@ func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (res
 		}
 	}
 	for _, cmd := range result.Full.Commands {
+		if cmd.Native != nil {
+			for _, test := range cmd.Native.Tests {
+				if proposedPackages[test.Unit] {
+					id := test.Unit + "/" + test.Test
+					if _, seen := selected[id]; !seen {
+						result.Inconsistencies = append(result.Inconsistencies, id)
+					}
+				}
+			}
+		}
 		if cmd.Vitest != nil {
 			for _, test := range cmd.Vitest.Tests {
 				if proposedPackages[test.Unit] {
@@ -465,10 +490,19 @@ func outcomes(execution Execution) map[string]string {
 }
 
 func unitOutcomeID(unit model.Unit) string {
-	if unit.Kind == "vitest-file" || strings.HasSuffix(unit.Kind, "-file") {
+	if unit.Kind == "vitest-file" || unit.Kind == "swift-target" || strings.HasSuffix(unit.Kind, "-file") {
 		return unit.ID
 	}
 	return unit.Workspace + ":" + unit.Selector
+}
+
+func hasApple(c model.Config) bool {
+	for _, w := range c.Workspaces {
+		if w.Adapter == "swift" || w.Adapter == "xcode" {
+			return true
+		}
+	}
+	return false
 }
 
 func nativeResultRunner(id string) bool {

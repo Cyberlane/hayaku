@@ -13,6 +13,8 @@ JavaScript, Python, browser, or service tests based on a recommendation, a trace
 or a confidence score. When information is incomplete, it keeps the full run or
 stops planning. See [how test decisions work](docs/safety.md).
 
+**v0.5.0 adds SwiftPM XCTest target proposals and full Xcode result reconciliation.** Installed Node dependencies can also be bound to an unchanged generic full command, including custom Cloudflare test pools. See [Apple integration](docs/apple.md) and the [release notes](docs/releases/v0.5.0.md). Native full suites remain required.
+
 **v0.4.0 can reuse passing results for separate WASI suites.** These WebAssembly
 suites run with controlled inputs and restricted access to your computer. Reuse
 requires unchanged code, inputs, and execution settings; it does not replace or
@@ -27,8 +29,8 @@ the source and build, and license notices.
 For macOS with Apple Silicon:
 
 ```sh
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.4.0/hayaku-darwin-arm64.tar.gz
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.4.0/SHA256SUMS
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.5.0/hayaku-darwin-arm64.tar.gz
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.5.0/SHA256SUMS
 grep '  hayaku-darwin-arm64.tar.gz$' SHA256SUMS | shasum -a 256 -c -
 tar -xzf hayaku-darwin-arm64.tar.gz
 mkdir -p "$HOME/.local/bin"
@@ -47,7 +49,7 @@ identity. See [download verification and build details](docs/distribution.md).
 With Go 1.26 or newer installed:
 
 ```sh
-go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.4.0
+go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.5.0
 ```
 
 No npm package, account, or background service is needed. Git and your test tools

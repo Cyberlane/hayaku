@@ -39,7 +39,8 @@ contexts reject even with an accepted Vite pair.
 | --- | --- | --- |
 | Maven, Gradle, sbt | Java/Kotlin JUnit/TestNG; Scala ScalaTest/MUnit | Preserved original full-scope command; applicable JUnit import |
 | .NET | C#/F# xUnit/NUnit/MSTest | Preserved full command; supported TRX/JUnit import |
-| Swift, Xcode | Swift Testing/XCTest; Objective-C XCTest | Preserved full command; Swift Testing JSONL or exported JUnit import |
+| SwiftPM | XCTest on Darwin Swift 6.0–6.4 | Target proposals; independent case list and serial XCTest terminal outcomes; full run required |
+| Xcode | Swift/Objective-C XCTest | Full enumeration and xcresulttool schema 0.4.0 reconciliation; one plan/device/configuration |
 | Ruby, PHP | RSpec, Minitest, PHPUnit | Preserved full command; applicable JUnit import |
 | Dart, Flutter | `package:test`, `flutter_test` | Preserved full command; applicable JUnit import |
 | C/C++ | GoogleTest, Catch2, CTest | Preserved full command; applicable JUnit import |

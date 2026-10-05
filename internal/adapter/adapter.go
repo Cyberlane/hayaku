@@ -13,6 +13,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/adapter/native"
 	"github.com/Cyberlane/hayaku/internal/adapter/nextest"
 	"github.com/Cyberlane/hayaku/internal/adapter/pytest"
+	swiftprovider "github.com/Cyberlane/hayaku/internal/adapter/swift"
 	"github.com/Cyberlane/hayaku/internal/adapter/vitest"
 	"github.com/Cyberlane/hayaku/internal/catalog"
 	"github.com/Cyberlane/hayaku/internal/config"
@@ -50,6 +51,8 @@ func Discover(ctx context.Context, root string, w model.Workspace, c model.Conte
 		return pytest.Discover(ctx, root, w, c)
 	case "vitest":
 		return vitest.Discover(ctx, root, w, c)
+	case "swift":
+		return swiftprovider.Describe(ctx, root, w, c)
 	case "node-test", "unittest", "jest", "playwright":
 		return native.Discover(ctx, root, w, c)
 	}
@@ -74,6 +77,11 @@ func fullSuite(ctx context.Context, root string, w model.Workspace) (model.Evide
 			return err
 		}
 		if d.IsDir() {
+			// Installed dependencies are bound independently and may contain links.
+			// This coarse fallback always retains its entire original suite.
+			if d.Name() == "node_modules" {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		if !d.Type().IsRegular() {
@@ -110,6 +118,8 @@ func Proposal(w model.Workspace, units []model.Unit) (model.Command, error) {
 		cmd, err = pytest.Proposal(w, units)
 	case "vitest":
 		cmd, err = vitest.Proposal(w, units)
+	case "swift":
+		cmd, err = swiftprovider.Proposal(w, units)
 	case "node-test", "unittest", "jest", "playwright":
 		cmd, err = native.Proposal(w, units)
 	default:
@@ -132,5 +142,5 @@ func Normalize(e *model.Evidence) {
 }
 
 func ImplementationVersions() map[string]string {
-	return map[string]string{"go": "go-native-v1", "cargo": "cargo-native-v1", "nextest": nextest.Version, "pytest": "pytest-native-v1", "vitest": "vitest-vite-graph-v1", "node-test": "native-files-v1", "unittest": "native-files-v1", "jest": "native-files-v1", "playwright": "native-files-v1", "fallback": "full-suite-v1"}
+	return map[string]string{"go": "go-native-v1", "cargo": "cargo-native-v1", "nextest": nextest.Version, "pytest": "pytest-native-v1", "vitest": "vitest-vite-graph-v1", "swift": swiftprovider.Version, "xcode": "xcode-xctest-v1", "node-test": "native-files-v1", "unittest": "native-files-v1", "jest": "native-files-v1", "playwright": "native-files-v1", "fallback": "full-suite-v1"}
 }

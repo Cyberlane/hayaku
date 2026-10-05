@@ -21,6 +21,7 @@ type Outcome struct {
 	Action string `json:"action"`
 }
 type Result struct {
+	Complete        bool      `json:"complete,omitempty"`
 	Units           []Outcome `json:"units"`
 	Tests           []Outcome `json:"tests"`
 	Missing         []string  `json:"missing"`

@@ -147,6 +147,32 @@ jobs:
       - name: Verify native discovery, execution and outcomes
         run: go test -race -count=1 ./internal/adapter/native ./internal/adapter/nextest ./internal/adapter/pytest ./internal/runner/native ./internal/app
 
+  apple:
+    name: Native SwiftPM and Xcode XCTest
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      HAYAKU_SWIFT_BINARY: /usr/bin/swift
+      HAYAKU_XCODE_BINARY: /usr/bin/xcodebuild
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+          cache: false
+      - name: Prepare checksum-pinned Go dependencies
+        run: GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download
+      - name: Record installed Apple context
+        run: |
+          xcodebuild -version
+          swift --version
+      - name: Verify target proposals, required full runs and native failures
+        run: go test -race -count=1 ./internal/adapter/swift ./internal/adapter/xcode ./internal/runner/native ./internal/app
+
   capsule:
     name: Hayaku WASI reuse pilot on ${{ matrix.runner }}
     strategy:

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	goprovider "github.com/Cyberlane/hayaku/internal/adapter/golang"
+	swiftprovider "github.com/Cyberlane/hayaku/internal/adapter/swift"
 	"io"
 	"os"
 	"os/exec"
@@ -16,6 +17,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/noderuntime"
+	"github.com/Cyberlane/hayaku/internal/process"
 )
 
 // ToolIdentity binds advisory cache data to actual installed executable bytes,
@@ -74,6 +76,27 @@ func toolsIdentity(ctx context.Context, c model.Config, root string) (string, er
 	}
 	values := map[string]string{}
 	for _, w := range c.Workspaces {
+		if w.Adapter == "swift" || w.Adapter == "xcode" {
+			id, err := swiftprovider.RuntimeIdentity(ctx, w.SwiftRuntime)
+			if err != nil {
+				return "", err
+			}
+			values[w.ID+"\x00swift-runtime"] = id
+			for _, args := range [][]string{{"--find", "swift"}, {"--find", "swiftc"}, {"--find", "xcodebuild"}, {"--find", "xcresulttool"}, {"--show-sdk-path"}, {"--show-sdk-version"}} {
+				out, err := process.Run(ctx, model.Command{Dir: ".", Executable: "/usr/bin/xcrun", Args: args}, root, c.Context.Env)
+				if err != nil {
+					return "", errors.New("cannot establish installed Swift compiler/SDK context")
+				}
+				value := strings.TrimSpace(string(out.Stdout))
+				if args[0] == "--find" {
+					value, err = toolIdentityAt(value, root)
+					if err != nil {
+						return "", err
+					}
+				}
+				values[w.ID+"\x00"+strings.Join(args, " ")] = value
+			}
+		}
 		if w.NodeRuntime != nil {
 			if err := validateVitestRunner(root, w); err != nil {
 				return "", err

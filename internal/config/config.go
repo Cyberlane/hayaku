@@ -118,8 +118,8 @@ func Validate(c model.Config) error {
 			return fmt.Errorf("workspace %s requires an adapter", w.ID)
 		}
 		if w.NodeRuntime != nil {
-			if w.Adapter != "vitest" && w.Adapter != "node-test" && w.Adapter != "jest" && w.Adapter != "playwright" {
-				return errors.New("node_runtime requires a supported native Node runner")
+			if w.Adapter != "vitest" && w.Adapter != "node-test" && w.Adapter != "jest" && w.Adapter != "playwright" && w.Adapter != "command" {
+				return errors.New("node_runtime requires a supported Node runner or full command")
 			}
 			if len(w.Prerequisites) != 0 {
 				return errors.New("bound native Node runtime does not support prerequisites or generated source inputs; use an independently captured envelope")
@@ -131,6 +131,11 @@ func Validate(c model.Config) error {
 			}
 			if filepath.Base(w.NodeRuntime.Modules) != "node_modules" {
 				return errors.New("node_runtime modules must name a node_modules directory")
+			}
+		}
+		if w.SwiftRuntime != nil {
+			if w.Adapter != "swift" || !filepath.IsAbs(w.SwiftRuntime.Dependencies) || filepath.Clean(w.SwiftRuntime.Dependencies) != w.SwiftRuntime.Dependencies || strings.ContainsAny(w.SwiftRuntime.Dependencies, "\x00\n") {
+				return errors.New("swift_runtime requires a Swift workspace and a clean absolute provisioned dependency path")
 			}
 		}
 		commands := append([]model.Command{w.Command}, w.Prerequisites...)

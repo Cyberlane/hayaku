@@ -10,15 +10,22 @@ type Command struct {
 }
 
 type Workspace struct {
-	ID            string       `json:"id"`
-	Root          string       `json:"root"`
-	Adapter       string       `json:"adapter"`
-	Command       Command      `json:"command"`
-	Prerequisites []Command    `json:"prerequisites,omitempty"`
-	Patterns      []string     `json:"patterns,omitempty"`
-	BuildFlags    []string     `json:"build_flags,omitempty"`
-	Inputs        []string     `json:"inputs,omitempty"`
-	NodeRuntime   *NodeRuntime `json:"node_runtime,omitempty"`
+	ID            string        `json:"id"`
+	Root          string        `json:"root"`
+	Adapter       string        `json:"adapter"`
+	Command       Command       `json:"command"`
+	Prerequisites []Command     `json:"prerequisites,omitempty"`
+	Patterns      []string      `json:"patterns,omitempty"`
+	BuildFlags    []string      `json:"build_flags,omitempty"`
+	Inputs        []string      `json:"inputs,omitempty"`
+	NodeRuntime   *NodeRuntime  `json:"node_runtime,omitempty"`
+	SwiftRuntime  *SwiftRuntime `json:"swift_runtime,omitempty"`
+}
+
+// SwiftRuntime selects only provisioned dependency state, never build products.
+// Dependencies contains checkouts, repositories and workspace-state.json.
+type SwiftRuntime struct {
+	Dependencies string `json:"dependencies"`
 }
 
 // NodeRuntime declares preinstalled, content-bound runtime inputs. Hayaku never

@@ -27,7 +27,7 @@ func TestDecodeStrictPolicy(t *testing.T) {
 	}
 }
 
-func TestNodeRuntimeConfigurationIsExplicitAndVitestOnly(t *testing.T) {
+func TestNodeRuntimeConfigurationIsExplicitAndRunnerBound(t *testing.T) {
 	c, err := Decode(strings.NewReader(valid))
 	if err != nil {
 		t.Fatal(err)
@@ -40,6 +40,10 @@ func TestNodeRuntimeConfigurationIsExplicitAndVitestOnly(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := Decode(strings.NewReader(string(encoded))); err != nil {
+		t.Fatal(err)
+	}
+	c.Workspaces[0].Adapter = "command"
+	if err := Validate(c); err != nil {
 		t.Fatal(err)
 	}
 	for _, change := range []func(*model.Config){
@@ -73,4 +77,27 @@ func FuzzDecode(f *testing.F) {
 			}
 		}
 	})
+}
+
+func TestSwiftRuntimeIsExplicitAndSwiftOnly(t *testing.T) {
+	c, err := Decode(strings.NewReader(valid))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.Workspaces[0].Adapter = "swift"
+	c.Workspaces[0].SwiftRuntime = &model.SwiftRuntime{Dependencies: filepath.Join(t.TempDir(), "dependencies")}
+	if err := Validate(c); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"relative", "/tmp/../escape", "/tmp/line\nvalue"} {
+		c.Workspaces[0].SwiftRuntime.Dependencies = path
+		if err := Validate(c); err == nil {
+			t.Fatal("unbound Swift dependency path accepted")
+		}
+	}
+	c.Workspaces[0].SwiftRuntime.Dependencies = filepath.Join(t.TempDir(), "dependencies")
+	c.Workspaces[0].Adapter = "command"
+	if err := Validate(c); err == nil {
+		t.Fatal("Swift runtime mounted in unrelated adapter")
+	}
 }

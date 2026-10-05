@@ -1,6 +1,6 @@
 # Distribution and releases
 
-v0.4.0 adds deterministic WASI suite execution and authenticated whole-suite reuse, explicit generated/linked input envelopes, native runner integrations and cost comparison tools. Native affected-test proposals retain the original full suite; a WASI result does not qualify an equivalent native command. Download binaries from [GitHub releases](https://github.com/Cyberlane/hayaku/releases).
+v0.5.0 adds [Apple XCTest integration](apple.md) and bound installed Node runtimes for full generic commands. v0.4.0 introduced deterministic WASI suite execution and authenticated whole-suite reuse, explicit generated/linked input envelopes, native runner integrations and cost comparison tools. Native affected-test proposals retain the original full suite; a WASI result does not qualify an equivalent native command. Download binaries from [GitHub releases](https://github.com/Cyberlane/hayaku/releases).
 
 ## Local archive builder
 
