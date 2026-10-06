@@ -173,9 +173,8 @@ The source includes pinned development fixtures and CI matrices. Local fixture s
 ## Isolated development acceptance progress
 
 The approved [runner provisioning](runner-provisioning.md) checkpoint records
-33 of 40 original framework/platform healthy and runtime-fault baselines: seventeen
-on macOS and sixteen on Linux. ScalaTest, MUnit and Bazel C++ baselines remain pending on both platforms;
-Flutter widget controls passed on macOS and remain pending on Linux. PHP PHAR controls do not cover
+39 of 40 original framework/platform healthy and runtime-fault baselines: twenty
+on macOS and nineteen on Linux. Linux Flutter widget controls remain pending. PHP PHAR controls do not cover
 Composer autoload. These records qualify no discovery, affected execution or
 cache reuse; the corresponding language/runtime/acceptance cards remain open.
 

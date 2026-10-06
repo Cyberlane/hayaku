@@ -77,9 +77,10 @@ used for those observations; future invocations must verify their actual bytes.
 At this checkpoint, macOS original full-command healthy and seeded runtime-fault
 baselines passed for Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter,
 Gradle/TestNG, xUnit, NUnit, MSTest, RSpec, Minitest, PHPUnit, Bun, Deno, Dart/package:test,
-GoogleTest, Catch2, CTest and Flutter widget tests (17 of 20 named profiles). Linux Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter, Gradle/TestNG, xUnit, NUnit,
-MSTest, RSpec, Minitest, PHPUnit, Bun, Deno, Dart/package:test, GoogleTest, Catch2 and CTest baselines also
-passed (16 of 20). Rust/Nextest baselines passed on actual macOS and Linux, and all four exact Vitest/Vite
+GoogleTest, Catch2, CTest, Flutter widget tests, ScalaTest, MUnit and Bazel C++
+(20 of 20 named profiles). Linux Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter, Gradle/TestNG, xUnit, NUnit,
+MSTest, RSpec, Minitest, PHPUnit, Bun, Deno, Dart/package:test, GoogleTest, Catch2,
+CTest, ScalaTest, MUnit and Bazel C++ baselines also passed (19 of 20). Rust/Nextest baselines passed on actual macOS and Linux, and all four exact Vitest/Vite
 pairs passed macOS baselines. The Deno record distinguishes an earlier type-check
 failure from the corrected runtime assertion failure. The initial Catch2 exit
 oracle, signed NuGet archive/content-hash distinction, PHP extraction/configuration
