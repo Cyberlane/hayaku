@@ -90,8 +90,16 @@ The source and tests define current behavior. “Native” below means installed
   validation and resource transport as controlled helpers. Independent actual
   C and Rust probes cover file/process/network enforcement, exact output limits,
   aggregate inputs, cancellation and source/copy drift. Raw operational results
-  have no decoder, cache, proof or receipt authority; dynamic runtimes remain a
-  separate unfinished contract. Final composition checks passed.
+  have no decoder, cache, proof or receipt authority. Final composition checks
+  passed.
+- Restricted dynamic Linux transport captures the installed ELF loader and
+  library closure, enforces executable mapping provenance, and rejects JIT and
+  unclosed loader modes. Independent actual C and configured jitless Node
+  boundary tests passed normal/race/vet, including typed cancellation, drift,
+  output limits and cleanup. Whole repository normal/race/vet composition passed.
+  Manual-loader startup differs from ordinary Node startup; these raw results
+  grant no runtime equivalence, provider qualification or receipt authority.
+  See [operational dynamic transport](native-groups.md#operational-dynamic-program-transport).
 - SwiftPM/Xcode closure APIs now bind compiler bytes, source/resources, build
   producers and private test products with fresh pre/post invocation checks.
   Actual installed normal/race tests passed within original fixture deadlines.
@@ -173,8 +181,10 @@ The source includes pinned development fixtures and CI matrices. Local fixture s
 ## Isolated development acceptance progress
 
 The approved [runner provisioning](runner-provisioning.md) checkpoint records
-39 of 40 original framework/platform healthy and runtime-fault baselines: twenty
-on macOS and nineteen on Linux. Linux Flutter widget controls remain pending. PHP PHAR controls do not cover
+40 of 40 original framework/platform healthy and runtime-fault baselines: twenty
+on each of macOS and Linux. Linux Flutter uses a derived ARM candidate built from
+verified official framework, engine and package components, rather than an official
+prepacked ARM SDK. PHP PHAR controls do not cover
 Composer autoload. These records qualify no discovery, affected execution or
 cache reuse; the corresponding language/runtime/acceptance cards remain open.
 

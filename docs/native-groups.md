@@ -184,6 +184,41 @@ outside qualification. `Execute` rejects every nonnil envelope before
 provider authority, cache lookup or audit. This API does not qualify an arbitrary runner or make
 an installed static CLI's process orchestration supported.
 
+## Operational dynamic program transport
+
+The internal `CaptureRuntime`, `CaptureDynamicProgram` and `RunDynamicProgram`
+APIs capture a restricted installed Linux ELF runtime and its loader/library
+closure. Loader search paths, preloads, audit hooks, unresolved dependencies and
+unbound libraries are rejected. Dynamic executable files have a 256 MiB bound;
+the combined program, runtime and resources retain the 512 MiB aggregate bound.
+The static program and resource file limits remain unchanged.
+
+The worker permits executable mappings only from the bound program, loader and
+libraries, with read/execute permissions. Anonymous executable mappings and
+permission transitions to executable memory are denied. Resources cannot become
+executable. Narrow thread creation supports the tested runtime without granting
+arbitrary subprocess execution. A narrowly scoped `FIONBIO` ioctl permits file
+descriptors 0 through 2; it does not attest their current identity or mode.
+Other ioctl operations remain denied. Explicit metadata mutation calls are
+denied; writes to admitted scratch files can naturally alter their metadata.
+
+Capture and invocation check source bytes, aliases, file metadata and copied
+transport identity before and after execution. Execution retains the 30-second
+bound, independent bounded post-validation/cleanup and exact raw output limits.
+Failed validation, cancellation or cleanup cannot report complete execution.
+
+Independent actual Linux arm64 tests cover C and explicitly configured jitless
+Node, runtime/resource drift, executable mappings, thread/descriptor behavior,
+loader environment rejection, output/aggregate bounds, cancellation and cleanup.
+Static program, managed child and restricted pure-Go regressions also passed.
+Whole repository normal/race/vet composition checks passed. The Node fixture binds an
+explicit OpenSSL configuration resource; ordinary default startup is separately
+observed to access an unbound configuration and is rejected. Manual-loader
+startup changes Node's executable-path observations. JIT, arbitrary interpreter
+modes, ordinary runtime equivalence and native test-provider qualification remain
+unqualified. These APIs return raw operational results with no decoder, cache,
+proof or receipt authority.
+
 ## Verification
 
 Unit tests cover unexecuted effects, testing-handle/function escapes, unknown

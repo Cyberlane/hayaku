@@ -6,13 +6,17 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -22,7 +26,7 @@ import (
 	"unsafe"
 )
 
-const version = "hayaku-linux-boundary-v4"
+const version = "hayaku-linux-boundary-v6"
 const childOutputLimit = 128 << 10
 const childTimeout = 30 * time.Second
 
@@ -30,12 +34,17 @@ type childContract struct {
 	Args []string `json:"args"`
 	Env  []string `json:"env"`
 }
+type dynamicInvocation struct {
+	Loader          string `json:"loader"`
+	ResourcesDigest string `json:"resources_digest"`
+}
 type invocation struct {
-	Args         []string       `json:"args"`
-	Env          []string       `json:"env"`
-	Envelope     bool           `json:"envelope"`
-	ScratchBytes int64          `json:"scratch_bytes"`
-	Child        *childContract `json:"child,omitempty"`
+	Args         []string           `json:"args"`
+	Env          []string           `json:"env"`
+	Envelope     bool               `json:"envelope"`
+	ScratchBytes int64              `json:"scratch_bytes"`
+	Child        *childContract     `json:"child,omitempty"`
+	Dynamic      *dynamicInvocation `json:"dynamic,omitempty"`
 }
 
 func fail(err error) { fmt.Fprintln(os.Stderr, "boundary unavailable:", err); os.Exit(125) }
@@ -77,6 +86,14 @@ func main() {
 			fail(err)
 		}
 	}
+	if contract.Dynamic != nil {
+		if broker || child || contract.Child != nil {
+			fail(syscall.EINVAL)
+		}
+		if err := prepareDynamicResources(contract.Dynamic.ResourcesDigest); err != nil {
+			fail(err)
+		}
+	}
 	runtime.LockOSThread()
 	if err := restrict(contract, broker, child); err != nil {
 		fail(err)
@@ -99,6 +116,9 @@ func main() {
 	if contract.Envelope {
 		resources = "/input/resources"
 	}
+	if contract.Dynamic != nil {
+		resources = "/resources"
+	}
 	if err := syscall.Chdir(resources); err != nil {
 		fail(err)
 	}
@@ -110,6 +130,10 @@ func main() {
 		program, args, env = "/input/helper", contract.Child.Args, contract.Child.Env
 	} else {
 		fmt.Fprintln(os.Stderr, version)
+	}
+	if contract.Dynamic != nil {
+		program = "/runtime/" + contract.Dynamic.Loader
+		args = append([]string{"--inhibit-cache", "--library-path", "/runtime", "/runtime/#program"}, args...)
 	}
 	fail(syscall.Exec(program, append([]string{program}, args...), env))
 }
@@ -152,6 +176,20 @@ func validValues(args, env []string) bool {
 	return true
 }
 func validInvocation(c invocation) bool {
+	if c.Dynamic != nil {
+		if !c.Envelope || c.Child != nil || !runtimeName(c.Dynamic.Loader) || len(c.Dynamic.ResourcesDigest) != 64 {
+			return false
+		}
+		if _, err := hex.DecodeString(c.Dynamic.ResourcesDigest); err != nil {
+			return false
+		}
+		for _, entry := range c.Env {
+			key, _, _ := strings.Cut(entry, "=")
+			if strings.HasPrefix(key, "LD_") || key == "GLIBC_TUNABLES" {
+				return false
+			}
+		}
+	}
 	return validValues(c.Args, c.Env) && c.ScratchBytes >= 0 && c.ScratchBytes <= 64<<20 && (c.Envelope || c.ScratchBytes == 0) && (c.Child == nil || validValues(c.Child.Args, c.Child.Env))
 }
 func restrict(contract invocation, broker, child bool) error {
@@ -174,6 +212,10 @@ func restrict(contract invocation, broker, child bool) error {
 		resources = "/input/resources"
 		rights |= 4
 	}
+	if contract.Dynamic != nil {
+		resources = "/resources"
+		program = "/runtime/" + contract.Dynamic.Loader
+	}
 	if child {
 		program = "/input/helper"
 	}
@@ -182,6 +224,11 @@ func restrict(contract invocation, broker, child bool) error {
 	}
 	if !broker {
 		if err := allowPath(ruleset, program, rights); err != nil {
+			return err
+		}
+	}
+	if contract.Dynamic != nil {
+		if err := allowPath(ruleset, "/runtime", 1|4|8); err != nil {
 			return err
 		}
 	}
@@ -207,7 +254,7 @@ func restrict(contract invocation, broker, child bool) error {
 	if _, err = call(446, ruleset, 0, 0); err != nil {
 		return err
 	}
-	return filter(broker)
+	return filter(broker, contract.Dynamic != nil)
 }
 
 // The untrusted main receives only anonymous RUN/reply channels. Installation
@@ -498,7 +545,7 @@ func allowPath(ruleset uintptr, name string, rights uint64) error {
 	_, err = call(445, ruleset, 1, uintptr(unsafe.Pointer(&rule)))
 	return err
 }
-func filter(broker bool) error {
+func filter(broker, dynamic bool) error {
 	arch := uint32(0xc00000b7)
 	clone := uint32(220)
 	denied := []uint32{198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 117, 97, 40, 41, 39, 51, 264, 265, 268, 270, 271, 280, 282, 241, 281, 242, 243, 244}
@@ -510,7 +557,21 @@ func filter(broker bool) error {
 		return syscall.ENOSYS
 	}
 	// clone3 and io_uring can bypass classic clone/filesystem filtering.
-	denied = append(denied, 435, 425, 426, 427, 438)
+	denied = append(denied, 425, 426, 427, 438)
+	if !dynamic {
+		denied = append(denied, 435)
+	}
+	if runtime.GOARCH == "amd64" {
+		denied = append(denied, 323)
+	} // userfaultfd on both supported ABIs.
+	if dynamic {
+		denied = append(denied, 447, 452, 463, 466, 469) // secretmem FD origin, fchmodat2 and newer attribute mutations
+		if runtime.GOARCH == "amd64" {
+			denied = append(denied, 90, 91, 92, 93, 94, 132, 188, 189, 190, 197, 198, 199, 235, 260, 261, 268, 280)
+		} else {
+			denied = append(denied, 5, 6, 7, 14, 15, 16, 52, 53, 54, 55, 88)
+		}
+	}
 	// Personality can make read mappings executable; shmat can admit SHM_EXEC.
 	if runtime.GOARCH == "amd64" {
 		denied = append(denied, 135, 30)
@@ -533,16 +594,52 @@ func filter(broker bool) error {
 		// Reject x32 syscall numbers before matching the native syscall table.
 		{Code: 0x45, Jf: 1, K: 0x40000000}, {Code: 0x06, K: 0x80000000},
 	}
+	if dynamic {
+		// FIONBIO changes only the admitted descriptor's nonblocking flag.
+		// The int pointee may be zero or nonzero; it is not attested here.
+		// Callers may remap an admitted descriptor into 0..2. This does not
+		// identify inherited stdio or admit any other ioctl/descriptor origin.
+		ioctl := uint32(29)
+		if runtime.GOARCH == "amd64" {
+			ioctl = 16
+		}
+		block := []syscall.SockFilter{
+			{Code: 0x20, K: 20}, {Code: 0x15, Jt: 1, K: 0}, {Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)},
+			{Code: 0x20, K: 16}, {Code: 0x25, Jf: 1, K: 2}, {Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)},
+			{Code: 0x20, K: 28}, {Code: 0x15, Jt: 1, K: 0}, {Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)},
+			{Code: 0x20, K: 24}, {Code: 0x15, Jt: 1, K: 0x5421}, {Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)},
+			{Code: 0x06, K: 0x7fff0000},
+		}
+		f = append(f, syscall.SockFilter{Code: 0x15, Jf: uint8(len(block)), K: ioctl})
+		f = append(f, block...)
+		f = append(f, syscall.SockFilter{Code: 0x20, K: 0})
+	}
 	for _, n := range denied {
 		f = append(f, syscall.SockFilter{Code: 0x15, Jf: 1, K: n}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)})
 	}
-	// A static context never admits executable writable mappings or memfd code.
+	if dynamic {
+		// libc clone3 must fall back to the reviewed classic pthread clone flags.
+		f = append(f, syscall.SockFilter{Code: 0x15, Jf: 1, K: 435}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.ENOSYS)})
+	}
 	for _, n := range []uint32{mmap, mprotect, pkey} {
-		f = append(f, syscall.SockFilter{Code: 0x15, Jf: 3, K: n}, syscall.SockFilter{Code: 0x20, K: 32}, syscall.SockFilter{Code: 0x45, Jf: 1, K: 4}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 0})
+		block := []syscall.SockFilter{{Code: 0x20, K: 36}, {Code: 0x15, Jt: 1, K: 0}, {Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, {Code: 0x20, K: 32}, {Code: 0x45, Jt: 1, K: 4}, {Code: 0x06, K: 0x7fff0000}}
+		if dynamic && n == mmap {
+			// RX only from a file descriptor on immutable runtime or kernel noexec data
+			// mounts. A valid FD alone is not executable-byte provenance.
+			block = append(block, syscall.SockFilter{Code: 0x45, Jf: 1, K: 2}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 44}, syscall.SockFilter{Code: 0x15, Jt: 1, K: 0}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 40}, syscall.SockFilter{Code: 0x45, Jf: 1, K: 0x20}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 52}, syscall.SockFilter{Code: 0x15, Jt: 1, K: 0}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 48}, syscall.SockFilter{Code: 0x15, Jf: 1, K: 0xffffffff}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x06, K: 0x7fff0000})
+		} else {
+			block = append(block, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)})
+		}
+		f = append(f, syscall.SockFilter{Code: 0x15, Jf: uint8(len(block)), K: n})
+		f = append(f, block...)
+		f = append(f, syscall.SockFilter{Code: 0x20, K: 0})
 	}
 	// Reviewed Go runtime thread flags only, plus fixed os/exec process-clone
 	// variants in the trusted broker. Namespace/parent/arbitrary flags are denied.
 	flags := []uint32{0x50f00}
+	if dynamic {
+		flags = append(flags, 0x3d0f00)
+	}
 	if broker {
 		flags = append(flags, 0x4111, 0x5111, 0x4100, 0x5100)
 	}
@@ -558,4 +655,311 @@ func filter(broker bool) error {
 	_, err := call(syscall.SYS_PRCTL, 22, 2, uintptr(unsafe.Pointer(&prog)))
 	runtime.KeepAlive(f)
 	return err
+}
+
+// Runtime files are mounted readonly and executable. Data is copied into a
+// separate kernel noexec tmpfs before any untrusted code or runtime descriptors
+// are admitted. This is a modified loader context, never equivalence proof.
+type dynamicResource struct {
+	Path   string `json:"path"`
+	Kind   string `json:"kind"`
+	Size   int64  `json:"size,omitempty"`
+	SHA256 string `json:"sha256,omitempty"`
+	Link   string `json:"link,omitempty"`
+}
+type dynamicResources struct {
+	Entries []dynamicResource `json:"entries"`
+	Absent  []string          `json:"absent"`
+	Bytes   int64             `json:"bytes"`
+}
+
+func runtimeName(name string) bool {
+	if len(name) == 0 || len(name) > 255 || name == "." || name == ".." {
+		return false
+	}
+	for _, c := range name {
+		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune("_.+-", c)) {
+			return false
+		}
+	}
+	return true
+}
+func resourceName(name string) bool {
+	return len(name) > 0 && len(name) <= 4096 && utf8.ValidString(name) && fs.ValidPath(name) && !strings.ContainsAny(name, "\\\x00\r\n:")
+}
+func resourceParent(root, name string) error {
+	for parent := filepath.Dir(name); ; parent = filepath.Dir(parent) {
+		info, err := os.Lstat(filepath.Join(root, parent))
+		if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("resource ancestor is not a real directory")
+		}
+		if parent == "." {
+			return nil
+		}
+	}
+}
+func sameResourceInfo(a, b os.FileInfo) bool {
+	return a != nil && b != nil && os.SameFile(a, b) && a.Mode() == b.Mode() && a.Size() == b.Size() && a.ModTime().Equal(b.ModTime())
+}
+func resourceFile(entry dynamicResource, destination string) error {
+	sourceName := filepath.Join("/input/resources", entry.Path)
+	if err := resourceParent("/input/resources", entry.Path); err != nil {
+		return err
+	}
+	before, err := os.Lstat(sourceName)
+	if err != nil || !before.Mode().IsRegular() || before.Mode().Perm() != 0444 || before.Size() != entry.Size {
+		return errors.New("resource source changed")
+	}
+	source, err := os.OpenFile(sourceName, os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+	if err != nil {
+		return err
+	}
+	opened, err := source.Stat()
+	if err != nil || !sameResourceInfo(before, opened) {
+		source.Close()
+		return errors.New("resource source changed")
+	}
+	target, err := os.OpenFile(destination, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		source.Close()
+		return err
+	}
+	hash := sha256.New()
+	n, readErr := io.CopyBuffer(io.MultiWriter(target, hash), io.LimitReader(source, entry.Size+1), make([]byte, 32<<10))
+	targetClose := target.Close()
+	after, statErr := source.Stat()
+	sourceClose := source.Close()
+	if err := errors.Join(readErr, targetClose, sourceClose); err != nil {
+		return err
+	}
+	pathAfter, pathErr := os.Lstat(sourceName)
+	if n != entry.Size || statErr != nil || pathErr != nil || !sameResourceInfo(before, after) || !sameResourceInfo(before, pathAfter) || hex.EncodeToString(hash.Sum(nil)) != entry.SHA256 {
+		return errors.New("resource bytes or identity changed")
+	}
+	return os.Chmod(destination, 0444)
+}
+func checkResource(entry dynamicResource, root string) error {
+	name := filepath.Join(root, entry.Path)
+	if err := resourceParent(root, entry.Path); err != nil {
+		return err
+	}
+	info, err := os.Lstat(name)
+	if err != nil {
+		return err
+	}
+	if info.Mode()&(os.ModeSetuid|os.ModeSetgid|os.ModeSticky) != 0 {
+		return errors.New("resource special mode")
+	}
+	switch entry.Kind {
+	case "directory":
+		if !info.IsDir() || info.Mode().Perm() != 0555 {
+			return errors.New("resource directory changed")
+		}
+	case "symlink":
+		link, err := os.Readlink(name)
+		if err != nil || info.Mode()&os.ModeSymlink == 0 || link != entry.Link {
+			return errors.New("resource link changed")
+		}
+		resolved, err := filepath.EvalSymlinks(name)
+		relative, relErr := filepath.Rel(root, resolved)
+		if err != nil || relErr != nil || relative == ".." || strings.HasPrefix(relative, "../") {
+			return errors.New("resource link escaped")
+		}
+	case "file":
+		if !info.Mode().IsRegular() || info.Mode().Perm() != 0444 || info.Size() != entry.Size {
+			return errors.New("resource file changed")
+		}
+		file, err := os.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+		if err != nil {
+			return err
+		}
+		before, statErr := file.Stat()
+		if statErr != nil || !sameResourceInfo(info, before) {
+			file.Close()
+			return errors.New("resource file changed")
+		}
+		hash := sha256.New()
+		n, readErr := io.CopyBuffer(hash, io.LimitReader(file, entry.Size+1), make([]byte, 32<<10))
+		after, afterErr := file.Stat()
+		closeErr := file.Close()
+		if err := errors.Join(readErr, closeErr); err != nil {
+			return err
+		}
+		pathAfter, pathErr := os.Lstat(name)
+		if n != entry.Size || afterErr != nil || pathErr != nil || !sameResourceInfo(before, after) || !sameResourceInfo(before, pathAfter) || hex.EncodeToString(hash.Sum(nil)) != entry.SHA256 {
+			return errors.New("resource bytes changed")
+		}
+	default:
+		return syscall.EINVAL
+	}
+	return nil
+}
+func prepareDynamicResources(expected string) error {
+	var runtimeFS, resourcesFS syscall.Statfs_t
+	if err := syscall.Statfs("/runtime", &runtimeFS); err != nil {
+		return err
+	}
+	if err := syscall.Statfs("/resources", &resourcesFS); err != nil {
+		return err
+	}
+	if runtimeFS.Flags&1 == 0 || resourcesFS.Type != 0x1021994 || resourcesFS.Flags&8 == 0 {
+		return errors.New("readonly runtime and noexec tmpfs required")
+	}
+	file, err := os.OpenFile("/input/resources.json", os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+	if err != nil {
+		return err
+	}
+	data, readErr := io.ReadAll(io.LimitReader(file, (8<<20)+1))
+	closeErr := file.Close()
+	if err := errors.Join(readErr, closeErr); err != nil {
+		return err
+	}
+	hash := sha256.Sum256(data)
+	if len(data) > 8<<20 || hex.EncodeToString(hash[:]) != expected || !utf8.Valid(data) {
+		return errors.New("resource declaration changed")
+	}
+	var declaration dynamicResources
+	if err := json.Unmarshal(data, &declaration); err != nil {
+		return err
+	}
+	if len(declaration.Entries) == 0 || len(declaration.Entries) > 50000 || len(declaration.Absent) > 50000 || declaration.Bytes < 0 || declaration.Bytes > 64<<20 {
+		return syscall.EINVAL
+	}
+	expectedEntries := map[string]dynamicResource{}
+	bytes := int64(0)
+	for _, entry := range declaration.Entries {
+		if !resourceName(entry.Path) {
+			return syscall.EINVAL
+		}
+		if _, duplicate := expectedEntries[entry.Path]; duplicate {
+			return syscall.EINVAL
+		}
+		switch entry.Kind {
+		case "directory":
+			if entry.Size != 0 || entry.SHA256 != "" || entry.Link != "" {
+				return syscall.EINVAL
+			}
+		case "file":
+			if entry.Size < 0 || entry.Size > (64<<20)-bytes || len(entry.SHA256) != 64 || entry.Link != "" {
+				return syscall.EINVAL
+			}
+			if _, err := hex.DecodeString(entry.SHA256); err != nil {
+				return err
+			}
+			bytes += entry.Size
+		case "symlink":
+			if entry.Size != 0 || entry.SHA256 != "" || len(entry.Link) == 0 || len(entry.Link) > 4096 || !utf8.ValidString(entry.Link) || filepath.IsAbs(entry.Link) || strings.ContainsAny(entry.Link, "\x00\r\n") {
+				return syscall.EINVAL
+			}
+		default:
+			return syscall.EINVAL
+		}
+		expectedEntries[entry.Path] = entry
+	}
+	if bytes != declaration.Bytes || expectedEntries["."].Kind != "directory" {
+		return syscall.EINVAL
+	}
+	root, err := os.Open("/resources")
+	if err != nil {
+		return err
+	}
+	contents, readErr := root.ReadDir(1)
+	closeErr = root.Close()
+	if (readErr != nil && readErr != io.EOF) || closeErr != nil || len(contents) != 0 {
+		return errors.New("resource tmpfs must start empty")
+	}
+	// Parent-before-child ordering is generated by the controller, then checked.
+	for _, entry := range declaration.Entries {
+		destination := filepath.Join("/resources", entry.Path)
+		if entry.Kind == "symlink" {
+			continue
+		}
+		if err := resourceParent("/resources", entry.Path); err != nil {
+			return err
+		}
+		if entry.Kind == "directory" {
+			if entry.Path != "." {
+				if err := os.Mkdir(destination, 0755); err != nil {
+					return err
+				}
+			}
+		} else if err := resourceFile(entry, destination); err != nil {
+			return err
+		}
+	}
+	for _, entry := range declaration.Entries {
+		if entry.Kind == "symlink" {
+			if err := resourceParent("/resources", entry.Path); err != nil {
+				return err
+			}
+			if err := os.Symlink(entry.Link, filepath.Join("/resources", entry.Path)); err != nil {
+				return err
+			}
+		}
+	}
+	for i := len(declaration.Entries) - 1; i >= 0; i-- {
+		entry := declaration.Entries[i]
+		if entry.Kind == "directory" {
+			if err := os.Chmod(filepath.Join("/resources", entry.Path), 0555); err != nil {
+				return err
+			}
+		}
+	}
+	// Bounded non-following membership walk; every leaf independently rehashed.
+	pending := []string{"."}
+	seen := 0
+	for len(pending) > 0 {
+		name := pending[len(pending)-1]
+		pending = pending[:len(pending)-1]
+		entry, ok := expectedEntries[name]
+		if !ok {
+			return errors.New("undeclared guest resource")
+		}
+		seen++
+		if seen > len(expectedEntries) {
+			return errors.New("resource membership exceeds bounds")
+		}
+		if err := checkResource(entry, "/resources"); err != nil {
+			return err
+		}
+		if entry.Kind == "directory" {
+			directory, err := os.OpenFile(filepath.Join("/resources", name), os.O_RDONLY|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+			if err != nil {
+				return err
+			}
+			children, readErr := directory.ReadDir(len(expectedEntries) - seen + 1)
+			closeErr := directory.Close()
+			if (readErr != nil && readErr != io.EOF) || closeErr != nil {
+				return errors.Join(readErr, closeErr)
+			}
+			if len(children) > len(expectedEntries)-seen {
+				return errors.New("resource membership exceeds bounds")
+			}
+			for _, child := range children {
+				pending = append(pending, filepath.Join(name, child.Name()))
+			}
+		}
+	}
+	if seen != len(expectedEntries) {
+		return errors.New("resource membership incomplete")
+	}
+	for _, name := range declaration.Absent {
+		if !resourceName(name) || name == "." {
+			return syscall.EINVAL
+		}
+		components := strings.Split(name, "/")
+		for i := 1; i <= len(components); i++ {
+			info, err := os.Lstat(filepath.Join("/resources", filepath.Join(components[:i]...)))
+			if errors.Is(err, os.ErrNotExist) {
+				break
+			}
+			if err != nil {
+				return err
+			}
+			if i == len(components) || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+				return errors.New("guest resource absence changed")
+			}
+		}
+	}
+	return nil
 }

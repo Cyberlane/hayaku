@@ -27,7 +27,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-const boundaryVersion = "hayaku-linux-boundary-v4"
+const boundaryVersion = "hayaku-linux-boundary-v6"
 const contractVersion = "native-pure-groups-v1"
 
 // Docker uses only already provisioned, immutable images. The daemon and its
@@ -187,9 +187,15 @@ func (b Backend) execute(ctx context.Context, a Artifact) (process.Output, error
 	return b.executeCaptured(ctx, a, nil)
 }
 
-func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *capturedExecutable) (result process.Output, runErr error) {
+func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *capturedExecutable) (process.Output, error) {
+	return b.executePrograms(ctx, a, primary, nil)
+}
+func (b Backend) executePrograms(ctx context.Context, a Artifact, primary *capturedExecutable, dynamic *DynamicProgram) (result process.Output, runErr error) {
 	if b.platform() != "linux" || b.Sandbox != "" {
 		return result, errors.New("captured executable requires a Linux backend")
+	}
+	if dynamic != nil && (primary != nil || a.Envelope == nil || a.Envelope.child != nil) {
+		return result, errors.New("unsupported dynamic execution context")
 	}
 	// Only private copied artifacts are mounted; never the repository, cache,
 	// compiler, host sockets, credentials or environment.
@@ -218,7 +224,7 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 		}
 		if err := os.RemoveAll(dir); err != nil {
 			result.Completed = false
-			runErr = errors.New("native copied input cleanup failed")
+			runErr = errors.Join(runErr, errors.New("native copied input cleanup failed"), err)
 		}
 	}()
 	if a.Envelope != nil {
@@ -228,11 +234,11 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 		defer func() {
 			if err := a.Envelope.VerifySources(ctx); err != nil {
 				result.Completed = false
-				runErr = err
+				runErr = errors.Join(runErr, err)
 			}
 			if err := a.Envelope.verifyMaterialization(ctx, filepath.Join(dir, "resources")); err != nil {
 				result.Completed = false
-				runErr = err
+				runErr = errors.Join(runErr, err)
 			}
 		}()
 	}
@@ -241,7 +247,34 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 	}
 	var data []byte
 	var primaryCopy os.FileInfo
-	if primary != nil {
+	var dynamicContract *dynamicInvocation
+	var dynamicCopies []dynamicTransportFile
+	var controls []transportControl
+	if dynamic != nil {
+		dynamicCopies, err = dynamic.materialize(ctx, filepath.Join(dir, "runtime"), b.Architecture)
+		if err != nil {
+			return result, err
+		}
+		resources, manifestErr := dynamicResourceManifest(a.Envelope)
+		if manifestErr != nil {
+			return result, manifestErr
+		}
+		if err = os.WriteFile(filepath.Join(dir, "resources.json"), resources, 0444); err != nil {
+			return result, err
+		}
+		resourceControl, controlErr := captureTransportControl(ctx, filepath.Join(dir, "resources.json"), digest(resources), 8<<20)
+		if controlErr != nil {
+			return result, controlErr
+		}
+		controls = append(controls, resourceControl)
+		dynamicContract = &dynamicInvocation{Loader: dynamic.runtime.loaderName(), ResourcesDigest: digest(resources)}
+		defer func() {
+			if err := errors.Join(dynamic.Verify(ctx), verifyDynamicTransport(ctx, dynamicCopies)); err != nil {
+				result.Completed = false
+				runErr = errors.Join(runErr, err)
+			}
+		}()
+	} else if primary != nil {
 		if a.Envelope == nil {
 			return process.Output{}, errors.New("captured primary requires an input envelope")
 		}
@@ -254,13 +287,13 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 		}
 		defer func() {
 			if err := primary.verifySources(ctx); err != nil {
-				result.Completed, runErr = false, err
+				result.Completed, runErr = false, errors.Join(runErr, err)
 			}
 			copyAfter, err := os.Lstat(filepath.Join(dir, "program"))
 			if err != nil || !sameProgramInfo(primaryCopy, copyAfter) {
-				result.Completed, runErr = false, errors.New("native static executable copy changed")
+				result.Completed, runErr = false, errors.Join(runErr, errors.New("native static executable copy changed"), err)
 			} else if err := primary.verifyCopy(filepath.Join(dir, "program")); err != nil {
-				result.Completed, runErr = false, err
+				result.Completed, runErr = false, errors.Join(runErr, err)
 			}
 		}()
 		data = primary.data
@@ -285,23 +318,28 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 		defer func() {
 			if err := c.verifyCopy(filepath.Join(dir, "helper")); err != nil {
 				result.Completed = false
-				runErr = err
+				runErr = errors.Join(runErr, err)
 			}
 		}()
 		child = c.contract()
 	}
 	contract, _ := json.Marshal(struct {
-		Args         []string       `json:"args"`
-		Env          []string       `json:"env"`
-		Envelope     bool           `json:"envelope"`
-		ScratchBytes int64          `json:"scratch_bytes"`
-		Child        *childContract `json:"child,omitempty"`
-	}{a.Args, env, a.Envelope != nil, scratchBytes, child})
+		Args         []string           `json:"args"`
+		Env          []string           `json:"env"`
+		Envelope     bool               `json:"envelope"`
+		ScratchBytes int64              `json:"scratch_bytes"`
+		Child        *childContract     `json:"child,omitempty"`
+		Dynamic      *dynamicInvocation `json:"dynamic,omitempty"`
+	}{a.Args, env, a.Envelope != nil, scratchBytes, child, dynamicContract})
 	if len(contract) > 131072 {
 		return process.Output{}, errors.New("native arguments or environment exceed limits")
 	}
 	if err = os.WriteFile(filepath.Join(dir, "contract.json"), contract, 0444); err != nil {
 		return process.Output{}, err
+	}
+	contractControl, err := captureTransportControl(ctx, filepath.Join(dir, "contract.json"), digest(contract), 131072)
+	if err != nil {
+		return result, err
 	}
 	worker := filepath.Join(dir, "boundary")
 	data, err = readBounded(b.Worker, 256<<20)
@@ -311,6 +349,21 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 	if err = os.WriteFile(worker, data, 0555); err != nil {
 		return process.Output{}, err
 	}
+	workerControl, err := captureTransportControl(ctx, worker, digest(data), 256<<20)
+	if err != nil {
+		return result, err
+	}
+	controls = append(controls, contractControl, workerControl)
+	defer func() {
+		// A canceled program does not cancel copied-context integrity checks.
+		// They must finish before cleanup removes the admitted control files.
+		post, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if err := verifyTransportControls(post, controls); err != nil {
+			result.Completed = false
+			runErr = errors.Join(runErr, err)
+		}
+	}()
 	// Colon/comma are Docker mount grammar, never accepted as path data here.
 	if strings.ContainsAny(dir, ",:") {
 		return process.Output{}, errors.New("unsupported Docker mount path")
@@ -321,9 +374,18 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 			return process.Output{}, errors.New("native static executable copy changed")
 		}
 	}
+	if err := verifyTransportControls(ctx, controls); err != nil {
+		return result, err
+	}
 	create := []string{"create", "--label=hayaku.native-boundary=v1", "--pull=never", "--network=none", "--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges:true", "--user=65534:65534", "--pids-limit=64", "--memory=256m", "--memory-swap=256m", "--workdir=/input", "--entrypoint=/boundary", "--mount", "type=bind,src=" + dir + ",dst=/input,readonly", "--mount", "type=bind,src=" + worker + ",dst=/boundary,readonly"}
 	if scratchBytes != 0 {
 		create = append(create, "--tmpfs", "/scratch:rw,noexec,nosuid,nodev,mode=0700,uid=65534,gid=65534,size="+strconv.FormatInt(scratchBytes, 10))
+	}
+	if dynamic != nil {
+		if err := verifyDynamicTransport(ctx, dynamicCopies); err != nil {
+			return result, err
+		}
+		create = append(create, "--mount", "type=bind,src="+filepath.Join(dir, "runtime")+",dst=/runtime,readonly", "--tmpfs", "/resources:rw,noexec,nosuid,nodev,mode=0700,uid=65534,gid=65534,size=80m")
 	}
 	create = append(create, b.Image, "/input/program")
 	made, err := command(ctx, b.Docker, create...)
@@ -342,7 +404,7 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 		defer cancel()
 		if _, err := command(cleanup, b.Docker, "rm", "--force", "--volumes", id); err != nil {
 			result.Completed = false
-			runErr = errors.New("native container cleanup failed")
+			runErr = errors.Join(runErr, errors.New("native container cleanup failed"), err)
 		}
 	}()
 	marker := boundaryVersion + "\n"

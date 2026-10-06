@@ -999,6 +999,58 @@
       "source_root": "/tmp/hayaku-language-acceptance-bdhM36/tools/rules_pkg-1.0.1",
       "status": "publisher-verified-private-Bazel-prerequisite-not-framework-baseline",
       "baseline_status": "private-source-prerequisite-loaded-by-exact-Mac-Linux-Bazel-Cpp-native-baselines; not independent Java/Python/proto qualification"
+    },
+    {
+      "tool": "flutter",
+      "version": "3.47.6",
+      "platform": "linux-arm64",
+      "construction": "derived candidate from exact official frameworkGit and published-checksum verified official ARM engine components; not an official prepacked ARM SDK",
+      "framework_commit": "5fc346839b5d0eef006ed8404392afb4dfae428d",
+      "engine_commit": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+      "official_component_manifest": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-arm64-engine-candidates.json",
+      "official_component_manifest_sha256": "a159289e883139c2a0e885af87f1314e151ef78a1713f5687270014de222415a",
+      "source_sdk_archive_sha256": "a1946d3b6b3de15ce247dc89649df9035ce29e6b4e7ebe91919a25890ea2e79a",
+      "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/flutter-3.47.6-derived-linux-arm64/flutter/bin/flutter",
+      "binary_sha256": "7d486c33b30a0cf1ea5146231c68bb8f966cdb4e087c5cd8b37e14513f536e7d",
+      "observed_version": "3.47.6",
+      "observed_dart": "3.13.5",
+      "observed_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+      "runtime_executable_sha256": {
+        "dart": "9dee3537ffdec8c9668feddf3380d31090f9ed7e413a4a460d1f5bd10c372808",
+        "flutter_tester": "7f7909258b5915ff769fb3c33401aec188c41b280e7e75f2667274c5566dad46"
+      },
+      "tool_snapshot_sha256": "85bb601a17fa0a08a92361e755fda54f678f3435ab4b48c6d5eda16bf494f942",
+      "tool_lock_sha256": "6a98afb61c0cc72f31631ab444932f072fd275aa04d56cde2bf6831ba02fc8f8",
+      "derived_candidate_manifest_sha256": "6e793a8d10a6b4e4d6e1ff4be2c835926066d8612541bd5cc4d4ad266544d4a0",
+      "universal_prerequisites": [
+        {
+          "path": "bin/cache/artifacts/gradle_wrapper/gradle/wrapper/gradle-wrapper.jar",
+          "sha256": "16caeaf66d57a0d1d2087fef6a97efa62de8da69afa5b908f40db35afc4342da",
+          "source_official_sdk_archive_sha256": "a1946d3b6b3de15ce247dc89649df9035ce29e6b4e7ebe91919a25890ea2e79a",
+          "scope": "platform-neutral SDK startup prerequisite; no Android or Windows framework qualification"
+        },
+        {
+          "path": "bin/cache/artifacts/gradle_wrapper/gradlew",
+          "sha256": "ec56c02543666d92d9ac5ae7fcc48f88ce4de0deb8b7f9b39928ca46f68c1b2b",
+          "source_official_sdk_archive_sha256": "a1946d3b6b3de15ce247dc89649df9035ce29e6b4e7ebe91919a25890ea2e79a",
+          "scope": "platform-neutral SDK startup prerequisite; no Android or Windows framework qualification"
+        },
+        {
+          "path": "bin/cache/artifacts/gradle_wrapper/gradlew.bat",
+          "sha256": "c13c6e91b9a517783976de213d46398c661ea9e17651376d7301e839eaedcc62",
+          "source_official_sdk_archive_sha256": "a1946d3b6b3de15ce247dc89649df9035ce29e6b4e7ebe91919a25890ea2e79a",
+          "scope": "platform-neutral SDK startup prerequisite; no Android or Windows framework qualification"
+        },
+        {
+          "path": "bin/cache/gradle_wrapper.stamp",
+          "sha256": "615252d8d68b7b12cbce829fc3ba014ffb83af1519cdda082cf17b84bacc06e1",
+          "source_official_sdk_archive_sha256": "a1946d3b6b3de15ce247dc89649df9035ce29e6b4e7ebe91919a25890ea2e79a",
+          "scope": "platform-neutral SDK startup prerequisite; no Android or Windows framework qualification"
+        }
+      ],
+      "status": "derived-official-components-offline-original-healthy-runtime-fault-baseline-passed-unqualified",
+      "baseline_status": "offline-original-healthy-runtime-fault-passed-unqualified",
+      "baseline_evidence": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-baseline.json"
     }
   ],
   "independent_baselines": {
@@ -2343,6 +2395,88 @@
         "aggregate_seconds": 240,
         "network": "none"
       }
+    },
+    "flutter-linux-baseline.json": {
+      "profile": "05B",
+      "platform": "linux-arm64",
+      "sdk_construction": "derived candidate from exact official frameworkGit and published-checksum verified official ARM engine components; not an official prepacked ARM SDK",
+      "sdk_manifest": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-arm-derived-candidate.json",
+      "observed_sdk_version": {
+        "frameworkVersion": "3.47.6",
+        "channel": "[user-branch]",
+        "repositoryUrl": "file:///tmp/hayaku-language-acceptance-bdhM36/tools/flutter-3.47.6-macos-arm64/flutter",
+        "frameworkRevision": "5fc346839b5d0eef006ed8404392afb4dfae428d",
+        "frameworkCommitDate": "2026-09-30 15:02:49 -0700",
+        "engineRevision": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+        "engineCommitDate": "2026-09-30 00:56:59.000Z",
+        "engineContentHash": "b8c8d3d8d5d0095127057f8a29ca8cc53da2167c",
+        "engineBuildDate": "2026-09-30 01:19:13.915",
+        "dartSdkVersion": "3.13.5",
+        "devToolsVersion": "2.60.0",
+        "flutterVersion": "3.47.6",
+        "flutterRoot": "/sdk"
+      },
+      "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+      "network": "none; loopback SDK IPC available",
+      "source_sha256": "a21043f68b264cd56f21c744f4c3720cbaa134ecb82d679b90c942698dbb4a46",
+      "pubspec_sha256": "11ff3202b4a905dfff79e1940ab31c5ca2ba4d52c4c2aef33c7b60f7e2d8234d",
+      "lock_sha256": "8241a6d6f2e2644b5750196e22c751a1d117b977980d8f8dd68c09fe7c27846b",
+      "runtime_executable_sha256": {
+        "dart": "9dee3537ffdec8c9668feddf3380d31090f9ed7e413a4a460d1f5bd10c372808",
+        "flutter_tester": "7f7909258b5915ff769fb3c33401aec188c41b280e7e75f2667274c5566dad46"
+      },
+      "results": [
+        {
+          "phase": "healthy",
+          "exit": 0,
+          "native_outcomes": {
+            "alpha": "success",
+            "beta": "success"
+          }
+        },
+        {
+          "phase": "fault",
+          "exit": 1,
+          "native_outcomes": {
+            "alpha": "error",
+            "beta": "success"
+          }
+        }
+      ],
+      "status": "unqualified-offline-native-baseline",
+      "native_log_sha256": {
+        "caches/flutter-linux-export/fault.exit": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "caches/flutter-linux-export/fault.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "caches/flutter-linux-export/fault.stdout": "c1ea8f8f5b079d0f92227047456f14ab7fcd4414117140a7f4de20718684e033",
+        "caches/flutter-linux-export/healthy.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "caches/flutter-linux-export/healthy.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "caches/flutter-linux-export/healthy.stdout": "b9c12b6d54bf8be865dc4847be165453fbd628f599fb7a5af3787c0cfb8e342d",
+        "caches/flutter-linux-export/offline-lock.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "caches/flutter-linux-export/offline-lock.stdout": "d4cb7a3c68b4133b4f6e58c67ff5bfd13725d8021e930388cdc98da8a575919d",
+        "caches/flutter-linux-export/runtime-sha256.stdout": "e86a7a0bf7745f5065c09827b19107399401ec9872b76b0bcf595f52f36652b1",
+        "caches/flutter-linux-export/version.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "caches/flutter-linux-export/version.stdout": "3b7584d05da69fb86bf5ddb6c8f7de033bda53f1bf82b3649f02ec514376df6d"
+      },
+      "source_file_sha256": {
+        "test/widget_test.dart": "a21043f68b264cd56f21c744f4c3720cbaa134ecb82d679b90c942698dbb4a46",
+        "pubspec.yaml": "11ff3202b4a905dfff79e1940ab31c5ca2ba4d52c4c2aef33c7b60f7e2d8234d",
+        "pubspec.lock": "8241a6d6f2e2644b5750196e22c751a1d117b977980d8f8dd68c09fe7c27846b"
+      },
+      "driver_sha256": "fe24c783723818167f4beee17bf67a3bf87f92fe73b32eba9ad19b121f610d7d",
+      "derived_sdk_manifest_sha256": "6e793a8d10a6b4e4d6e1ff4be2c835926066d8612541bd5cc4d4ad266544d4a0",
+      "fresh_publisher_package_manifest_sha256": "0a268e6450c85b748dbf944fe29b5ede96fb77435b0979bd9414ab83ac89fce1",
+      "provisioning_bounds": {
+        "pids": 192,
+        "memory": "2g",
+        "cpus": 2,
+        "tmpfs": "1g",
+        "per_stage_seconds": 180,
+        "aggregate_seconds": 600,
+        "max_each_log_bytes": 8388608,
+        "network": "none"
+      },
+      "fixture_lock_sha256": "9f73aacaeaa43a14e3b04a14b0a8063d1a62ff0a2db96ef900c9cbfd30df8a4b",
+      "postrun_package_integrity_record": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-postrun-reverification.json"
     }
   },
   "linux_nextest_baseline_log": "/tmp/hayaku-language-acceptance-bdhM36/nextest146-linux-baseline-exec.log",
@@ -2389,7 +2523,7 @@
       "03B": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "04A": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "05A": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
-      "05B": "pending-offline-original-native-baseline",
+      "05B": "linux-derived-official-components-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "06A": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "06B": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "06C": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
@@ -6963,6 +7097,1467 @@
       },
       "verifier_script_sha256": "6cb2d8cd6b3ef6317e46323510d73e6a37115c5129364aa559ce14f88a29f3bb",
       "scope": "Byte integrity after four actual original native healthy/runtime-fault baselines; no Hayaku qualification."
+    },
+    "flutter-linux-pub-verified-packages.json": {
+      "packages": [
+        {
+          "package": "_fe_analyzer_shared",
+          "version": "95.0.0",
+          "digest": "0e4db51a88671b676adc09e923ffebd765a1f0c2b04dc19b08b35a335de2972c",
+          "metadata_url": "https://pub.dev/api/packages/_fe_analyzer_shared/versions/95.0.0",
+          "archive_url": "https://pub.dev/api/archives/_fe_analyzer_shared-95.0.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/_fe_analyzer_shared-95.0.0.tar.gz",
+          "archive_bytes": 702312,
+          "observed_archive_sha256": "0e4db51a88671b676adc09e923ffebd765a1f0c2b04dc19b08b35a335de2972c",
+          "fresh_extracted_tree_sha256": "afca0966a62fdec1e7a1a395ab44a11e135825333701b7054ba9c29ef2c7bac8",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/_fe_analyzer_shared-95.0.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "analyzer",
+          "version": "10.1.0",
+          "digest": "3d577a36cde804a46bd1d89e673c3d87c3538c49a39c35d4d336f7760b48c319",
+          "metadata_url": "https://pub.dev/api/packages/analyzer/versions/10.1.0",
+          "archive_url": "https://pub.dev/api/archives/analyzer-10.1.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/analyzer-10.1.0.tar.gz",
+          "archive_bytes": 10775116,
+          "observed_archive_sha256": "3d577a36cde804a46bd1d89e673c3d87c3538c49a39c35d4d336f7760b48c319",
+          "fresh_extracted_tree_sha256": "678125fec6beb15034f31f4c6c61046c6661af93c3dd731bbb5e0bb9ea5edcec",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/analyzer-10.1.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "archive",
+          "version": "3.6.1",
+          "digest": "cb6a278ef2dbb298455e1a713bda08524a175630ec643a242c399c932a0a1f7d",
+          "metadata_url": "https://pub.dev/api/packages/archive/versions/3.6.1",
+          "archive_url": "https://pub.dev/api/archives/archive-3.6.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/archive-3.6.1.tar.gz",
+          "archive_bytes": 1933889,
+          "observed_archive_sha256": "cb6a278ef2dbb298455e1a713bda08524a175630ec643a242c399c932a0a1f7d",
+          "fresh_extracted_tree_sha256": "a905280f8bbc0e925a6873b396a6f0e958171ea571bb2c14a1da6436dd9956d9",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/archive-3.6.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "args",
+          "version": "2.7.0",
+          "digest": "d0481093c50b1da8910eb0bb301626d4d8eb7284aa739614d2b394ee09e3ea04",
+          "metadata_url": "https://pub.dev/api/packages/args/versions/2.7.0",
+          "archive_url": "https://pub.dev/api/archives/args-2.7.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/args-2.7.0.tar.gz",
+          "archive_bytes": 46690,
+          "observed_archive_sha256": "d0481093c50b1da8910eb0bb301626d4d8eb7284aa739614d2b394ee09e3ea04",
+          "fresh_extracted_tree_sha256": "9f6f9ff28070659af9e2a5c3350216f0a8ef522ae520609a11ac3686a3ae0677",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/args-2.7.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "async",
+          "version": "2.13.1",
+          "digest": "e2eb0491ba5ddb6177742d2da23904574082139b07c1e33b8503b9f46f3e1a37",
+          "metadata_url": "https://pub.dev/api/packages/async/versions/2.13.1",
+          "archive_url": "https://pub.dev/api/archives/async-2.13.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/async-2.13.1.tar.gz",
+          "archive_bytes": 85402,
+          "observed_archive_sha256": "e2eb0491ba5ddb6177742d2da23904574082139b07c1e33b8503b9f46f3e1a37",
+          "fresh_extracted_tree_sha256": "e09f5534bb6dbada735a638ff2eba6f6fc2ddef9eed21c684dc9626c34dc8853",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/async-2.13.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "boolean_selector",
+          "version": "2.1.2",
+          "digest": "8aab1771e1243a5063b8b0ff68042d67334e3feab9e95b9490f9a6ebf73b42ea",
+          "metadata_url": "https://pub.dev/api/packages/boolean_selector/versions/2.1.2",
+          "archive_url": "https://pub.dev/api/archives/boolean_selector-2.1.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/boolean_selector-2.1.2.tar.gz",
+          "archive_bytes": 12958,
+          "observed_archive_sha256": "8aab1771e1243a5063b8b0ff68042d67334e3feab9e95b9490f9a6ebf73b42ea",
+          "fresh_extracted_tree_sha256": "cdea1b0f31d0f1c0c564ffbe30c33533b0dae7f41d021b8eff21f3255bde7015",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/boolean_selector-2.1.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "browser_launcher",
+          "version": "1.1.3",
+          "digest": "ca2557663d3033845f2ef2b60f94fc249528324fd1affddccb7c63ac0ccd6c67",
+          "metadata_url": "https://pub.dev/api/packages/browser_launcher/versions/1.1.3",
+          "archive_url": "https://pub.dev/api/archives/browser_launcher-1.1.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/browser_launcher-1.1.3.tar.gz",
+          "archive_bytes": 7357,
+          "observed_archive_sha256": "ca2557663d3033845f2ef2b60f94fc249528324fd1affddccb7c63ac0ccd6c67",
+          "fresh_extracted_tree_sha256": "c9dd60a2cf00343ce811a38af730b9f5ddbc9b769bc736c7309cc4972d197996",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/browser_launcher-1.1.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "built_collection",
+          "version": "5.1.1",
+          "digest": "376e3dd27b51ea877c28d525560790aee2e6fbb5f20e2f85d5081027d94e2100",
+          "metadata_url": "https://pub.dev/api/packages/built_collection/versions/5.1.1",
+          "archive_url": "https://pub.dev/api/archives/built_collection-5.1.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/built_collection-5.1.1.tar.gz",
+          "archive_bytes": 42062,
+          "observed_archive_sha256": "376e3dd27b51ea877c28d525560790aee2e6fbb5f20e2f85d5081027d94e2100",
+          "fresh_extracted_tree_sha256": "508a0dd79a7dcdc7f5c00a9d741c9ca51f4f90159a29f34157b85024e16bba22",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/built_collection-5.1.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "built_value",
+          "version": "8.12.6",
+          "digest": "34e4067d30ce212937df995f03b69992eea683539ceeac7f679a1f1eba055b56",
+          "metadata_url": "https://pub.dev/api/packages/built_value/versions/8.12.6",
+          "archive_url": "https://pub.dev/api/archives/built_value-8.12.6.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/built_value-8.12.6.tar.gz",
+          "archive_bytes": 41194,
+          "observed_archive_sha256": "34e4067d30ce212937df995f03b69992eea683539ceeac7f679a1f1eba055b56",
+          "fresh_extracted_tree_sha256": "791eb22c31ae66460915bd630481d6913621884cbc1efcc562d0be372c6d0e17",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/built_value-8.12.6",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "characters",
+          "version": "1.4.1",
+          "digest": "faf38497bda5ead2a8c7615f4f7939df04333478bf32e4173fcb06d428b5716b",
+          "metadata_url": "https://pub.dev/api/packages/characters/versions/1.4.1",
+          "archive_url": "https://pub.dev/api/archives/characters-1.4.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/characters-1.4.1.tar.gz",
+          "archive_bytes": 528692,
+          "observed_archive_sha256": "faf38497bda5ead2a8c7615f4f7939df04333478bf32e4173fcb06d428b5716b",
+          "fresh_extracted_tree_sha256": "153a1bd1a2ca5da81e8571766dbef31d80c1ac66e3e4a7afac0235396bfd45ce",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/characters-1.4.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "checked_yaml",
+          "version": "2.0.4",
+          "digest": "959525d3162f249993882720d52b7e0c833978df229be20702b33d48d91de70f",
+          "metadata_url": "https://pub.dev/api/packages/checked_yaml/versions/2.0.4",
+          "archive_url": "https://pub.dev/api/archives/checked_yaml-2.0.4.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/checked_yaml-2.0.4.tar.gz",
+          "archive_bytes": 6270,
+          "observed_archive_sha256": "959525d3162f249993882720d52b7e0c833978df229be20702b33d48d91de70f",
+          "fresh_extracted_tree_sha256": "3ff14251583e2e4dce6c25159fcf5981c47f57d3259818c1f6a962831a6bb695",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/checked_yaml-2.0.4",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "cli_config",
+          "version": "0.2.0",
+          "digest": "ac20a183a07002b700f0c25e61b7ee46b23c309d76ab7b7640a028f18e4d99ec",
+          "metadata_url": "https://pub.dev/api/packages/cli_config/versions/0.2.0",
+          "archive_url": "https://pub.dev/api/archives/cli_config-0.2.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/cli_config-0.2.0.tar.gz",
+          "archive_bytes": 12466,
+          "observed_archive_sha256": "ac20a183a07002b700f0c25e61b7ee46b23c309d76ab7b7640a028f18e4d99ec",
+          "fresh_extracted_tree_sha256": "35d7125015735a21d5b19ac91a9e56bf8ff972c4a5a0424a37f45ce09457553d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/cli_config-0.2.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "clock",
+          "version": "1.1.2",
+          "digest": "fddb70d9b5277016c77a80201021d40a2247104d9f4aa7bab7157b7e3f05b84b",
+          "metadata_url": "https://pub.dev/api/packages/clock/versions/1.1.2",
+          "archive_url": "https://pub.dev/api/archives/clock-1.1.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/clock-1.1.2.tar.gz",
+          "archive_bytes": 11740,
+          "observed_archive_sha256": "fddb70d9b5277016c77a80201021d40a2247104d9f4aa7bab7157b7e3f05b84b",
+          "fresh_extracted_tree_sha256": "f869c464ae1b6238c96a4b17f5b398b794eed2695deb75edfb2ad7d7ba0eaf1a",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/clock-1.1.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "clock",
+          "version": "1.1.3",
+          "digest": "e51d50bca3217c9a9fa2b41a30e4a38971133f5f9ec7a3d57bae095007f1d28e",
+          "metadata_url": "https://pub.dev/api/packages/clock/versions/1.1.3",
+          "archive_url": "https://pub.dev/api/archives/clock-1.1.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/clock-1.1.3.tar.gz",
+          "archive_bytes": 11965,
+          "observed_archive_sha256": "e51d50bca3217c9a9fa2b41a30e4a38971133f5f9ec7a3d57bae095007f1d28e",
+          "fresh_extracted_tree_sha256": "ac507260266e444db9c7b07e45e7988e70ae66181f9e3d3490062943a186f327",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/clock-1.1.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "code_assets",
+          "version": "1.2.1",
+          "digest": "bf394f466ba9205f1812a0433b392d6af280f155f56651eda7c18cc32ed493b8",
+          "metadata_url": "https://pub.dev/api/packages/code_assets/versions/1.2.1",
+          "archive_url": "https://pub.dev/api/archives/code_assets-1.2.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/code_assets-1.2.1.tar.gz",
+          "archive_bytes": 24190,
+          "observed_archive_sha256": "bf394f466ba9205f1812a0433b392d6af280f155f56651eda7c18cc32ed493b8",
+          "fresh_extracted_tree_sha256": "a9baabe1e0cd04ed4af7e08aa4653b3b53c2ea377c5fce02cb42385ec6d26773",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/code_assets-1.2.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "code_builder",
+          "version": "4.11.1",
+          "digest": "6a6cab2ba4680d6423f34a9b972a4c9a94ebe1b62ecec4e1a1f2cba91fd1319d",
+          "metadata_url": "https://pub.dev/api/packages/code_builder/versions/4.11.1",
+          "archive_url": "https://pub.dev/api/archives/code_builder-4.11.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/code_builder-4.11.1.tar.gz",
+          "archive_bytes": 63363,
+          "observed_archive_sha256": "6a6cab2ba4680d6423f34a9b972a4c9a94ebe1b62ecec4e1a1f2cba91fd1319d",
+          "fresh_extracted_tree_sha256": "a0bc1d9b5a4ae9626d3ba216c72038fcaf3e7ff1c4b888c7298abeb1db75284d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/code_builder-4.11.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "collection",
+          "version": "1.19.1",
+          "digest": "2f5709ae4d3d59dd8f7cd309b4e023046b57d8a6c82130785d2b0e5868084e76",
+          "metadata_url": "https://pub.dev/api/packages/collection/versions/1.19.1",
+          "archive_url": "https://pub.dev/api/archives/collection-1.19.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/collection-1.19.1.tar.gz",
+          "archive_bytes": 77897,
+          "observed_archive_sha256": "2f5709ae4d3d59dd8f7cd309b4e023046b57d8a6c82130785d2b0e5868084e76",
+          "fresh_extracted_tree_sha256": "1083053045cf0448f24611febdf874aafa1383b3e3442da99583436a29baeec1",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/collection-1.19.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "completion",
+          "version": "1.0.2",
+          "digest": "82fa09800c0b71a2e8396bf3ca6b36b43cd35fe7ba2aeab53b6349ac671d0f5b",
+          "metadata_url": "https://pub.dev/api/packages/completion/versions/1.0.2",
+          "archive_url": "https://pub.dev/api/archives/completion-1.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/completion-1.0.2.tar.gz",
+          "archive_bytes": 12584,
+          "observed_archive_sha256": "82fa09800c0b71a2e8396bf3ca6b36b43cd35fe7ba2aeab53b6349ac671d0f5b",
+          "fresh_extracted_tree_sha256": "9aa92c2df8f8b79d666076aff0aee7a6989d1707036fee8fd2b04f52fbabb7d7",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/completion-1.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "convert",
+          "version": "3.1.2",
+          "digest": "b30acd5944035672bc15c6b7a8b47d773e41e2f17de064350988c5d02adb1c68",
+          "metadata_url": "https://pub.dev/api/packages/convert/versions/3.1.2",
+          "archive_url": "https://pub.dev/api/archives/convert-3.1.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/convert-3.1.2.tar.gz",
+          "archive_bytes": 23145,
+          "observed_archive_sha256": "b30acd5944035672bc15c6b7a8b47d773e41e2f17de064350988c5d02adb1c68",
+          "fresh_extracted_tree_sha256": "d52ccd908b3d66278e9412083aac0d4e764a50779e469883e8d20b0fd42ae348",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/convert-3.1.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "coverage",
+          "version": "1.15.1",
+          "digest": "956a3de0725ca232ad353565a8290d3357592bf4250f6f298a185e2d949c5d3d",
+          "metadata_url": "https://pub.dev/api/packages/coverage/versions/1.15.1",
+          "archive_url": "https://pub.dev/api/archives/coverage-1.15.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/coverage-1.15.1.tar.gz",
+          "archive_bytes": 495383,
+          "observed_archive_sha256": "956a3de0725ca232ad353565a8290d3357592bf4250f6f298a185e2d949c5d3d",
+          "fresh_extracted_tree_sha256": "fb2cdf9f52a9f880cb9e6bff27152cb57af94288b826efca744f63015068be49",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/coverage-1.15.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "crypto",
+          "version": "3.0.7",
+          "digest": "c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf",
+          "metadata_url": "https://pub.dev/api/packages/crypto/versions/3.0.7",
+          "archive_url": "https://pub.dev/api/archives/crypto-3.0.7.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/crypto-3.0.7.tar.gz",
+          "archive_bytes": 615595,
+          "observed_archive_sha256": "c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf",
+          "fresh_extracted_tree_sha256": "118791f550f14f3466d7f02ae3b11384cd2406227314c92b80a27a21e58e678d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/crypto-3.0.7",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "csslib",
+          "version": "1.0.2",
+          "digest": "09bad715f418841f976c77db72d5398dc1253c21fb9c0c7f0b0b985860b2d58e",
+          "metadata_url": "https://pub.dev/api/packages/csslib/versions/1.0.2",
+          "archive_url": "https://pub.dev/api/archives/csslib-1.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/csslib-1.0.2.tar.gz",
+          "archive_bytes": 333776,
+          "observed_archive_sha256": "09bad715f418841f976c77db72d5398dc1253c21fb9c0c7f0b0b985860b2d58e",
+          "fresh_extracted_tree_sha256": "491b798d65bb64ead16a39b8caee5f9e92570f7b0ad043aaae91eb4b83adea75",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/csslib-1.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "dap",
+          "version": "1.4.0",
+          "digest": "42b0b083a09c59a118741769e218fc3738980ab591114f09d1026241d2b9c290",
+          "metadata_url": "https://pub.dev/api/packages/dap/versions/1.4.0",
+          "archive_url": "https://pub.dev/api/archives/dap-1.4.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/dap-1.4.0.tar.gz",
+          "archive_bytes": 87432,
+          "observed_archive_sha256": "42b0b083a09c59a118741769e218fc3738980ab591114f09d1026241d2b9c290",
+          "fresh_extracted_tree_sha256": "fa62fadb878d30ee7503a9b5ecdcffd37d3c805a1b52597d7aa8300e99950e04",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/dap-1.4.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "dart_service_protocol_shared",
+          "version": "0.0.3",
+          "digest": "1737875c176d7e3d87bb3a359182828b542fe20a0b34198b8d31a81af5c7a76d",
+          "metadata_url": "https://pub.dev/api/packages/dart_service_protocol_shared/versions/0.0.3",
+          "archive_url": "https://pub.dev/api/archives/dart_service_protocol_shared-0.0.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/dart_service_protocol_shared-0.0.3.tar.gz",
+          "archive_bytes": 7688,
+          "observed_archive_sha256": "1737875c176d7e3d87bb3a359182828b542fe20a0b34198b8d31a81af5c7a76d",
+          "fresh_extracted_tree_sha256": "bbeb0bc73b4de6c5ebbdb319f8444d4845d51e384fe50289b0e8158f300c3179",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/dart_service_protocol_shared-0.0.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "dart_style",
+          "version": "3.1.7",
+          "digest": "29f7ecc274a86d32920b1d9cfc7502fa87220da41ec60b55f329559d5732e2b2",
+          "metadata_url": "https://pub.dev/api/packages/dart_style/versions/3.1.7",
+          "archive_url": "https://pub.dev/api/archives/dart_style-3.1.7.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/dart_style-3.1.7.tar.gz",
+          "archive_bytes": 637948,
+          "observed_archive_sha256": "29f7ecc274a86d32920b1d9cfc7502fa87220da41ec60b55f329559d5732e2b2",
+          "fresh_extracted_tree_sha256": "086c9ff134c45f7bf07cd286f87e34712ffec222cded5efd969da9cc4a282c04",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/dart_style-3.1.7",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "data_assets",
+          "version": "0.20.0",
+          "digest": "8bfdbf25ec8a0f4b5a3c993042c4ab9996ba354f0b03d40f4e360f3730d71cae",
+          "metadata_url": "https://pub.dev/api/packages/data_assets/versions/0.20.0",
+          "archive_url": "https://pub.dev/api/archives/data_assets-0.20.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/data_assets-0.20.0.tar.gz",
+          "archive_bytes": 9919,
+          "observed_archive_sha256": "8bfdbf25ec8a0f4b5a3c993042c4ab9996ba354f0b03d40f4e360f3730d71cae",
+          "fresh_extracted_tree_sha256": "ecb058755c05575fc75012121884506de13271432627b303cda6cd05f8dd1ee7",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/data_assets-0.20.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "dds",
+          "version": "5.4.0",
+          "digest": "f8e875dcd7b5e5073a7bfe54095144c70487f18e2f8e47fa51c09dd67eccfb0c",
+          "metadata_url": "https://pub.dev/api/packages/dds/versions/5.4.0",
+          "archive_url": "https://pub.dev/api/archives/dds-5.4.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/dds-5.4.0.tar.gz",
+          "archive_bytes": 347018,
+          "observed_archive_sha256": "f8e875dcd7b5e5073a7bfe54095144c70487f18e2f8e47fa51c09dd67eccfb0c",
+          "fresh_extracted_tree_sha256": "6bb6252d3798afe4213f9ad7cd2682999e935f014212127392a60aac5edffabd",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/dds-5.4.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "dds_service_extensions",
+          "version": "2.1.0",
+          "digest": "afe0fce921953ac0c5bb276bccd7e36fa5035d7769567d122523fdd09beb4d03",
+          "metadata_url": "https://pub.dev/api/packages/dds_service_extensions/versions/2.1.0",
+          "archive_url": "https://pub.dev/api/archives/dds_service_extensions-2.1.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/dds_service_extensions-2.1.0.tar.gz",
+          "archive_bytes": 7385,
+          "observed_archive_sha256": "afe0fce921953ac0c5bb276bccd7e36fa5035d7769567d122523fdd09beb4d03",
+          "fresh_extracted_tree_sha256": "2a37d9bcaa38fea2b59dfbd2a12fcfc1861fbdac385963971e2fd73e908dbeb0",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/dds_service_extensions-2.1.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "devtools_shared",
+          "version": "13.1.0",
+          "digest": "13df2c17d5f21dd7c92d08145386d45e1153364c04e531e994afb0ee7b67554b",
+          "metadata_url": "https://pub.dev/api/packages/devtools_shared/versions/13.1.0",
+          "archive_url": "https://pub.dev/api/archives/devtools_shared-13.1.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/devtools_shared-13.1.0.tar.gz",
+          "archive_bytes": 67418,
+          "observed_archive_sha256": "13df2c17d5f21dd7c92d08145386d45e1153364c04e531e994afb0ee7b67554b",
+          "fresh_extracted_tree_sha256": "9ca3fc3fed7054f2acd69f5102257c1c4c66e14ddf3ae442657ac159fc37cbf0",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/devtools_shared-13.1.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "dtd",
+          "version": "4.0.0",
+          "digest": "09ddb228b3d1478a093556357692a4c203ff4f9d5f8cda05dfdca0ff3fb7c5d3",
+          "metadata_url": "https://pub.dev/api/packages/dtd/versions/4.0.0",
+          "archive_url": "https://pub.dev/api/archives/dtd-4.0.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/dtd-4.0.0.tar.gz",
+          "archive_bytes": 26803,
+          "observed_archive_sha256": "09ddb228b3d1478a093556357692a4c203ff4f9d5f8cda05dfdca0ff3fb7c5d3",
+          "fresh_extracted_tree_sha256": "9439d7db68867cb55831d42891e679d2b38b7d1006e8132ca53f777dcb9abc64",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/dtd-4.0.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "dwds",
+          "version": "27.1.2",
+          "digest": "280ca49e939f3f8a96f3a77bb17dfc284fd92b5004bd144ccafb2ab3ddb3b7f9",
+          "metadata_url": "https://pub.dev/api/packages/dwds/versions/27.1.2",
+          "archive_url": "https://pub.dev/api/archives/dwds-27.1.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/dwds-27.1.2.tar.gz",
+          "archive_bytes": 464914,
+          "observed_archive_sha256": "280ca49e939f3f8a96f3a77bb17dfc284fd92b5004bd144ccafb2ab3ddb3b7f9",
+          "fresh_extracted_tree_sha256": "0fa600aac0222775c2748574aa544432010e54310e794c26b1ff41c7f37ede4c",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/dwds-27.1.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "extension_discovery",
+          "version": "2.1.0",
+          "digest": "de1fce715ab013cdfb00befc3bdf0914bea5e409c3a567b7f8f144bc061611a7",
+          "metadata_url": "https://pub.dev/api/packages/extension_discovery/versions/2.1.0",
+          "archive_url": "https://pub.dev/api/archives/extension_discovery-2.1.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/extension_discovery-2.1.0.tar.gz",
+          "archive_bytes": 17379,
+          "observed_archive_sha256": "de1fce715ab013cdfb00befc3bdf0914bea5e409c3a567b7f8f144bc061611a7",
+          "fresh_extracted_tree_sha256": "4f79e6de9efe79da93eb73b9108ae53aa75fba075b921eb3e43037452d8c262c",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/extension_discovery-2.1.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "fake_async",
+          "version": "1.3.3",
+          "digest": "5368f224a74523e8d2e7399ea1638b37aecfca824a3cc4dfdf77bf1fa905ac44",
+          "metadata_url": "https://pub.dev/api/packages/fake_async/versions/1.3.3",
+          "archive_url": "https://pub.dev/api/archives/fake_async-1.3.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/fake_async-1.3.3.tar.gz",
+          "archive_bytes": 15216,
+          "observed_archive_sha256": "5368f224a74523e8d2e7399ea1638b37aecfca824a3cc4dfdf77bf1fa905ac44",
+          "fresh_extracted_tree_sha256": "ae6762a2f5f08fdf0bf9a9cc1a7a4b4a7b3e2719c1e497ddff4d8170b1ad4bfb",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/fake_async-1.3.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "ffi",
+          "version": "2.2.0",
+          "digest": "6d7fd89431262d8f3125e81b50d3847a091d846eafcd4fdb88dd06f36d705a45",
+          "metadata_url": "https://pub.dev/api/packages/ffi/versions/2.2.0",
+          "archive_url": "https://pub.dev/api/archives/ffi-2.2.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/ffi-2.2.0.tar.gz",
+          "archive_bytes": 11014,
+          "observed_archive_sha256": "6d7fd89431262d8f3125e81b50d3847a091d846eafcd4fdb88dd06f36d705a45",
+          "fresh_extracted_tree_sha256": "d008cc4e400c78061c73121941d5dddb1d1ea8ad0cf6645d74b5f00a61e41c8c",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/ffi-2.2.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "file",
+          "version": "7.0.1",
+          "digest": "a3b4f84adafef897088c160faf7dfffb7696046cb13ae90b508c2cbc95d3b8d4",
+          "metadata_url": "https://pub.dev/api/packages/file/versions/7.0.1",
+          "archive_url": "https://pub.dev/api/archives/file-7.0.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/file-7.0.1.tar.gz",
+          "archive_bytes": 56783,
+          "observed_archive_sha256": "a3b4f84adafef897088c160faf7dfffb7696046cb13ae90b508c2cbc95d3b8d4",
+          "fresh_extracted_tree_sha256": "3fad9a3130a7b813dcdc736103d840cf9445a4b6187a04a26c7486d727afc5a5",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/file-7.0.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "file_testing",
+          "version": "3.0.2",
+          "digest": "eb0c85fd118ddc0d41c295c09f64e0924c256b071087cdc9828d5372c80d554d",
+          "metadata_url": "https://pub.dev/api/packages/file_testing/versions/3.0.2",
+          "archive_url": "https://pub.dev/api/archives/file_testing-3.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/file_testing-3.0.2.tar.gz",
+          "archive_bytes": 3436,
+          "observed_archive_sha256": "eb0c85fd118ddc0d41c295c09f64e0924c256b071087cdc9828d5372c80d554d",
+          "fresh_extracted_tree_sha256": "0f12511b5482e0997b5c435dc65499a8b0715e7325fb49e9b5cb6bc3b5c4c0e8",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/file_testing-3.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "fixnum",
+          "version": "1.1.1",
+          "digest": "b6dc7065e46c974bc7c5f143080a6764ec7a4be6da1285ececdc37be96de53be",
+          "metadata_url": "https://pub.dev/api/packages/fixnum/versions/1.1.1",
+          "archive_url": "https://pub.dev/api/archives/fixnum-1.1.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/fixnum-1.1.1.tar.gz",
+          "archive_bytes": 24416,
+          "observed_archive_sha256": "b6dc7065e46c974bc7c5f143080a6764ec7a4be6da1285ececdc37be96de53be",
+          "fresh_extracted_tree_sha256": "5dce60b21be40a84b2fd5814f3fb35e27dc1c12a8d6ea28154bc2d1dc1f153d2",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/fixnum-1.1.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "flutter_template_images",
+          "version": "5.0.0",
+          "digest": "0120589a786dbae4e86af1f61748baccd8530abd56a60e7a13479647a75222fe",
+          "metadata_url": "https://pub.dev/api/packages/flutter_template_images/versions/5.0.0",
+          "archive_url": "https://pub.dev/api/archives/flutter_template_images-5.0.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/flutter_template_images-5.0.0.tar.gz",
+          "archive_bytes": 485296,
+          "observed_archive_sha256": "0120589a786dbae4e86af1f61748baccd8530abd56a60e7a13479647a75222fe",
+          "fresh_extracted_tree_sha256": "5e0c5b786e09b3861a3d7ddc4f42da4b37c18bb61e62ab97dedd8c59fbdba41f",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/flutter_template_images-5.0.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "frontend_server_client",
+          "version": "4.0.0",
+          "digest": "f64a0333a82f30b0cca061bc3d143813a486dc086b574bfb233b7c1372427694",
+          "metadata_url": "https://pub.dev/api/packages/frontend_server_client/versions/4.0.0",
+          "archive_url": "https://pub.dev/api/archives/frontend_server_client-4.0.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/frontend_server_client-4.0.0.tar.gz",
+          "archive_bytes": 14419,
+          "observed_archive_sha256": "f64a0333a82f30b0cca061bc3d143813a486dc086b574bfb233b7c1372427694",
+          "fresh_extracted_tree_sha256": "e011a10187e52a6a068a2522af65ce2f391386f36326a2b42c8850f827b83553",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/frontend_server_client-4.0.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "glob",
+          "version": "2.1.3",
+          "digest": "c3f1ee72c96f8f78935e18aa8cecced9ab132419e8625dc187e1c2408efc20de",
+          "metadata_url": "https://pub.dev/api/packages/glob/versions/2.1.3",
+          "archive_url": "https://pub.dev/api/archives/glob-2.1.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/glob-2.1.3.tar.gz",
+          "archive_bytes": 22395,
+          "observed_archive_sha256": "c3f1ee72c96f8f78935e18aa8cecced9ab132419e8625dc187e1c2408efc20de",
+          "fresh_extracted_tree_sha256": "5026480bddd3314dd20f167c3e20e55f5ccd6df0eb420b05dc20fcea97faedb5",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/glob-2.1.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "graphs",
+          "version": "2.3.2",
+          "digest": "741bbf84165310a68ff28fe9e727332eef1407342fca52759cb21ad8177bb8d0",
+          "metadata_url": "https://pub.dev/api/packages/graphs/versions/2.3.2",
+          "archive_url": "https://pub.dev/api/archives/graphs-2.3.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/graphs-2.3.2.tar.gz",
+          "archive_bytes": 16263,
+          "observed_archive_sha256": "741bbf84165310a68ff28fe9e727332eef1407342fca52759cb21ad8177bb8d0",
+          "fresh_extracted_tree_sha256": "5519926b054ba38776e99ea77a180ba2bd3049db923f95c7319ad859e1c17eb0",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/graphs-2.3.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "hooks",
+          "version": "2.0.2",
+          "digest": "9a62a50b50b769a737bc0a8ff381f333529df3ab746b2f6b02e83760231455ba",
+          "metadata_url": "https://pub.dev/api/packages/hooks/versions/2.0.2",
+          "archive_url": "https://pub.dev/api/archives/hooks-2.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/hooks-2.0.2.tar.gz",
+          "archive_bytes": 36651,
+          "observed_archive_sha256": "9a62a50b50b769a737bc0a8ff381f333529df3ab746b2f6b02e83760231455ba",
+          "fresh_extracted_tree_sha256": "c731f9bb16978e683613ee5991b05fe7c65f614cc48be208639e214a458a9bd1",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/hooks-2.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "hooks_runner",
+          "version": "1.5.0",
+          "digest": "a67ab8106545fcffcf5c43edf84b4be222fc95a9fbec8baef1bcaf4534540cfc",
+          "metadata_url": "https://pub.dev/api/packages/hooks_runner/versions/1.5.0",
+          "archive_url": "https://pub.dev/api/archives/hooks_runner-1.5.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/hooks_runner-1.5.0.tar.gz",
+          "archive_bytes": 34171,
+          "observed_archive_sha256": "a67ab8106545fcffcf5c43edf84b4be222fc95a9fbec8baef1bcaf4534540cfc",
+          "fresh_extracted_tree_sha256": "d1d85decc48326a95a95d0099275017569b232241d7f1877cd2e697f0087472d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/hooks_runner-1.5.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "html",
+          "version": "0.15.6",
+          "digest": "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602",
+          "metadata_url": "https://pub.dev/api/packages/html/versions/0.15.6",
+          "archive_url": "https://pub.dev/api/archives/html-0.15.6.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/html-0.15.6.tar.gz",
+          "archive_bytes": 232248,
+          "observed_archive_sha256": "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602",
+          "fresh_extracted_tree_sha256": "52affdf043c9b5f68321159af2431a8c0a58f1124dc58852c1f0b72c02008f94",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/html-0.15.6",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "http",
+          "version": "1.6.0",
+          "digest": "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412",
+          "metadata_url": "https://pub.dev/api/packages/http/versions/1.6.0",
+          "archive_url": "https://pub.dev/api/archives/http-1.6.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/http-1.6.0.tar.gz",
+          "archive_bytes": 46315,
+          "observed_archive_sha256": "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412",
+          "fresh_extracted_tree_sha256": "453b7cdfd49a333c0732b79e20bc2b1dfd1c4f2016d7a59b0660f6f70801d5dc",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/http-1.6.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "http_multi_server",
+          "version": "3.2.2",
+          "digest": "aa6199f908078bb1c5efb8d8638d4ae191aac11b311132c3ef48ce352fb52ef8",
+          "metadata_url": "https://pub.dev/api/packages/http_multi_server/versions/3.2.2",
+          "archive_url": "https://pub.dev/api/archives/http_multi_server-3.2.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/http_multi_server-3.2.2.tar.gz",
+          "archive_bytes": 11690,
+          "observed_archive_sha256": "aa6199f908078bb1c5efb8d8638d4ae191aac11b311132c3ef48ce352fb52ef8",
+          "fresh_extracted_tree_sha256": "1955b911f6f0700d44f4bfff5323fbc9e823cab045d8aae2932c0f49ee487c4a",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/http_multi_server-3.2.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "http_parser",
+          "version": "4.1.2",
+          "digest": "178d74305e7866013777bab2c3d8726205dc5a4dd935297175b19a23a2e66571",
+          "metadata_url": "https://pub.dev/api/packages/http_parser/versions/4.1.2",
+          "archive_url": "https://pub.dev/api/archives/http_parser-4.1.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/http_parser-4.1.2.tar.gz",
+          "archive_bytes": 17424,
+          "observed_archive_sha256": "178d74305e7866013777bab2c3d8726205dc5a4dd935297175b19a23a2e66571",
+          "fresh_extracted_tree_sha256": "b0d291e270bb44c4a2aa06769702a24e9b4993dc70be61596bed2c4bc54ce35c",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/http_parser-4.1.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "intl",
+          "version": "0.20.3",
+          "digest": "1ca20c894b1717686a2319b8548763d812bc0aabdac580420a44c5178c57a867",
+          "metadata_url": "https://pub.dev/api/packages/intl/versions/0.20.3",
+          "archive_url": "https://pub.dev/api/archives/intl-0.20.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/intl-0.20.3.tar.gz",
+          "archive_bytes": 302642,
+          "observed_archive_sha256": "1ca20c894b1717686a2319b8548763d812bc0aabdac580420a44c5178c57a867",
+          "fresh_extracted_tree_sha256": "f6de6dbb9212ef8e0564a9dba3062242bde1844f8291630a6b0a13de8456f6de",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/intl-0.20.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "io",
+          "version": "1.0.5",
+          "digest": "dfd5a80599cf0165756e3181807ed3e77daf6dd4137caaad72d0b7931597650b",
+          "metadata_url": "https://pub.dev/api/packages/io/versions/1.0.5",
+          "archive_url": "https://pub.dev/api/archives/io-1.0.5.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/io-1.0.5.tar.gz",
+          "archive_bytes": 17975,
+          "observed_archive_sha256": "dfd5a80599cf0165756e3181807ed3e77daf6dd4137caaad72d0b7931597650b",
+          "fresh_extracted_tree_sha256": "a72f77971a18586eecb8477ec6c63c7922cf86bde3cd19efd93e2a6f3dd6f9d7",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/io-1.0.5",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "js",
+          "version": "0.7.2",
+          "digest": "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc",
+          "metadata_url": "https://pub.dev/api/packages/js/versions/0.7.2",
+          "archive_url": "https://pub.dev/api/archives/js-0.7.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/js-0.7.2.tar.gz",
+          "archive_bytes": 9994,
+          "observed_archive_sha256": "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc",
+          "fresh_extracted_tree_sha256": "70d323f951bbe98e46b6e2e270f1642ec9d6321094f31641d6037feb694638f6",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/js-0.7.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "json_annotation",
+          "version": "4.12.0",
+          "digest": "2a743920d81b7910627f68ee2c9ac1fc0bfee32b9fc3403587d7c6791ca12f80",
+          "metadata_url": "https://pub.dev/api/packages/json_annotation/versions/4.12.0",
+          "archive_url": "https://pub.dev/api/archives/json_annotation-4.12.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/json_annotation-4.12.0.tar.gz",
+          "archive_bytes": 13940,
+          "observed_archive_sha256": "2a743920d81b7910627f68ee2c9ac1fc0bfee32b9fc3403587d7c6791ca12f80",
+          "fresh_extracted_tree_sha256": "e2c1360f92930fb9bf6082345a08cbc63bf983b3ead70bcf944c0bdf2c861e76",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/json_annotation-4.12.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "json_rpc_2",
+          "version": "4.1.0",
+          "digest": "82dfd37d3b2e5030ae4729e1d7f5538cbc45eb1c73d618b9272931facac3bec1",
+          "metadata_url": "https://pub.dev/api/packages/json_rpc_2/versions/4.1.0",
+          "archive_url": "https://pub.dev/api/archives/json_rpc_2-4.1.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/json_rpc_2-4.1.0.tar.gz",
+          "archive_bytes": 23684,
+          "observed_archive_sha256": "82dfd37d3b2e5030ae4729e1d7f5538cbc45eb1c73d618b9272931facac3bec1",
+          "fresh_extracted_tree_sha256": "6f78f3fc392adfe57a9356148ef62c861b05b8cc7ca71404143dca14f599dfaa",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/json_rpc_2-4.1.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "leak_tracker",
+          "version": "11.0.2",
+          "digest": "33e2e26bdd85a0112ec15400c8cbffea70d0f9c3407491f672a2fad47915e2de",
+          "metadata_url": "https://pub.dev/api/packages/leak_tracker/versions/11.0.2",
+          "archive_url": "https://pub.dev/api/archives/leak_tracker-11.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/leak_tracker-11.0.2.tar.gz",
+          "archive_bytes": 34448,
+          "observed_archive_sha256": "33e2e26bdd85a0112ec15400c8cbffea70d0f9c3407491f672a2fad47915e2de",
+          "fresh_extracted_tree_sha256": "5281d0663e5d2075323c95cb2f588fff762922247eed4da287e2f50cbd60f81a",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/leak_tracker-11.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "leak_tracker_flutter_testing",
+          "version": "3.0.10",
+          "digest": "1dbc140bb5a23c75ea9c4811222756104fbcd1a27173f0c34ca01e16bea473c1",
+          "metadata_url": "https://pub.dev/api/packages/leak_tracker_flutter_testing/versions/3.0.10",
+          "archive_url": "https://pub.dev/api/archives/leak_tracker_flutter_testing-3.0.10.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/leak_tracker_flutter_testing-3.0.10.tar.gz",
+          "archive_bytes": 10363,
+          "observed_archive_sha256": "1dbc140bb5a23c75ea9c4811222756104fbcd1a27173f0c34ca01e16bea473c1",
+          "fresh_extracted_tree_sha256": "5d26a364acf402b13db99832367ec1fa18a8cf9d822ef398b6261e5a6cf1487a",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/leak_tracker_flutter_testing-3.0.10",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "leak_tracker_testing",
+          "version": "3.0.2",
+          "digest": "8d5a2d49f4a66b49744b23b018848400d23e54caf9463f4eb20df3eb8acb2eb1",
+          "metadata_url": "https://pub.dev/api/packages/leak_tracker_testing/versions/3.0.2",
+          "archive_url": "https://pub.dev/api/archives/leak_tracker_testing-3.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/leak_tracker_testing-3.0.2.tar.gz",
+          "archive_bytes": 7535,
+          "observed_archive_sha256": "8d5a2d49f4a66b49744b23b018848400d23e54caf9463f4eb20df3eb8acb2eb1",
+          "fresh_extracted_tree_sha256": "9919ee6015a6b6fd9aebb32c4b89cb90cdb5090e65f44ee2e4e66211d26710f2",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/leak_tracker_testing-3.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "logging",
+          "version": "1.3.0",
+          "digest": "c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61",
+          "metadata_url": "https://pub.dev/api/packages/logging/versions/1.3.0",
+          "archive_url": "https://pub.dev/api/archives/logging-1.3.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/logging-1.3.0.tar.gz",
+          "archive_bytes": 12198,
+          "observed_archive_sha256": "c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61",
+          "fresh_extracted_tree_sha256": "26ed17a77a9dfe8c6e306f54b87bdeac3a9c30dc97907ab5abd995aa7accff5a",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/logging-1.3.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "matcher",
+          "version": "0.12.20",
+          "digest": "31bd099b47c10cd1aeb55146a2d46ce0277630ecef3f7dae54ad7873f36696cd",
+          "metadata_url": "https://pub.dev/api/packages/matcher/versions/0.12.20",
+          "archive_url": "https://pub.dev/api/archives/matcher-0.12.20.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/matcher-0.12.20.tar.gz",
+          "archive_bytes": 59725,
+          "observed_archive_sha256": "31bd099b47c10cd1aeb55146a2d46ce0277630ecef3f7dae54ad7873f36696cd",
+          "fresh_extracted_tree_sha256": "2cf5cc605f33305288242111b845fd365b6053e7c8828da7375c2b90db29d3f5",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/matcher-0.12.20",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "material_color_utilities",
+          "version": "0.13.0",
+          "digest": "9c337007e82b1889149c82ed242ed1cb24a66044e30979c44912381e9be4c48b",
+          "metadata_url": "https://pub.dev/api/packages/material_color_utilities/versions/0.13.0",
+          "archive_url": "https://pub.dev/api/archives/material_color_utilities-0.13.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/material_color_utilities-0.13.0.tar.gz",
+          "archive_bytes": 2115434,
+          "observed_archive_sha256": "9c337007e82b1889149c82ed242ed1cb24a66044e30979c44912381e9be4c48b",
+          "fresh_extracted_tree_sha256": "7d4935327429484b9ecce1ff935e4f9104ee0656cfc54738e6cf6f0044b462b9",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/material_color_utilities-0.13.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "meta",
+          "version": "1.18.3",
+          "digest": "c82594181e3312f3d0695fc95aaaf7758d75b8d4ae2bbecf223b9fd5109a059d",
+          "metadata_url": "https://pub.dev/api/packages/meta/versions/1.18.3",
+          "archive_url": "https://pub.dev/api/archives/meta-1.18.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/meta-1.18.3.tar.gz",
+          "archive_bytes": 16874,
+          "observed_archive_sha256": "c82594181e3312f3d0695fc95aaaf7758d75b8d4ae2bbecf223b9fd5109a059d",
+          "fresh_extracted_tree_sha256": "f4c93cbeebccb3389467b9a3e88d0f7d4168b57c3912d6f445a8d7a0cd5db8a1",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/meta-1.18.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "meta",
+          "version": "1.19.0",
+          "digest": "307249ce4ff29d58a18e97f6345f539382eb9c9c29ecda628900f31de0443dd9",
+          "metadata_url": "https://pub.dev/api/packages/meta/versions/1.19.0",
+          "archive_url": "https://pub.dev/api/archives/meta-1.19.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/meta-1.19.0.tar.gz",
+          "archive_bytes": 17258,
+          "observed_archive_sha256": "307249ce4ff29d58a18e97f6345f539382eb9c9c29ecda628900f31de0443dd9",
+          "fresh_extracted_tree_sha256": "345da85c5c1e5960d126ae66feb8e9fed781fbb95c09600890815456bb9ed18d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/meta-1.19.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "mime",
+          "version": "2.0.0",
+          "digest": "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6",
+          "metadata_url": "https://pub.dev/api/packages/mime/versions/2.0.0",
+          "archive_url": "https://pub.dev/api/archives/mime-2.0.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/mime-2.0.0.tar.gz",
+          "archive_bytes": 24379,
+          "observed_archive_sha256": "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6",
+          "fresh_extracted_tree_sha256": "a606e80b8382f701c4e4c463b9c612d159faf8cfb8bfc235bc4aacb53fe260ec",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/mime-2.0.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "multicast_dns",
+          "version": "0.3.3+1",
+          "digest": "134668a9605c747322d8c3eb0e89a4c0cbdedb29f8d2d5ae29d14daef724987b",
+          "metadata_url": "https://pub.dev/api/packages/multicast_dns/versions/0.3.3+1",
+          "archive_url": "https://pub.dev/api/archives/multicast_dns-0.3.3%2B1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/multicast_dns-0.3.3+1.tar.gz",
+          "archive_bytes": 18783,
+          "observed_archive_sha256": "134668a9605c747322d8c3eb0e89a4c0cbdedb29f8d2d5ae29d14daef724987b",
+          "fresh_extracted_tree_sha256": "ed34a49266df10200daa6ee77c0894b9026dffec64929c659081c07cc1b0acfb",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/multicast_dns-0.3.3+1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "mustache_template",
+          "version": "2.0.5",
+          "digest": "c689b4d59176f8c7a2860aab765d205916aa5b06cfafff7613bfcc42fa996143",
+          "metadata_url": "https://pub.dev/api/packages/mustache_template/versions/2.0.5",
+          "archive_url": "https://pub.dev/api/archives/mustache_template-2.0.5.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/mustache_template-2.0.5.tar.gz",
+          "archive_bytes": 38811,
+          "observed_archive_sha256": "c689b4d59176f8c7a2860aab765d205916aa5b06cfafff7613bfcc42fa996143",
+          "fresh_extracted_tree_sha256": "8cf0753ee411075e9a5358e66d31d9c8727bca05c0e347d08d9c39374f2f9cdc",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/mustache_template-2.0.5",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "native_stack_traces",
+          "version": "0.6.1",
+          "digest": "d34cf916db87b14d39465b3e3b4b4a8ee1f304bde6ed7605571e34802e3d6a11",
+          "metadata_url": "https://pub.dev/api/packages/native_stack_traces/versions/0.6.1",
+          "archive_url": "https://pub.dev/api/archives/native_stack_traces-0.6.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/native_stack_traces-0.6.1.tar.gz",
+          "archive_bytes": 46469,
+          "observed_archive_sha256": "d34cf916db87b14d39465b3e3b4b4a8ee1f304bde6ed7605571e34802e3d6a11",
+          "fresh_extracted_tree_sha256": "0718de4c8c4061afcffa1df29af73306cffdf361a57b27de7d6384d6c04e4270",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/native_stack_traces-0.6.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "node_preamble",
+          "version": "2.0.2",
+          "digest": "6e7eac89047ab8a8d26cf16127b5ed26de65209847630400f9aefd7cd5c730db",
+          "metadata_url": "https://pub.dev/api/packages/node_preamble/versions/2.0.2",
+          "archive_url": "https://pub.dev/api/archives/node_preamble-2.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/node_preamble-2.0.2.tar.gz",
+          "archive_bytes": 6563,
+          "observed_archive_sha256": "6e7eac89047ab8a8d26cf16127b5ed26de65209847630400f9aefd7cd5c730db",
+          "fresh_extracted_tree_sha256": "7fd4899ebd7fe96cde19682eb902f838dce7bccd826e67d0b6c337347dda7968",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/node_preamble-2.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "package_config",
+          "version": "2.2.0",
+          "digest": "f096c55ebb7deb7e384101542bfba8c52696c1b56fca2eb62827989ef2353bbc",
+          "metadata_url": "https://pub.dev/api/packages/package_config/versions/2.2.0",
+          "archive_url": "https://pub.dev/api/archives/package_config-2.2.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/package_config-2.2.0.tar.gz",
+          "archive_bytes": 33690,
+          "observed_archive_sha256": "f096c55ebb7deb7e384101542bfba8c52696c1b56fca2eb62827989ef2353bbc",
+          "fresh_extracted_tree_sha256": "fbec7d80565ea030aa665390d86d2b66091c02b995274c8453a224b41c13fd77",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/package_config-2.2.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "path",
+          "version": "1.9.1",
+          "digest": "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5",
+          "metadata_url": "https://pub.dev/api/packages/path/versions/1.9.1",
+          "archive_url": "https://pub.dev/api/archives/path-1.9.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/path-1.9.1.tar.gz",
+          "archive_bytes": 45282,
+          "observed_archive_sha256": "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5",
+          "fresh_extracted_tree_sha256": "2efc93ef20347c910e192630abbbbdb07c6ac70dec044e6765eb911080f69868",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/path-1.9.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "petitparser",
+          "version": "7.0.2",
+          "digest": "91bd59303e9f769f108f8df05e371341b15d59e995e6806aefab827b58336675",
+          "metadata_url": "https://pub.dev/api/packages/petitparser/versions/7.0.2",
+          "archive_url": "https://pub.dev/api/archives/petitparser-7.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/petitparser-7.0.2.tar.gz",
+          "archive_bytes": 125648,
+          "observed_archive_sha256": "91bd59303e9f769f108f8df05e371341b15d59e995e6806aefab827b58336675",
+          "fresh_extracted_tree_sha256": "deef6b58f186b7bafb016dc9b6d8a847d4b7755dc8e1a47b10138a6dced5761a",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/petitparser-7.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "platform",
+          "version": "3.1.6",
+          "digest": "5d6b1b0036a5f331ebc77c850ebc8506cbc1e9416c27e59b439f917a902a4984",
+          "metadata_url": "https://pub.dev/api/packages/platform/versions/3.1.6",
+          "archive_url": "https://pub.dev/api/archives/platform-3.1.6.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/platform-3.1.6.tar.gz",
+          "archive_bytes": 8453,
+          "observed_archive_sha256": "5d6b1b0036a5f331ebc77c850ebc8506cbc1e9416c27e59b439f917a902a4984",
+          "fresh_extracted_tree_sha256": "2ca89f61f3e3f93781f04bd241987ae792aaac8491d70ea60e2bcafb71e78523",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/platform-3.1.6",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "pool",
+          "version": "1.5.2",
+          "digest": "978783255c543aa3586a1b3c21f6e9d720eb315376a915872c61ef8b5c20177d",
+          "metadata_url": "https://pub.dev/api/packages/pool/versions/1.5.2",
+          "archive_url": "https://pub.dev/api/archives/pool-1.5.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/pool-1.5.2.tar.gz",
+          "archive_bytes": 11161,
+          "observed_archive_sha256": "978783255c543aa3586a1b3c21f6e9d720eb315376a915872c61ef8b5c20177d",
+          "fresh_extracted_tree_sha256": "bcad6d1e5244e2d1df23274491c58fba4daade92eeced6c34bbcfccb8108863e",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/pool-1.5.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "process",
+          "version": "5.0.5",
+          "digest": "c6248e4526673988586e8c00bb22a49210c258dc91df5227d5da9748ecf79744",
+          "metadata_url": "https://pub.dev/api/packages/process/versions/5.0.5",
+          "archive_url": "https://pub.dev/api/archives/process-5.0.5.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/process-5.0.5.tar.gz",
+          "archive_bytes": 13251,
+          "observed_archive_sha256": "c6248e4526673988586e8c00bb22a49210c258dc91df5227d5da9748ecf79744",
+          "fresh_extracted_tree_sha256": "d150700e9fcc9c18284f76bfc728a4d4a0f5cf59dfb904d85b7db26aad6e23ca",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/process-5.0.5",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "pub_semver",
+          "version": "2.2.0",
+          "digest": "5bfcf68ca79ef689f8990d1160781b4bad40a3bd5e5218ad4076ddb7f4081585",
+          "metadata_url": "https://pub.dev/api/packages/pub_semver/versions/2.2.0",
+          "archive_url": "https://pub.dev/api/archives/pub_semver-2.2.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/pub_semver-2.2.0.tar.gz",
+          "archive_bytes": 25661,
+          "observed_archive_sha256": "5bfcf68ca79ef689f8990d1160781b4bad40a3bd5e5218ad4076ddb7f4081585",
+          "fresh_extracted_tree_sha256": "e1267598dd35f9ced886f7fe442fe4e681e02e5d02992d29ce8134c368064abf",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/pub_semver-2.2.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "pubspec_parse",
+          "version": "1.5.0",
+          "digest": "0560ba233314abbed0a48a2956f7f022cce7c3e1e73df540277da7544cad4082",
+          "metadata_url": "https://pub.dev/api/packages/pubspec_parse/versions/1.5.0",
+          "archive_url": "https://pub.dev/api/archives/pubspec_parse-1.5.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/pubspec_parse-1.5.0.tar.gz",
+          "archive_bytes": 15686,
+          "observed_archive_sha256": "0560ba233314abbed0a48a2956f7f022cce7c3e1e73df540277da7544cad4082",
+          "fresh_extracted_tree_sha256": "bc7be567cb0a71e365e1d1f89f02e1c4d5cebc8f310b8efac0d236d3100ae836",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/pubspec_parse-1.5.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "record_use",
+          "version": "0.6.0",
+          "digest": "2551bd8eecfe95d14ae75f6021ad0248be5c27f138c2ec12fcb52b500b3ba1ed",
+          "metadata_url": "https://pub.dev/api/packages/record_use/versions/0.6.0",
+          "archive_url": "https://pub.dev/api/archives/record_use-0.6.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/record_use-0.6.0.tar.gz",
+          "archive_bytes": 61704,
+          "observed_archive_sha256": "2551bd8eecfe95d14ae75f6021ad0248be5c27f138c2ec12fcb52b500b3ba1ed",
+          "fresh_extracted_tree_sha256": "4cff6c52361809fec9411dc8aad0631726e65129fc8ee66de492e5414d2f6a01",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/record_use-0.6.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "shelf",
+          "version": "1.4.2",
+          "digest": "e7dd780a7ffb623c57850b33f43309312fc863fb6aa3d276a754bb299839ef12",
+          "metadata_url": "https://pub.dev/api/packages/shelf/versions/1.4.2",
+          "archive_url": "https://pub.dev/api/archives/shelf-1.4.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/shelf-1.4.2.tar.gz",
+          "archive_bytes": 47492,
+          "observed_archive_sha256": "e7dd780a7ffb623c57850b33f43309312fc863fb6aa3d276a754bb299839ef12",
+          "fresh_extracted_tree_sha256": "1ef0346cc64030cb125bb8fdb125603b0a7c70c2278eaacdf8e0ade664f0ab3d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/shelf-1.4.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "shelf_packages_handler",
+          "version": "3.0.2",
+          "digest": "89f967eca29607c933ba9571d838be31d67f53f6e4ee15147d5dc2934fee1b1e",
+          "metadata_url": "https://pub.dev/api/packages/shelf_packages_handler/versions/3.0.2",
+          "archive_url": "https://pub.dev/api/archives/shelf_packages_handler-3.0.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/shelf_packages_handler-3.0.2.tar.gz",
+          "archive_bytes": 4243,
+          "observed_archive_sha256": "89f967eca29607c933ba9571d838be31d67f53f6e4ee15147d5dc2934fee1b1e",
+          "fresh_extracted_tree_sha256": "1f73277a5b62383a5826ef803a08bb615a13cc29f322b604ad1cc93344e5e6d9",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/shelf_packages_handler-3.0.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "shelf_proxy",
+          "version": "1.0.5",
+          "digest": "0c3a7b2b4c111cae8a6d9077701e0622c6013d38a780373ac359d6d45b3aa10b",
+          "metadata_url": "https://pub.dev/api/packages/shelf_proxy/versions/1.0.5",
+          "archive_url": "https://pub.dev/api/archives/shelf_proxy-1.0.5.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/shelf_proxy-1.0.5.tar.gz",
+          "archive_bytes": 5842,
+          "observed_archive_sha256": "0c3a7b2b4c111cae8a6d9077701e0622c6013d38a780373ac359d6d45b3aa10b",
+          "fresh_extracted_tree_sha256": "e68fa03e9bcd7bfc3063070e057a3aa2dd173d9669ecf25b8036c4ce3be63dd4",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/shelf_proxy-1.0.5",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "shelf_static",
+          "version": "1.1.3",
+          "digest": "c87c3875f91262785dade62d135760c2c69cb217ac759485334c5857ad89f6e3",
+          "metadata_url": "https://pub.dev/api/packages/shelf_static/versions/1.1.3",
+          "archive_url": "https://pub.dev/api/archives/shelf_static-1.1.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/shelf_static-1.1.3.tar.gz",
+          "archive_bytes": 18155,
+          "observed_archive_sha256": "c87c3875f91262785dade62d135760c2c69cb217ac759485334c5857ad89f6e3",
+          "fresh_extracted_tree_sha256": "48c7b082a2c5baab40ab8636bf3b78d7eb341651a980f404df44f0a9e6886170",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/shelf_static-1.1.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "shelf_web_socket",
+          "version": "3.0.0",
+          "digest": "3632775c8e90d6c9712f883e633716432a27758216dfb61bd86a8321c0580925",
+          "metadata_url": "https://pub.dev/api/packages/shelf_web_socket/versions/3.0.0",
+          "archive_url": "https://pub.dev/api/archives/shelf_web_socket-3.0.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/shelf_web_socket-3.0.0.tar.gz",
+          "archive_bytes": 7182,
+          "observed_archive_sha256": "3632775c8e90d6c9712f883e633716432a27758216dfb61bd86a8321c0580925",
+          "fresh_extracted_tree_sha256": "f20611ec3d603580e5a8466510a953a07766aef1070d329817f71f31bf5633ba",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/shelf_web_socket-3.0.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "source_map_stack_trace",
+          "version": "2.1.2",
+          "digest": "c0713a43e323c3302c2abe2a1cc89aa057a387101ebd280371d6a6c9fa68516b",
+          "metadata_url": "https://pub.dev/api/packages/source_map_stack_trace/versions/2.1.2",
+          "archive_url": "https://pub.dev/api/archives/source_map_stack_trace-2.1.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/source_map_stack_trace-2.1.2.tar.gz",
+          "archive_bytes": 6237,
+          "observed_archive_sha256": "c0713a43e323c3302c2abe2a1cc89aa057a387101ebd280371d6a6c9fa68516b",
+          "fresh_extracted_tree_sha256": "3baa892cd7c8a46b76222eff4768ac16ae76103c42dc62bac5f9b88bb837cc4e",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/source_map_stack_trace-2.1.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "source_maps",
+          "version": "0.10.13",
+          "digest": "190222579a448b03896e0ca6eca5998fa810fda630c1d65e2f78b3f638f54812",
+          "metadata_url": "https://pub.dev/api/packages/source_maps/versions/0.10.13",
+          "archive_url": "https://pub.dev/api/archives/source_maps-0.10.13.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/source_maps-0.10.13.tar.gz",
+          "archive_bytes": 23051,
+          "observed_archive_sha256": "190222579a448b03896e0ca6eca5998fa810fda630c1d65e2f78b3f638f54812",
+          "fresh_extracted_tree_sha256": "bb3708fce73675b0fb4a0e144c28ddb07aa5cec48354dca050fe25f65291edd4",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/source_maps-0.10.13",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "source_span",
+          "version": "1.10.2",
+          "digest": "56a02f1f4cd1a2d96303c0144c93bd6d909eea6bee6bf5a0e0b685edbd4c47ab",
+          "metadata_url": "https://pub.dev/api/packages/source_span/versions/1.10.2",
+          "archive_url": "https://pub.dev/api/archives/source_span-1.10.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/source_span-1.10.2.tar.gz",
+          "archive_bytes": 29648,
+          "observed_archive_sha256": "56a02f1f4cd1a2d96303c0144c93bd6d909eea6bee6bf5a0e0b685edbd4c47ab",
+          "fresh_extracted_tree_sha256": "0122e2f0b1531f9ab13e714d04dea3c4c11f16290a00d78d9d0ce40e5bfd8228",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/source_span-1.10.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "sprintf",
+          "version": "7.0.0",
+          "digest": "1fc9ffe69d4df602376b52949af107d8f5703b77cda567c4d7d86a0693120f23",
+          "metadata_url": "https://pub.dev/api/packages/sprintf/versions/7.0.0",
+          "archive_url": "https://pub.dev/api/archives/sprintf-7.0.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/sprintf-7.0.0.tar.gz",
+          "archive_bytes": 6916,
+          "observed_archive_sha256": "1fc9ffe69d4df602376b52949af107d8f5703b77cda567c4d7d86a0693120f23",
+          "fresh_extracted_tree_sha256": "6e40a523c656302611fbc148a542f3271c06ca92eda2773d11cbb22df6b2395c",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/sprintf-7.0.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "sse",
+          "version": "4.2.0",
+          "digest": "a9a804dbde8bfd369da3b4aa241d44d63a6486a97388c54ec166073d88c52302",
+          "metadata_url": "https://pub.dev/api/packages/sse/versions/4.2.0",
+          "archive_url": "https://pub.dev/api/archives/sse-4.2.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/sse-4.2.0.tar.gz",
+          "archive_bytes": 75579,
+          "observed_archive_sha256": "a9a804dbde8bfd369da3b4aa241d44d63a6486a97388c54ec166073d88c52302",
+          "fresh_extracted_tree_sha256": "e02d17c997acccc84a9b426177d2667add6cb9a5c0236bee7b1d02f856da2666",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/sse-4.2.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "stack_trace",
+          "version": "1.12.1",
+          "digest": "8b27215b45d22309b5cddda1aa2b19bdfec9df0e765f2de506401c071d38d1b1",
+          "metadata_url": "https://pub.dev/api/packages/stack_trace/versions/1.12.1",
+          "archive_url": "https://pub.dev/api/archives/stack_trace-1.12.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/stack_trace-1.12.1.tar.gz",
+          "archive_bytes": 35098,
+          "observed_archive_sha256": "8b27215b45d22309b5cddda1aa2b19bdfec9df0e765f2de506401c071d38d1b1",
+          "fresh_extracted_tree_sha256": "29334117b7577bed1f7f3e9b3ae4f62202ca7f4ba07973acc636655ad987e4bf",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/stack_trace-1.12.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "stack_trace",
+          "version": "1.12.2",
+          "digest": "277654b3034d17ac6f9f1cb5595db011b1d5d41e8806866db28e0abaa101c490",
+          "metadata_url": "https://pub.dev/api/packages/stack_trace/versions/1.12.2",
+          "archive_url": "https://pub.dev/api/archives/stack_trace-1.12.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/stack_trace-1.12.2.tar.gz",
+          "archive_bytes": 34019,
+          "observed_archive_sha256": "277654b3034d17ac6f9f1cb5595db011b1d5d41e8806866db28e0abaa101c490",
+          "fresh_extracted_tree_sha256": "054b5a2f31ec90b4a321d0e5d7dbabc76015d74f9893d674268734b8c385c292",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/stack_trace-1.12.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "standard_message_codec",
+          "version": "0.0.1+5",
+          "digest": "f10b3fbdb4d56c6bc4d160ef5b3d6346df7a998a84876d05886a75d17eb290e6",
+          "metadata_url": "https://pub.dev/api/packages/standard_message_codec/versions/0.0.1+5",
+          "archive_url": "https://pub.dev/api/archives/standard_message_codec-0.0.1%2B5.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/standard_message_codec-0.0.1+5.tar.gz",
+          "archive_bytes": 9649,
+          "observed_archive_sha256": "f10b3fbdb4d56c6bc4d160ef5b3d6346df7a998a84876d05886a75d17eb290e6",
+          "fresh_extracted_tree_sha256": "c014bd9cc27f81bc1c39e3f9cfaa6078e187a88744345f68e978eadabf474970",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/standard_message_codec-0.0.1+5",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "stream_channel",
+          "version": "2.1.4",
+          "digest": "969e04c80b8bcdf826f8f16579c7b14d780458bd97f56d107d3950fdbeef059d",
+          "metadata_url": "https://pub.dev/api/packages/stream_channel/versions/2.1.4",
+          "archive_url": "https://pub.dev/api/archives/stream_channel-2.1.4.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/stream_channel-2.1.4.tar.gz",
+          "archive_bytes": 22854,
+          "observed_archive_sha256": "969e04c80b8bcdf826f8f16579c7b14d780458bd97f56d107d3950fdbeef059d",
+          "fresh_extracted_tree_sha256": "4276f301ae0fd6b1770bb01054ad5aaa78f9e5f325b0e0604256d00f1197410f",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/stream_channel-2.1.4",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "string_scanner",
+          "version": "1.4.1",
+          "digest": "921cd31725b72fe181906c6a94d987c78e3b98c2e205b397ea399d4054872b43",
+          "metadata_url": "https://pub.dev/api/packages/string_scanner/versions/1.4.1",
+          "archive_url": "https://pub.dev/api/archives/string_scanner-1.4.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/string_scanner-1.4.1.tar.gz",
+          "archive_bytes": 16495,
+          "observed_archive_sha256": "921cd31725b72fe181906c6a94d987c78e3b98c2e205b397ea399d4054872b43",
+          "fresh_extracted_tree_sha256": "ff59168d07b8c66a1bd97b6cfc7eacbfc1c65d6c47230d7d1be86cc1eda1572f",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/string_scanner-1.4.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "sync_http",
+          "version": "0.3.1",
+          "digest": "7f0cd72eca000d2e026bcd6f990b81d0ca06022ef4e32fb257b30d3d1014a961",
+          "metadata_url": "https://pub.dev/api/packages/sync_http/versions/0.3.1",
+          "archive_url": "https://pub.dev/api/archives/sync_http-0.3.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/sync_http-0.3.1.tar.gz",
+          "archive_bytes": 8426,
+          "observed_archive_sha256": "7f0cd72eca000d2e026bcd6f990b81d0ca06022ef4e32fb257b30d3d1014a961",
+          "fresh_extracted_tree_sha256": "dcba517b36e4e854317e2336797385f32bfcaa23673ecd2fc5d3150c0f9c1fbc",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/sync_http-0.3.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "term_glyph",
+          "version": "1.2.2",
+          "digest": "7f554798625ea768a7518313e58f83891c7f5024f88e46e7182a4558850a4b8e",
+          "metadata_url": "https://pub.dev/api/packages/term_glyph/versions/1.2.2",
+          "archive_url": "https://pub.dev/api/archives/term_glyph-1.2.2.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/term_glyph-1.2.2.tar.gz",
+          "archive_bytes": 9024,
+          "observed_archive_sha256": "7f554798625ea768a7518313e58f83891c7f5024f88e46e7182a4558850a4b8e",
+          "fresh_extracted_tree_sha256": "9a07f107c110da347778f5501670657d9a0d082224ca6c6894caab9710df2ce1",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/term_glyph-1.2.2",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "test",
+          "version": "1.31.1",
+          "digest": "ca578dc12bb8b2f40b67b7d3bd2fac4f31c01a6ff7130a14e2597b919934507f",
+          "metadata_url": "https://pub.dev/api/packages/test/versions/1.31.1",
+          "archive_url": "https://pub.dev/api/archives/test-1.31.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/test-1.31.1.tar.gz",
+          "archive_bytes": 366146,
+          "observed_archive_sha256": "ca578dc12bb8b2f40b67b7d3bd2fac4f31c01a6ff7130a14e2597b919934507f",
+          "fresh_extracted_tree_sha256": "216217c691b24d8b84fbcdca7ad9e52cf8d6237b8a4d08c690e50beeef1f450d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/test-1.31.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "test_api",
+          "version": "0.7.12",
+          "digest": "2a122cbe059f8b610d3a5415f42e255b6c17b1f21eee1d960f31080237fb4f11",
+          "metadata_url": "https://pub.dev/api/packages/test_api/versions/0.7.12",
+          "archive_url": "https://pub.dev/api/archives/test_api-0.7.12.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/test_api-0.7.12.tar.gz",
+          "archive_bytes": 60812,
+          "observed_archive_sha256": "2a122cbe059f8b610d3a5415f42e255b6c17b1f21eee1d960f31080237fb4f11",
+          "fresh_extracted_tree_sha256": "0fe99c1206d658ac9dcf4055ee9841cc6f20571ee3c152650d83d20c25bd32cc",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/test_api-0.7.12",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "test_core",
+          "version": "0.6.18",
+          "digest": "d2e98ec12998368dc59ddd47ab709f2cd55acd6b66dc7db764455a44082f4bc5",
+          "metadata_url": "https://pub.dev/api/packages/test_core/versions/0.6.18",
+          "archive_url": "https://pub.dev/api/archives/test_core-0.6.18.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/test_core-0.6.18.tar.gz",
+          "archive_bytes": 110779,
+          "observed_archive_sha256": "d2e98ec12998368dc59ddd47ab709f2cd55acd6b66dc7db764455a44082f4bc5",
+          "fresh_extracted_tree_sha256": "2118017756e20c0ba356b5c2247eac4ffdf1b8d7849abc79ce233bfe1fc4917b",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/test_core-0.6.18",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "typed_data",
+          "version": "1.4.0",
+          "digest": "f9049c039ebfeb4cf7a7104a675823cd72dba8297f264b6637062516699fa006",
+          "metadata_url": "https://pub.dev/api/packages/typed_data/versions/1.4.0",
+          "archive_url": "https://pub.dev/api/archives/typed_data-1.4.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/typed_data-1.4.0.tar.gz",
+          "archive_bytes": 15910,
+          "observed_archive_sha256": "f9049c039ebfeb4cf7a7104a675823cd72dba8297f264b6637062516699fa006",
+          "fresh_extracted_tree_sha256": "4e86517ab45f88cba33121d242a0e17d572620a82900b5992141df75c976dd28",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/typed_data-1.4.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "unified_analytics",
+          "version": "8.0.15",
+          "digest": "0988c50d794f3cd96f6df92b4b35b7c333bbf869df304fc6062a45ebc7eb0776",
+          "metadata_url": "https://pub.dev/api/packages/unified_analytics/versions/8.0.15",
+          "archive_url": "https://pub.dev/api/archives/unified_analytics-8.0.15.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/unified_analytics-8.0.15.tar.gz",
+          "archive_bytes": 83094,
+          "observed_archive_sha256": "0988c50d794f3cd96f6df92b4b35b7c333bbf869df304fc6062a45ebc7eb0776",
+          "fresh_extracted_tree_sha256": "4706c8dd326da711696bd07bcaa70e0d31acdd46a22f1f146a482f7532da30e3",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/unified_analytics-8.0.15",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "uuid",
+          "version": "4.5.3",
+          "digest": "1fef9e8e11e2991bb773070d4656b7bd5d850967a2456cfc83cf47925ba79489",
+          "metadata_url": "https://pub.dev/api/packages/uuid/versions/4.5.3",
+          "archive_url": "https://pub.dev/api/archives/uuid-4.5.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/uuid-4.5.3.tar.gz",
+          "archive_bytes": 237574,
+          "observed_archive_sha256": "1fef9e8e11e2991bb773070d4656b7bd5d850967a2456cfc83cf47925ba79489",
+          "fresh_extracted_tree_sha256": "63522b267cb01d8cf75b020bd0142432cec899e4db4c0034e34190b6c75d3b22",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/uuid-4.5.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "vector_math",
+          "version": "2.4.3",
+          "digest": "92b9910f66ed1057fd4da7b040ae7c74cafacf885bdc81be496928d5049b032d",
+          "metadata_url": "https://pub.dev/api/packages/vector_math/versions/2.4.3",
+          "archive_url": "https://pub.dev/api/archives/vector_math-2.4.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/vector_math-2.4.3.tar.gz",
+          "archive_bytes": 182955,
+          "observed_archive_sha256": "92b9910f66ed1057fd4da7b040ae7c74cafacf885bdc81be496928d5049b032d",
+          "fresh_extracted_tree_sha256": "8f7a3a4a622fcc2bbaddbe59b8ba16b29ed0794272065105f9f4e3bc580b4e20",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/vector_math-2.4.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "vm_service",
+          "version": "15.2.0",
+          "digest": "0016aef94fc66495ac78af5859181e3f3bf2026bd8eecc72b9565601e19ab360",
+          "metadata_url": "https://pub.dev/api/packages/vm_service/versions/15.2.0",
+          "archive_url": "https://pub.dev/api/archives/vm_service-15.2.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/vm_service-15.2.0.tar.gz",
+          "archive_bytes": 1000087,
+          "observed_archive_sha256": "0016aef94fc66495ac78af5859181e3f3bf2026bd8eecc72b9565601e19ab360",
+          "fresh_extracted_tree_sha256": "2f2d444e1ef4c19391f118325b80739426258cb0886b073c7095111e414cbd1e",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/vm_service-15.2.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "vm_service",
+          "version": "15.3.0",
+          "digest": "5f37239c4851efcef929cea7824e76df7f2f0970aef85d66bbc430afa40e72f0",
+          "metadata_url": "https://pub.dev/api/packages/vm_service/versions/15.3.0",
+          "archive_url": "https://pub.dev/api/archives/vm_service-15.3.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/vm_service-15.3.0.tar.gz",
+          "archive_bytes": 998996,
+          "observed_archive_sha256": "5f37239c4851efcef929cea7824e76df7f2f0970aef85d66bbc430afa40e72f0",
+          "fresh_extracted_tree_sha256": "62ca909a3858badc3b8e00215916d55c86098fdfb71a6714ba98a00219b948e5",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/vm_service-15.3.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "vm_service_interface",
+          "version": "2.0.1",
+          "digest": "503c92c26cf9f77d688bf8fca27fa9ec40450adbf02ec1ec5f12828ded508ac0",
+          "metadata_url": "https://pub.dev/api/packages/vm_service_interface/versions/2.0.1",
+          "archive_url": "https://pub.dev/api/archives/vm_service_interface-2.0.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/vm_service_interface-2.0.1.tar.gz",
+          "archive_bytes": 20915,
+          "observed_archive_sha256": "503c92c26cf9f77d688bf8fca27fa9ec40450adbf02ec1ec5f12828ded508ac0",
+          "fresh_extracted_tree_sha256": "8caef59ab03f249e8116fb9b8de243dd5de3fb566b526d19717667cfcd0681fa",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/vm_service_interface-2.0.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "vm_snapshot_analysis",
+          "version": "0.7.6",
+          "digest": "5a79b9fbb6be2555090f55b03b23907e75d44c3fd7bdd88da09848aa5a1914c8",
+          "metadata_url": "https://pub.dev/api/packages/vm_snapshot_analysis/versions/0.7.6",
+          "archive_url": "https://pub.dev/api/archives/vm_snapshot_analysis-0.7.6.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/vm_snapshot_analysis-0.7.6.tar.gz",
+          "archive_bytes": 129193,
+          "observed_archive_sha256": "5a79b9fbb6be2555090f55b03b23907e75d44c3fd7bdd88da09848aa5a1914c8",
+          "fresh_extracted_tree_sha256": "647b419132dd1be89c5f604ddcf4bffc5e984f7be4b8d83c7cd2647371d13bfb",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/vm_snapshot_analysis-0.7.6",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "watcher",
+          "version": "1.2.1",
+          "digest": "1398c9f081a753f9226febe8900fce8f7d0a67163334e1c94a2438339d79d635",
+          "metadata_url": "https://pub.dev/api/packages/watcher/versions/1.2.1",
+          "archive_url": "https://pub.dev/api/archives/watcher-1.2.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/watcher-1.2.1.tar.gz",
+          "archive_bytes": 57442,
+          "observed_archive_sha256": "1398c9f081a753f9226febe8900fce8f7d0a67163334e1c94a2438339d79d635",
+          "fresh_extracted_tree_sha256": "bfcc544d211107077dcdbd44e1ffc26ac6012990b168759c3f95168e6d93539f",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/watcher-1.2.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "web",
+          "version": "1.1.1",
+          "digest": "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a",
+          "metadata_url": "https://pub.dev/api/packages/web/versions/1.1.1",
+          "archive_url": "https://pub.dev/api/archives/web-1.1.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/web-1.1.1.tar.gz",
+          "archive_bytes": 539843,
+          "observed_archive_sha256": "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a",
+          "fresh_extracted_tree_sha256": "10b0591888b4480e8bd6633b2698982e0a28fd7bf96272da5c194e1128bec381",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/web-1.1.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "web_socket",
+          "version": "1.0.1",
+          "digest": "34d64019aa8e36bf9842ac014bb5d2f5586ca73df5e4d9bf5c936975cae6982c",
+          "metadata_url": "https://pub.dev/api/packages/web_socket/versions/1.0.1",
+          "archive_url": "https://pub.dev/api/archives/web_socket-1.0.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/web_socket-1.0.1.tar.gz",
+          "archive_bytes": 9038,
+          "observed_archive_sha256": "34d64019aa8e36bf9842ac014bb5d2f5586ca73df5e4d9bf5c936975cae6982c",
+          "fresh_extracted_tree_sha256": "23c40d2087d037ca75699c305e306d9e551c1e288804b6183e5ec08fdeaac13d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/web_socket-1.0.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "web_socket_channel",
+          "version": "3.0.3",
+          "digest": "d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8",
+          "metadata_url": "https://pub.dev/api/packages/web_socket_channel/versions/3.0.3",
+          "archive_url": "https://pub.dev/api/archives/web_socket_channel-3.0.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/web_socket_channel-3.0.3.tar.gz",
+          "archive_bytes": 14525,
+          "observed_archive_sha256": "d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8",
+          "fresh_extracted_tree_sha256": "5dde229e5a5aa7c92d30b9e8cd3255ce9ab1831e492894e823258f3bebbc490d",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/web_socket_channel-3.0.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "webdriver",
+          "version": "3.1.0",
+          "digest": "2f3a14ca026957870cfd9c635b83507e0e51d8091568e90129fbf805aba7cade",
+          "metadata_url": "https://pub.dev/api/packages/webdriver/versions/3.1.0",
+          "archive_url": "https://pub.dev/api/archives/webdriver-3.1.0.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/webdriver-3.1.0.tar.gz",
+          "archive_bytes": 78450,
+          "observed_archive_sha256": "2f3a14ca026957870cfd9c635b83507e0e51d8091568e90129fbf805aba7cade",
+          "fresh_extracted_tree_sha256": "cea655d10aa76577ffadba58427b0a6569c9787d062163bcd2372580b77bc2ee",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/webdriver-3.1.0",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "webkit_inspection_protocol",
+          "version": "1.2.1",
+          "digest": "87d3f2333bb240704cd3f1c6b5b7acd8a10e7f0bc28c28dcf14e782014f4a572",
+          "metadata_url": "https://pub.dev/api/packages/webkit_inspection_protocol/versions/1.2.1",
+          "archive_url": "https://pub.dev/api/archives/webkit_inspection_protocol-1.2.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/webkit_inspection_protocol-1.2.1.tar.gz",
+          "archive_bytes": 24985,
+          "observed_archive_sha256": "87d3f2333bb240704cd3f1c6b5b7acd8a10e7f0bc28c28dcf14e782014f4a572",
+          "fresh_extracted_tree_sha256": "1641b9e3caa70da13f97a2cd90ca0d776f8dd9ec34276cd44d2c3f3e64bf6d45",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/webkit_inspection_protocol-1.2.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "xml",
+          "version": "6.6.1",
+          "digest": "971043b3a0d3da28727e40ed3e0b5d18b742fa5a68665cca88e74b7876d5e025",
+          "metadata_url": "https://pub.dev/api/packages/xml/versions/6.6.1",
+          "archive_url": "https://pub.dev/api/archives/xml-6.6.1.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/xml-6.6.1.tar.gz",
+          "archive_bytes": 199307,
+          "observed_archive_sha256": "971043b3a0d3da28727e40ed3e0b5d18b742fa5a68665cca88e74b7876d5e025",
+          "fresh_extracted_tree_sha256": "b6f1fc6fb37bb7426a4f1386e0292ed6416d83e9b60148bb2f34a6e216071ffa",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/xml-6.6.1",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "yaml",
+          "version": "3.1.3",
+          "digest": "b9da305ac7c39faa3f030eccd175340f968459dae4af175130b3fc47e40d76ce",
+          "metadata_url": "https://pub.dev/api/packages/yaml/versions/3.1.3",
+          "archive_url": "https://pub.dev/api/archives/yaml-3.1.3.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/yaml-3.1.3.tar.gz",
+          "archive_bytes": 46513,
+          "observed_archive_sha256": "b9da305ac7c39faa3f030eccd175340f968459dae4af175130b3fc47e40d76ce",
+          "fresh_extracted_tree_sha256": "667ed07c8a5ba64ffbb773f02adfb99006166265ba41e0036df2dc68b4c547dc",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/yaml-3.1.3",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        },
+        {
+          "package": "yaml_edit",
+          "version": "2.2.4",
+          "digest": "07c9e63ba42519745182b88ca12264a7ba2484d8239958778dfe4d44fe760488",
+          "metadata_url": "https://pub.dev/api/packages/yaml_edit/versions/2.2.4",
+          "archive_url": "https://pub.dev/api/archives/yaml_edit-2.2.4.tar.gz",
+          "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-pub/yaml_edit-2.2.4.tar.gz",
+          "archive_bytes": 53911,
+          "observed_archive_sha256": "07c9e63ba42519745182b88ca12264a7ba2484d8239958778dfe4d44fe760488",
+          "fresh_extracted_tree_sha256": "6adc93d053c9a096c8770c28c5cde14c4794e93f35e37a185041776f9e6271b6",
+          "cache_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-pub-verified/hosted/pub.dev/yaml_edit-2.2.4",
+          "status": "publisher-checksum-verified-before-fresh-extraction-no-package-execution"
+        }
+      ],
+      "tool_packages": 101,
+      "widget_hosted_packages": 21,
+      "unique_packages": 111,
+      "qualification": "none"
+    },
+    "flutter-linux-postrun-reverification.json": {
+      "status": "post-offline-Flutter-tool-and-widget-baseline-integrity-check-passed",
+      "utc": "2026-10-06T13:02:29.367818+00:00",
+      "unique_verified_package_archives_and_trees": 111,
+      "publisher_archive_and_observed_hashes_unchanged": true,
+      "native_sidecars_exact64_hex_bytes": true,
+      "package_manifest_sha256": "0a268e6450c85b748dbf944fe29b5ede96fb77435b0979bd9414ab83ac89fce1",
+      "baseline_sha256": "3852b6627ca7412807784885916becd2cd9349092c0ca83e1a80c8dd0ad075f6",
+      "scope": "Read-only byte integrity after original Linux Flutter baseline; no Hayaku qualification."
     }
   },
   "tool_identity_limit": "Individual executable and official archive digests are provisioning evidence; complete mutable installed runtime closure remains a separate admission requirement.",
@@ -7279,6 +8874,158 @@
           "caches/bazel-third-disabled-fetch-failure/bazel-mac-healthy.stderr": "42c346c029487f86146d2c35b2aa69759d8d18a312ba23da7fc8023648a87403"
         }
       }
+    },
+    "flutter-linux-initial-missing-tool-lock-failure.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-initial-missing-tool-lock-failure.json",
+      "sha256": "613a33f51e38bbf43a7fab1109a8f1d6b08d871fa2790322521b1290a5bf4c32",
+      "record": {
+        "stage": "derived Linux Flutter tool offline dependency setup",
+        "failure": "Dart pub --enforce-lockfile rejected missing flutter_tools/pubspec.lock; Git source clone omits this ignored lock shipped in the official SDK archive.",
+        "container_exit": 1,
+        "framework_cases": 0,
+        "qualification": "none",
+        "logs": [
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/dart-version.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/dart-version.stdout",
+            "sha256": "3fdb7ff7f33750dba0e7bc368a7ee303b432e4cfe3388a572233c9d4cb545e5b"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/flutter-linux-bootstrap-container.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/flutter-linux-bootstrap-container.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/flutter-linux-bootstrap-driver.stderr",
+            "sha256": "985454d262e2589ce5a34feff21cc23879b059c0df4dbb9cf52e42dae22700cc"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/flutter-linux-bootstrap-driver.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/tool-offline-pub.stderr",
+            "sha256": "0f7b1caa79898921ee599bb56e8a2eb8898dc87b64c37704d4ed0ab04e5f75ac"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-initial-missing-lock/tool-offline-pub.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ]
+      }
+    },
+    "flutter-linux-initial-sidecar-format-failure.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-initial-sidecar-format-failure.json",
+      "sha256": "1c3f33198f3647bdd6d41d8ff1387226e91c2b6fb44a67d5c65f8c7264a58388",
+      "record": {
+        "stage": "derived Linux Flutter tool offline dependency setup",
+        "failure": "Private publisher-hash sidecars included a newline (65 bytes); original Dart-generated sidecars contain exactly64 hex bytes. Native offline pub rejected all cache hashes and refused network redownload. Official archive digests/extracted package bytes remained unchanged.",
+        "container_exit": 1,
+        "framework_cases": 0,
+        "qualification": "none",
+        "logs": [
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/dart-version.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/dart-version.stdout",
+            "sha256": "3fdb7ff7f33750dba0e7bc368a7ee303b432e4cfe3388a572233c9d4cb545e5b"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/flutter-linux-bootstrap-container.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/flutter-linux-bootstrap-container.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/flutter-linux-bootstrap-driver.stderr",
+            "sha256": "b02a7a6a66883fd61ec6ec05475bc5bdcbd3299f8ed0a71b3d887603d070e288"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/flutter-linux-bootstrap-driver.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/tool-offline-pub.stderr",
+            "sha256": "5021e9b1bb64d2a97ff348a7e3fee69f46280fb556cc9297ced5d4a36c0ca704"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-bootstrap-sidecar-format-failure/tool-offline-pub.stdout",
+            "sha256": "17fd955502fcba362854ade8d49b86219b741bc83b9fb8fa341752ae812c1731"
+          }
+        ]
+      }
+    },
+    "flutter-linux-initial-missing-universal-gradle-failure.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-initial-missing-universal-gradle-failure.json",
+      "sha256": "65f62b3ec18c4cdf9e13f14f9ef43f511994f0f9c4e9cb06c4ac50cf4fa962df",
+      "record": {
+        "stage": "Linux Flutter widget fixture offline dependency setup",
+        "failure": "Flutter requires its universal Gradle-wrapper startup artifact even for this widget fixture. Network-none correctly rejects implicit SDK artifact download; no widget execution reached. Exact platform-neutral prerequisite is available in the checksum-verified official SDK archive.",
+        "container_exit": 1,
+        "framework_cases": 0,
+        "qualification": "none",
+        "logs": [
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/flutter-linux-baseline-driver.stderr",
+            "sha256": "5ff5934146459ed6b8aa560ccc4822f38a9b0443dcb84b4bc6f68b67d0319b52"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/flutter-linux-baseline-driver.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/flutter-linux-widget-container.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/flutter-linux-widget-container.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/offline-lock.stderr",
+            "sha256": "d338721215bdd10f479f2e3caa565cd34deaf922d250e00a270099b97b54ed1d"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/offline-lock.stdout",
+            "sha256": "4cfabd9d3440698fd27fa78029c208eb1e2e78a38e36d62aecf973105c0ceb81"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/version.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/flutter-linux-initial-missing-gradle/version.stdout",
+            "sha256": "3b7584d05da69fb86bf5ddb6c8f7de033bda53f1bf82b3649f02ec514376df6d"
+          }
+        ]
+      }
+    },
+    "flutter-linux-initial-universal-stamp-oracle-failure.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-initial-universal-stamp-oracle-failure.json",
+      "sha256": "2e22b7e38d42a8fbb63ada5fde9d70c3901590918133c565e5f60f97b74e6ecb",
+      "record": {
+        "stage": "Private derived-SDK prerequisite capture preflight",
+        "failure": "Fixture compared raw stamp/version file bytes; official stamp lacks a newline while version file includes one. Native Flutter getStampFor/getVersionFor compare trimmed text. Exact archive-extracted stamp bytes and publisher SHA remain unchanged; fixture now compares native version semantics.",
+        "native_runner_executed": false,
+        "framework_cases": 0,
+        "qualification": "none",
+        "logs": [
+          {
+            "path": "/tmp/hayaku-language-acceptance-bdhM36/flutter-linux-universal-stamp-oracle-failure.stderr",
+            "sha256": "2cc598c7a070323a35e728749eaf2849a18e53c4d271f5065ac3d3f9b8edb8e2"
+          }
+        ]
+      }
     }
   },
   "evidence_parser_failures_after_framework_execution": {
@@ -7314,7 +9061,7 @@
     "schema": 1,
     "status": "local-original-baselines-only; not Hayaku admission or hosted CI acceptance",
     "required_contexts": 40,
-    "passed_contexts": 39,
+    "passed_contexts": 40,
     "contexts": [
       {
         "profile": "01A",
@@ -7584,9 +9331,9 @@
         "profile": "05B",
         "framework": "Flutter widget tests",
         "platform": "linux-arm64",
-        "original_healthy_runtime_fault_baseline": "pending",
+        "original_healthy_runtime_fault_baseline": "passed",
         "qualification": "unqualified",
-        "detail": "pending-offline-original-native-baseline"
+        "detail": "linux-derived-official-components-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified"
       },
       {
         "profile": "06A",

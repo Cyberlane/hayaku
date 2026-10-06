@@ -78,10 +78,12 @@ At this checkpoint, macOS original full-command healthy and seeded runtime-fault
 baselines passed for Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter,
 Gradle/TestNG, xUnit, NUnit, MSTest, RSpec, Minitest, PHPUnit, Bun, Deno, Dart/package:test,
 GoogleTest, Catch2, CTest, Flutter widget tests, ScalaTest, MUnit and Bazel C++
-(20 of 20 named profiles). Linux Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter, Gradle/TestNG, xUnit, NUnit,
-MSTest, RSpec, Minitest, PHPUnit, Bun, Deno, Dart/package:test, GoogleTest, Catch2,
-CTest, ScalaTest, MUnit and Bazel C++ baselines also passed (19 of 20). Rust/Nextest baselines passed on actual macOS and Linux, and all four exact Vitest/Vite
-pairs passed macOS baselines. The Deno record distinguishes an earlier type-check
+(20 of 20 named profiles). Linux Maven/JUnit Jupiter, Maven/TestNG,
+Gradle/JUnit Jupiter, Gradle/TestNG, xUnit, NUnit, MSTest, RSpec, Minitest,
+PHPUnit, Bun, Deno, Dart/package:test, GoogleTest, Catch2, CTest, Flutter widget
+tests, ScalaTest, MUnit and Bazel C++ baselines also passed (20 of 20).
+Rust/Nextest baselines passed on actual macOS and Linux, and all four exact
+Vitest/Vite pairs passed macOS baselines. The Deno record distinguishes an earlier type-check
 failure from the corrected runtime assertion failure. The initial Catch2 exit
 oracle, signed NuGet archive/content-hash distinction, PHP extraction/configuration
 setup failures, Bundler version-display/frozen-option setup failures and Linux Dart cache-write setup failures are retained separately from
@@ -91,3 +93,12 @@ No candidate in this checkpoint gains permission to omit tests.
 
 The PHP baselines cover the bundled PHPUnit PHAR. Composer autoload, lockfile and
 bootstrap variants require separate fixture evidence before profile admission.
+
+Linux Flutter is a derived ARM development candidate assembled from the pinned
+official framework and engine components. The official SDK archive supplies the
+unchanged Flutter tool lock and platform-neutral Gradle wrapper prerequisites;
+the record does not claim an official prepacked ARM SDK or Gradle execution.
+All 111 distinct tool/widget package archives were publisher-verified before
+private extraction and checked again after the offline healthy/fault controls.
+The missing shipped lock, cache sidecar serialization, universal wrapper setup
+and private preflight comparison failures are retained as setup failures.
