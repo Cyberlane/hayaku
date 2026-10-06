@@ -11,10 +11,11 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"unicode/utf8"
 	"unsafe"
 )
 
-const version = "hayaku-linux-boundary-v1"
+const version = "hayaku-linux-boundary-v2"
 
 func fail(err error) { fmt.Fprintln(os.Stderr, "boundary unavailable:", err); os.Exit(125) }
 func call(number, a, b, c uintptr) (uintptr, error) {
@@ -33,25 +34,27 @@ func main() {
 		fail(syscall.EINVAL)
 	}
 	var contract struct {
-		Args []string `json:"args"`
-		Env  []string `json:"env"`
+		Args         []string `json:"args"`
+		Env          []string `json:"env"`
+		Envelope     bool     `json:"envelope"`
+		ScratchBytes int64    `json:"scratch_bytes"`
 	}
 	data, err := os.ReadFile("/input/contract.json")
-	if err != nil || len(data) > 65536 || json.Unmarshal(data, &contract) != nil {
+	if err != nil || len(data) > 65536 || !utf8.Valid(data) || json.Unmarshal(data, &contract) != nil {
 		fail(syscall.EINVAL)
 	}
-	if len(contract.Args) > 128 || len(contract.Env) > 128 {
+	if len(contract.Args) > 128 || len(contract.Env) > 128 || contract.ScratchBytes < 0 || contract.ScratchBytes > 64<<20 || (!contract.Envelope && contract.ScratchBytes != 0) {
 		fail(syscall.EINVAL)
 	}
 	for _, arg := range contract.Args {
-		if strings.ContainsRune(arg, 0) {
+		if !utf8.ValidString(arg) || strings.ContainsRune(arg, 0) {
 			fail(syscall.EINVAL)
 		}
 	}
 	seen := map[string]bool{}
 	for _, entry := range contract.Env {
 		key, _, ok := strings.Cut(entry, "=")
-		if !ok || key == "" || strings.ContainsRune(entry, 0) || seen[key] {
+		if !ok || key == "" || !utf8.ValidString(entry) || strings.ContainsRune(entry, 0) || seen[key] {
 			fail(syscall.EINVAL)
 		}
 		seen[key] = true
@@ -68,26 +71,25 @@ func main() {
 		fail(err)
 	}
 	defer syscall.Close(int(ruleset))
-	fd, err := syscall.Open("/input", 0x200000|syscall.O_CLOEXEC, 0)
-	if err != nil {
+	resources := "/input"
+	programRights := uint64(1)
+	if contract.Envelope {
+		resources = "/input/resources"
+		programRights |= 4
+	}
+	if err := allowPath(ruleset, resources, 4|8); err != nil {
 		fail(err)
 	}
-	// Packed landlock_path_beneath_attr (u64 allowed_access, s32 parent_fd).
-	rule := [2]uint64{4 | 8, uint64(fd)}
-	_, err = call(445, ruleset, 1, uintptr(unsafe.Pointer(&rule)))
-	syscall.Close(fd)
-	if err != nil {
+	if err := allowPath(ruleset, "/input/program", programRights); err != nil {
 		fail(err)
 	}
-	fd, err = syscall.Open("/input/program", 0x200000|syscall.O_CLOEXEC, 0)
-	if err != nil {
-		fail(err)
-	}
-	rule = [2]uint64{1, uint64(fd)}
-	_, err = call(445, ruleset, 1, uintptr(unsafe.Pointer(&rule)))
-	syscall.Close(fd)
-	if err != nil {
-		fail(err)
+	if contract.ScratchBytes != 0 {
+		// Ordinary files/directories only. No executable, device, socket, FIFO
+		// or symlink creation; tmpfs independently supplies noexec/nosuid/nodev.
+		const scratchRights = 2 | 4 | 8 | 16 | 32 | 128 | 256 | 8192 | 16384
+		if err := allowPath(ruleset, "/scratch", scratchRights); err != nil {
+			fail(err)
+		}
 	}
 	if _, err = call(syscall.SYS_PRCTL, 38, 1, 0); err != nil {
 		fail(err)
@@ -103,12 +105,24 @@ func main() {
 	if _, err = call(436, 3, ^uintptr(0), 0); err != nil {
 		fail(err)
 	}
-	if err = syscall.Chdir("/input"); err != nil {
+	if err = syscall.Chdir(resources); err != nil {
 		fail(err)
 	}
 	fmt.Fprintln(os.Stderr, version)
 	err = syscall.Exec("/input/program", append([]string{"/input/program"}, contract.Args...), contract.Env)
 	fail(err)
+}
+
+func allowPath(ruleset uintptr, name string, rights uint64) error {
+	fd, err := syscall.Open(name, 0x200000|syscall.O_CLOEXEC, 0)
+	if err != nil {
+		return err
+	}
+	defer syscall.Close(fd)
+	// Packed landlock_path_beneath_attr (u64 allowed_access, s32 parent_fd).
+	rule := [2]uint64{rights, uint64(fd)}
+	_, err = call(445, ruleset, 1, uintptr(unsafe.Pointer(&rule)))
+	return err
 }
 func filter() error {
 	arch := uint32(0xc00000b7)

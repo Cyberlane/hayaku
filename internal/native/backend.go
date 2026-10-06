@@ -13,8 +13,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/passcache"
@@ -22,7 +25,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/runner"
 )
 
-const boundaryVersion = "hayaku-linux-boundary-v1"
+const boundaryVersion = "hayaku-linux-boundary-v2"
 const contractVersion = "native-pure-groups-v1"
 
 // Docker uses only already provisioned, immutable images. The daemon and its
@@ -33,6 +36,7 @@ type Artifact struct {
 	Cases                []string
 	Args                 []string
 	Env                  []string
+	Envelope             *Envelope `json:"-"`
 }
 type Result struct {
 	Name      string         `json:"name"`
@@ -156,14 +160,52 @@ func (b Backend) unchanged(ctx context.Context) error {
 	}
 	return nil
 }
-func (b Backend) execute(ctx context.Context, a Artifact) (process.Output, error) {
+func (b Backend) execute(ctx context.Context, a Artifact) (result process.Output, runErr error) {
 	// Only private copied artifacts are mounted; never the repository, cache,
 	// compiler, host sockets, credentials or environment.
+	env := a.Env
+	scratchBytes := int64(0)
+	if a.Envelope != nil {
+		if err := a.Envelope.VerifySources(ctx); err != nil {
+			return process.Output{}, err
+		}
+		if len(a.Env) != 0 && !slices.Equal(a.Env, a.Envelope.env) {
+			return process.Output{}, errors.New("native artifact conflicts with envelope environment")
+		}
+		env = a.Envelope.env
+		scratchBytes = a.Envelope.scratchBytes
+	}
+	if err := validateNativeArguments(a.Args, env); err != nil {
+		return process.Output{}, err
+	}
 	dir, err := os.MkdirTemp("", "hayaku-native-envelope-")
 	if err != nil {
 		return process.Output{}, err
 	}
-	defer os.RemoveAll(dir)
+	defer func() {
+		if a.Envelope != nil {
+			_ = removeEnvelopeCopy(filepath.Join(dir, "resources"))
+		}
+		if err := os.RemoveAll(dir); err != nil {
+			result.Completed = false
+			runErr = errors.New("native copied input cleanup failed")
+		}
+	}()
+	if a.Envelope != nil {
+		if err = a.Envelope.materialize(ctx, filepath.Join(dir, "resources")); err != nil {
+			return process.Output{}, err
+		}
+		defer func() {
+			if err := a.Envelope.VerifySources(ctx); err != nil {
+				result.Completed = false
+				runErr = err
+			}
+			if err := a.Envelope.verifyMaterialization(ctx, filepath.Join(dir, "resources")); err != nil {
+				result.Completed = false
+				runErr = err
+			}
+		}()
+	}
 	data, err := readBounded(a.Program, 256<<20)
 	if err != nil || len(data) > 256<<20 {
 		return process.Output{}, errors.New("native program unavailable")
@@ -175,10 +217,12 @@ func (b Backend) execute(ctx context.Context, a Artifact) (process.Output, error
 		return process.Output{}, err
 	}
 	contract, _ := json.Marshal(struct {
-		Args []string `json:"args"`
-		Env  []string `json:"env"`
-	}{a.Args, a.Env})
-	if len(contract) > 65536 || len(a.Args) > 128 || len(a.Env) > 128 {
+		Args         []string `json:"args"`
+		Env          []string `json:"env"`
+		Envelope     bool     `json:"envelope"`
+		ScratchBytes int64    `json:"scratch_bytes"`
+	}{a.Args, env, a.Envelope != nil, scratchBytes})
+	if len(contract) > 65536 {
 		return process.Output{}, errors.New("native arguments or environment exceed limits")
 	}
 	if err = os.WriteFile(filepath.Join(dir, "contract.json"), contract, 0444); err != nil {
@@ -196,7 +240,11 @@ func (b Backend) execute(ctx context.Context, a Artifact) (process.Output, error
 	if strings.ContainsAny(dir, ",:") {
 		return process.Output{}, errors.New("unsupported Docker mount path")
 	}
-	create := []string{"create", "--label=hayaku.native-boundary=v1", "--pull=never", "--network=none", "--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges:true", "--user=65534:65534", "--pids-limit=64", "--memory=256m", "--memory-swap=256m", "--workdir=/input", "--entrypoint=/boundary", "--mount", "type=bind,src=" + dir + ",dst=/input,readonly", "--mount", "type=bind,src=" + worker + ",dst=/boundary,readonly", b.Image, "/input/program"}
+	create := []string{"create", "--label=hayaku.native-boundary=v1", "--pull=never", "--network=none", "--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges:true", "--user=65534:65534", "--pids-limit=64", "--memory=256m", "--memory-swap=256m", "--workdir=/input", "--entrypoint=/boundary", "--mount", "type=bind,src=" + dir + ",dst=/input,readonly", "--mount", "type=bind,src=" + worker + ",dst=/boundary,readonly"}
+	if scratchBytes != 0 {
+		create = append(create, "--tmpfs", "/scratch:rw,noexec,nosuid,nodev,mode=0700,uid=65534,gid=65534,size="+strconv.FormatInt(scratchBytes, 10))
+	}
+	create = append(create, b.Image, "/input/program")
 	made, err := command(ctx, b.Docker, create...)
 	if err != nil {
 		return made, errors.New("native container creation failed")
@@ -211,9 +259,12 @@ func (b Backend) execute(ctx context.Context, a Artifact) (process.Output, error
 	defer func() {
 		cleanup, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		_, _ = command(cleanup, b.Docker, "rm", "--force", "--volumes", id)
+		if _, err := command(cleanup, b.Docker, "rm", "--force", "--volumes", id); err != nil {
+			result.Completed = false
+			runErr = errors.New("native container cleanup failed")
+		}
 	}()
-	result, runErr := command(ctx, b.Docker, "start", "--attach", id)
+	result, runErr = command(ctx, b.Docker, "start", "--attach", id)
 	// Docker attach completion is not itself the guest's exit status.
 	status, statusErr := command(ctx, b.Docker, "inspect", id, "--format", "{{json .State}}")
 	var state struct {
@@ -247,6 +298,12 @@ func (b Backend) execute(ctx context.Context, a Artifact) (process.Output, error
 // by a JSON declaration, previous coverage or user result report.
 func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit bool, decode func(process.Output, Artifact) (model.Outcomes, error)) (Result, error) {
 	r := Result{Name: a.Name, Context: "linux-" + b.Architecture, Qualified: a.Proof != "", Cache: "disabled"}
+	// The operational envelope is not a reviewed language/runtime proof. Reject
+	// before cache lookup or audit mutation, including caller-supplied Proof.
+	if a.Envelope != nil {
+		r.Qualified = false
+		return r, errors.New("native input envelope has no qualified provider")
+	}
 	if !r.Qualified || b.Identity == "" || decode == nil || runner.ValidateInventory(a.inventory()) != nil {
 		r.Qualified = false
 		return r, errors.New("native artifact is not qualified")
@@ -351,6 +408,30 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 		return r, err
 	}
 	return r, runErr
+}
+
+func validateNativeArguments(args, env []string) error {
+	if len(args) > 128 || len(env) > 128 {
+		return errors.New("native arguments or environment exceed limits")
+	}
+	bytes := 0
+	for _, list := range [][]string{args, env} {
+		for _, value := range list {
+			if len(value) > 65536-bytes || !utf8.ValidString(value) || strings.ContainsRune(value, 0) {
+				return errors.New("invalid native argument or environment")
+			}
+			bytes += len(value)
+		}
+	}
+	seen := map[string]bool{}
+	for _, entry := range env {
+		key, _, ok := strings.Cut(entry, "=")
+		if !ok || key == "" || seen[key] {
+			return errors.New("invalid native environment key")
+		}
+		seen[key] = true
+	}
+	return nil
 }
 func passing(o model.Outcomes, a Artifact) bool {
 	return runner.AllPassed(o, a.inventory())

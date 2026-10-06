@@ -66,6 +66,20 @@ func pythonAcceptanceWrite(t *testing.T, root, name, source string) {
 	}
 }
 
+func TestPythonAcceptanceRejectsLossyNativeCaseIdentity(t *testing.T) {
+	source := "import unittest\nclass Values(unittest.TestCase):\n def id(self): return 'custom_case'\n def test_value(self): self.assertEqual(1, 1)\n"
+	root, workspace, execution := pythonAcceptanceFixture(t, "unittest", map[string]string{"test_value.py": source})
+	healthy, err := CollectPythonClosure(context.Background(), root, workspace, execution)
+	if err != nil || len(healthy.Inventory.Cases) != 1 || healthy.Inventory.Cases[0].ID != "custom_case" {
+		t.Fatal("healthy custom native identity unavailable before fault", err)
+	}
+	pythonAcceptanceWrite(t, root, "test_value.py", strings.Replace(source, "custom_case", "case_\\ud800", 1))
+	broken, err := CollectPythonClosure(context.Background(), root, workspace, execution)
+	if err == nil || !reflect.DeepEqual(broken, PythonClosure{}) {
+		t.Fatal("lossy surrogate identity produced usable native evidence")
+	}
+}
+
 func TestPythonAcceptancePinnedProtocolEnvironment(t *testing.T) {
 	t.Setenv("HAYAKU_ACCEPTANCE_AMBIENT", "parent-only")
 	t.Setenv("HAYAKU_ACCEPTANCE_PINNED", "parent-value")

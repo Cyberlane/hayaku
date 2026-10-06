@@ -64,7 +64,7 @@ cards do not authorize native omission or change the capabilities listed here.
 | Integration | Implemented evidence | Assurance |
 | --- | --- | --- |
 | Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted pure-package Linux reuse | Ordinary native plans remain full; imports/cgo/external inputs are outside native group qualification |
-| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected. The fourth pair has local adapter evidence; its aggregate application acceptance and a locked CI fixture remain outstanding |
+| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected. The fourth pair has local adapter and complete application acceptance; a locked CI fixture remains outstanding |
 | Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
@@ -76,9 +76,11 @@ cards do not authorize native omission or change the capabilities listed here.
 `hayaku catalog` lists these distinctions. Report formats may require a runner-specific reporter/export step; an entry does not imply that every runner emits that dialect directly. [Runner support](runner-support.md) records exact fixture versions separately from accepted protocol ranges.
 
 The new independent Vitest collection path has actual installed-runner evidence
-for 4.1.11/8.2.2. Its broader application run failed one resource scenario during
-concurrent checks; that scenario passed unchanged in isolation. The aggregate
-remains failed. New collection behavior on the older pairs remains unverified;
+for 4.1.11/8.2.2. The complete local application aggregate passed in 680.095s on
+2026-10-06 with original per-case limits and no concurrent heavy builds: five
+shared Vitest scenarios and eleven dedicated application checks. A prior run
+timed out one resource scenario under concurrent checks; it is retained as
+historical failed evidence. New collection behavior on older pairs remains unverified;
 a linked dependency tree outside the captured workspace is rejected rather than
 treated as complete evidence.
 

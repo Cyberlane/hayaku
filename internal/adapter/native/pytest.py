@@ -51,7 +51,7 @@ for selector, action in sorted(by_file.items()):
         units.append({'selector': selector, 'action': action})
 payload = {'schema': 1, 'runner': 'pytest', 'version': pytest.__version__, 'complete': complete,
            'errors': results.errors, 'units': units, 'tests': tests}
-serialized = json.dumps(payload, sort_keys=True)
+serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False)
 if len(serialized.encode()) > 16 * 1024 * 1024:
     raise RuntimeError('native pytest metadata limit exceeded')
 with open(request['output'], 'x', encoding='utf-8') as stream:

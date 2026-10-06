@@ -275,7 +275,7 @@ elif mode == 'analyze':
 else:
     raise RuntimeError('unknown mode')
 
-serialized = json.dumps(payload, sort_keys=True)
+serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False)
 if len(serialized.encode()) > 16 * 1024 * 1024:
     raise RuntimeError('metadata bytes')
 with open(request['output'], 'x', encoding='utf-8') as stream:

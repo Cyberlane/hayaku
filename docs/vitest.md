@@ -13,7 +13,7 @@ Hayaku uses installed Vitest/Vite APIs for configured JS/TS import influence, fi
 
 These exact pairs are accepted; missing, mismatched, prerelease or other versions are rejected. The bridge resolves Vite from the installed Vitest package, binds both versions into its protocol, and verifies the returned pair in Go. v3 uses its `init`/vite-node SSR APIs; v4 uses standalone SSR environments. Current upstream documentation can describe a different version: the pinned installed API and fixture tests are the compatibility evidence.
 
-Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for the first three pairs. The fourth pair has passing local adapter checks; its aggregate application acceptance is still pending. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
+Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for the first three pairs. The fourth pair has passing local adapter checks and a complete local application aggregate (680.095s on 2026-10-06); its locked CI fixture remains outstanding. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
 
 ## Configure an existing installation
 

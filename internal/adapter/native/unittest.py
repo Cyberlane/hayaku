@@ -120,7 +120,7 @@ else:
     payload = {'schema': 1, 'runner': 'unittest', 'version': version, 'complete': complete,
                'errors': errors, 'units': units, 'tests': tests}
 
-serialized = json.dumps(payload, sort_keys=True)
+serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False)
 if len(serialized.encode()) > 16 * 1024 * 1024:
     raise RuntimeError('native metadata limit exceeded')
 with open(request['output'], 'x', encoding='utf-8') as stream:
