@@ -73,6 +73,7 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 	configuration := fs.String("config", "", "strict JSON configuration")
 	output := fs.String("output", "", "report file (must not exist)")
 	cache := fs.String("cache-dir", "", "private capsule receipt directory")
+	cacheFlags := registerCacheAuthorityFlags(fs)
 	audit := fs.Bool("no-reuse", false, "execute and invalidate any previous receipt first")
 	destination := fs.String("destination", "", "new input envelope directory (must not exist)")
 	baseline := fs.String("baseline", "", "baseline measurement JSON")
@@ -98,7 +99,7 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 		allowed["cache-dir"] = true
 		allowed["package"] = true
 	case "capsule", "suite":
-		for _, k := range []string{"config", "cache-dir", "no-reuse"} {
+		for _, k := range []string{"config", "cache-dir", "no-reuse", "cache-policy", "cache-signing-key"} {
 			allowed[k] = true
 		}
 	case "inputs":
@@ -127,6 +128,14 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 	}
 	ctx, cancel := context.WithTimeout(ctx, *timeout)
 	defer cancel()
+	cachePath := *cache
+	if cachePath != "" && !filepath.IsAbs(cachePath) {
+		cachePath = filepath.Join(abs, cachePath)
+	}
+	authority, err := cacheFlags.load(ctx, fs, abs, cachePath)
+	if err != nil {
+		return failure(errout, err)
+	}
 	var value any
 	var unsuccessful bool
 	switch args[0] {
@@ -203,14 +212,12 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 		if err != nil {
 			return failure(errout, err)
 		}
-		cachePath := *cache
-		if cachePath != "" && !filepath.IsAbs(cachePath) {
-			cachePath = filepath.Join(abs, cachePath)
-		}
-		r, runErr := capsule.Run(ctx, loaded.request, capsule.Options{CacheDir: cachePath, Limits: c.Limits, NoReuse: *audit})
+		options := capsule.Options{CacheDir: cachePath, Limits: c.Limits, NoReuse: *audit, Authority: authority}
+		r, runErr := capsule.Run(ctx, loaded.request, options)
 		var current capsuleConfig
-		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current) && loaded.verify(ctx, abs) == nil
+		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current) && loaded.verify(ctx, abs) == nil && stableCacheAuthority(ctx, authority)
 		if !stable {
+			_ = capsule.Revoke(options, r.Key)
 			invalidateCapsuleResult(&r)
 		}
 		value = r
@@ -242,13 +249,9 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 			loaded = append(loaded, item)
 			groups = append(groups, suite.Group{Request: item.request, Limits: group.Limits})
 		}
-		cachePath := *cache
-		if cachePath != "" && !filepath.IsAbs(cachePath) {
-			cachePath = filepath.Join(abs, cachePath)
-		}
-		r, runErr := suite.Run(ctx, groups, suite.Options{CacheDir: cachePath, NoReuse: *audit})
+		r, runErr := suite.Run(ctx, groups, suite.Options{CacheDir: cachePath, NoReuse: *audit, Authority: authority})
 		var current suiteConfig
-		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current)
+		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current) && stableCacheAuthority(ctx, authority)
 		for _, item := range loaded {
 			if item.verify(ctx, abs) != nil {
 				stable = false
@@ -257,6 +260,7 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 		if !stable {
 			r.Complete, r.Passed = false, false
 			for i := range r.Groups {
+				_ = capsule.Revoke(capsule.Options{CacheDir: cachePath, Authority: authority}, r.Groups[i].Key)
 				invalidateCapsuleResult(&r.Groups[i])
 			}
 		}

@@ -63,8 +63,16 @@ are trusted; replacing that authority is outside receipt authentication's threat
 model. Windows cache ACL semantics remain unqualified, so reuse is disabled there.
 Missing, unavailable or invalid caches execute again.
 
-Audit mode removes the previous receipt before execution. Failed/interrupted
-audits cannot leave the prior pass authorized; output-digest mismatch invalidates
+An explicit [portable receipt policy](portable-cache.md) separates Ed25519
+issuers from public-key-only verifiers. Signatures authenticate the existing
+qualified result and context; they cannot qualify native influence, imported
+reports or a different host. Verification-only misses execute without issuing
+receipts. Policy distribution, untrusted hosted jobs and distributed freshness
+need separate acceptance.
+
+Audit mode removes the selected previous receipt before execution. Early
+request/configuration failures before receipt selection can currently leave old
+copies intact; corrective K48 tracks this gap. Output-digest mismatch invalidates
 qualification. A cache hit certifies the functional outcome of this bounded
 contract, not host-load timing or another command. See [capsules](capsules.md).
 

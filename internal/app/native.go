@@ -20,6 +20,7 @@ func runNative(ctx context.Context, args []string, out, errout io.Writer) int {
 	root := flags.String("root", ".", "source root")
 	name := flags.String("config", "native.json", "strict native group configuration relative to root")
 	cache := flags.String("cache-dir", "", "private receipt directory outside source tree")
+	cacheFlags := registerCacheAuthorityFlags(flags)
 	audit := flags.Bool("no-reuse", false, "invalidate old passes and execute all groups")
 	output := flags.String("output", "", "new report file")
 	timeout := flags.Duration("timeout", 10*time.Minute, "maximum duration")
@@ -39,12 +40,17 @@ func runNative(ctx context.Context, args []string, out, errout io.Writer) int {
 	}
 	ctx, cancel := context.WithTimeout(ctx, *timeout)
 	defer cancel()
-	value, runErr := native.Go(ctx, abs, c, *cache, *audit)
+	authority, err := cacheFlags.load(ctx, flags, abs, *cache)
+	if err != nil {
+		return failure(errout, err)
+	}
+	options := native.ExecutionOptions{CacheDir: *cache, Audit: *audit, Authority: authority}
+	value, runErr := native.GoWithOptions(ctx, abs, c, options)
 	var current native.Config
-	if readToolJSON(abs, *name, &current) != nil || !reflect.DeepEqual(c, current) {
+	if readToolJSON(abs, *name, &current) != nil || !reflect.DeepEqual(c, current) || !stableCacheAuthority(ctx, authority) {
 		value.Complete = false
 		value.Passed = false
-		_ = native.Revoke(*cache, value)
+		_ = native.RevokeWithOptions(options, value)
 		runErr = errors.New("native configuration changed during execution")
 	}
 	if status := writeResult(out, errout, *output, func(w io.Writer) error { return report.JSON(w, value) }); status != 0 {

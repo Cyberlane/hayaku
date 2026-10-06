@@ -33,7 +33,7 @@ Descriptions and imported records never create in-process qualification authorit
 The initial specification recorded locally installed Ruby, Bun and CMake
 candidates and unresolved additional runner fixtures. Approved isolated
 [runner provisioning](runner-provisioning.md) now records exact candidate
-identities and original healthy/fault baselines for twelve named macOS and two Linux profiles,
+identities and original healthy/fault baselines for sixteen named macOS and sixteen Linux profiles,
 plus Rust and Vitest compatibility fixtures. SDK-only records and unresolved
 framework baselines remain explicit. None of these setup records is the complete
 admitted context above; missing qualification retains an available original

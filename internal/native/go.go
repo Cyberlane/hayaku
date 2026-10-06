@@ -344,7 +344,17 @@ func treeIdentity(ctx context.Context, root string) (string, error) {
 	return identity(inputs), err
 }
 func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool) (Report, error) {
+	return GoWithOptions(ctx, root, c, ExecutionOptions{CacheDir: cacheDir, Audit: audit})
+}
+
+func GoWithOptions(ctx context.Context, root string, c Config, options ExecutionOptions) (Report, error) {
+	cacheDir, audit := options.CacheDir, options.Audit
 	report := Report{Schema: 1, Contract: contractVersion}
+	if !audit && options.Authority != nil {
+		if err := options.Authority.Verify(ctx); err != nil {
+			return report, err
+		}
+	}
 	if c.Platform == "" {
 		c.Platform = "linux"
 	}
@@ -381,7 +391,7 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 		}
 	}
 	if audit {
-		cache, e := passcache.Open(cacheDir, "hayaku-native-pure-pass-v1")
+		cache, e := passcache.OpenWithAuthority(cacheDir, "hayaku-native-pure-pass-v1", options.Authority)
 		if e != nil {
 			return report, errors.New("native audit authority unavailable")
 		}
@@ -393,6 +403,11 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 		cache.Close()
 		if e != nil {
 			return report, errors.New("native audit could not revoke previous passes")
+		}
+	}
+	if options.Authority != nil {
+		if err := options.Authority.Verify(ctx); err != nil {
+			return report, err
 		}
 	}
 	temporary, err := os.MkdirTemp("", "hayaku-native-build-")
@@ -468,7 +483,7 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 					artifact := Artifact{Name: p, Program: binary, Proof: goSourceProof(files), Cases: cases, Args: []string{"-test.v", "-test.count=1", "-test.parallel=1", "-test.timeout=60s"}, Env: []string{"GOMAXPROCS=1", "GODEBUG=randautoseed=0", "TZ=UTC"}}
 					artifact, err = issueGoArtifact(ctx, backend, artifact, build, root, source, filepath.Join(source, filepath.FromSlash(strings.TrimPrefix(p, "./"))))
 					if err == nil {
-						group, err = Execute(ctx, backend, artifact, cacheDir, audit, decodeGo)
+						group, err = ExecuteWithOptions(ctx, backend, artifact, options, decodeGo)
 					}
 					if !group.Complete && ctx.Err() == nil {
 						group, err = fullGo(ctx, goTool, root, p, "native execution evidence incomplete; executing complete original group")
@@ -503,8 +518,14 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 		returnedErr = ctx.Err()
 	}
 	// Revoke every receipt on aggregate identity drift, including earlier groups.
+	if options.Authority != nil {
+		if e := options.Authority.Verify(ctx); e != nil {
+			report.Complete, report.Passed = false, false
+			returnedErr = e
+		}
+	}
 	if !report.Complete {
-		_ = Revoke(cacheDir, report)
+		_ = RevokeWithOptions(options, report)
 	}
 	return report, returnedErr
 }
@@ -624,7 +645,10 @@ func decodeGo(output process.Output, a Artifact) (model.Outcomes, error) {
 // Revoke invalidates this invocation's native receipts when a caller detects
 // live policy drift after execution. It never authorizes execution or reuse.
 func Revoke(cacheDir string, report Report) error {
-	cache, err := passcache.Open(cacheDir, "hayaku-native-pure-pass-v1")
+	return RevokeWithOptions(ExecutionOptions{CacheDir: cacheDir}, report)
+}
+func RevokeWithOptions(options ExecutionOptions, report Report) error {
+	cache, err := passcache.OpenWithAuthority(options.CacheDir, "hayaku-native-pure-pass-v1", options.Authority)
 	if err != nil {
 		return err
 	}

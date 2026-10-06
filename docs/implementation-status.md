@@ -92,6 +92,16 @@ The source and tests define current behavior. “Native” below means installed
   aggregate inputs, cancellation and source/copy drift. Raw operational results
   have no decoder, cache, proof or receipt authority; dynamic runtimes remain a
   separate unfinished contract. Final composition checks passed.
+- SwiftPM/Xcode closure APIs now bind compiler bytes, source/resources, build
+  producers and private test products with fresh pre/post invocation checks.
+  Actual installed normal/race tests passed within original fixture deadlines.
+  SDK metadata observations, unsupported macros/plugins and device effects
+  remain gaps; these APIs grant no runtime qualification or receipt authority.
+- Shared portable Ed25519 receipt authentication supports explicit protected
+  issuer/verifier roles, namespace/epoch/key rotation and receipt-only transfer.
+  Independent macOS/Linux tests and full composition checks passed. Hosted CI
+  trust, distributed freshness and early failed-audit cleanup remain separate
+  gates. See [portable receipts](portable-cache.md).
 - General native affected-only qualification across imported packages,
   additional language certifiers and representative consumer CI savings
   remain unfinished. Original native plan gates remain full.
@@ -122,8 +132,8 @@ cards do not authorize native omission or change the capabilities listed here.
 | Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
-| SwiftPM XCTest | Installed Darwin Swift 6.0–6.4 target graph, conservative target proposals, independent case collection and serial terminal outcomes; shadow comparisons | XCTest only; full suite required, no parallel/plugin/macro/binary support |
-| Xcode XCTest | Independent full test enumeration and installed Xcode 26.3/27.0 xcresulttool exports case/summary reconciliation | Full single-plan/device/configuration scope; no filtering, repetition or Swift Testing |
+| SwiftPM XCTest | Installed Darwin Swift 6.0–6.4 target graph, source/resource/tool and observed private build-product closure, conservative proposals, independent cases and serial outcomes; shadow comparisons | XCTest only; full suite required, no parallel/plugin/macro/binary support |
+| Xcode XCTest | Observed private build/test-product and tool closure, independent full enumeration and installed Xcode 26.3/27.0 xcresulttool case/summary reconciliation | Full single-plan/device/configuration scope; no filtering, repetition or Swift Testing |
 | JVM, .NET, Ruby, PHP, Dart, C/C++, Bun, Deno, Bazel | Explicit original full-scope command entries and applicable strict report imports | No claim of native framework discovery, filtering or runtime qualification for these entries |
 | Generic command | Preserved original structured command and exit status; optional verified installed Node dependency tree | Full scope only; custom Cloudflare pools stay generic |
 
@@ -148,3 +158,18 @@ treated as complete evidence.
 Exact local Git revisions, old/new graph union, deleted/renamed/new input handling, structured argv/cwd, bounded process output/cancellation, strict schemas, immutable source copies, context/tool digests, full fallback reasons, setup without overwrite and portable archives remain supported. Native Vitest traces broaden proposals monotonically and cover observed dynamic reads/probes/directories. Unobserved influence remains a gap and cannot authorize skipping.
 
 The source includes pinned development fixtures and CI matrices. Local fixture success, cross-compilation, remote release acceptance and consumer CI qualification are separate claims; see [verification](verification.md), [release checks](release-checks.md) and [pilot results](pilot-results.md). Published release notes describe bounded implemented capabilities, not completion of every language/framework on the catalog.
+
+## Isolated development acceptance progress
+
+The approved [runner provisioning](runner-provisioning.md) checkpoint records
+32 of 40 original framework/platform healthy and runtime-fault baselines: sixteen
+on macOS and sixteen on Linux. ScalaTest, MUnit, Flutter widget and Bazel C++
+baselines remain pending on both platforms. PHP PHAR controls do not cover
+Composer autoload. These records qualify no discovery, affected execution or
+cache reuse; the corresponding language/runtime/acceptance cards remain open.
+
+Apple closure and portable receipt implementation passed independent review
+and full repository normal/race/vet composition checks. The [generated-input candidate](generated-inputs.md)
+has targeted macOS normal/race/vet evidence; independent Linux and complete
+composition gates remain pending. The [kanban](affected-tests-kanban.md) records
+file ownership, dependencies and outstanding work.

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Cyberlane/hayaku/internal/capsule"
+	"github.com/Cyberlane/hayaku/internal/passcache"
 )
 
 const MaxGroups = 256
@@ -18,8 +19,9 @@ type Group struct {
 	Limits  capsule.Limits
 }
 type Options struct {
-	CacheDir string
-	NoReuse  bool
+	CacheDir  string
+	NoReuse   bool
+	Authority *passcache.Authority
 }
 type Result struct {
 	Schema   int              `json:"schema"`
@@ -70,7 +72,7 @@ func Run(ctx context.Context, groups []Group, options Options) (result Result, r
 			result.Complete, result.Passed = false, false
 			return result, err
 		}
-		outcome, err := capsule.Run(ctx, group.Request, capsule.Options{CacheDir: options.CacheDir, Limits: group.Limits, NoReuse: options.NoReuse})
+		outcome, err := capsule.Run(ctx, group.Request, capsule.Options{CacheDir: options.CacheDir, Limits: group.Limits, NoReuse: options.NoReuse, Authority: options.Authority})
 		result.Groups = append(result.Groups, outcome)
 		if outcome.Mode == "executed" {
 			result.Executed++

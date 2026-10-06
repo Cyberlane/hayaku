@@ -245,12 +245,12 @@
       "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.12.1_1.tar.gz",
       "archive_sha256": "3623232f33a9c3baadf304480b2535f9a3cba8a58d42ecbb438ba267315d9998",
       "metadata_url": "https://api.github.com/repos/adoptium/temurin21-binaries/releases/latest",
-      "status": "verified-archive-not-executed",
+      "status": "official-checksum-verified-offline-original-Maven-healthy-runtime-fault-passed-unqualified",
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.12.1_1.tar.gz",
       "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/jdk21-mac-arm64/jdk-21.0.12.1+1/Contents/Home/bin/java",
       "binary_sha256": "9be1d0a740ff6502df1a762145e62860f5de4b7e17658d9cb9498da3acf9d16c",
       "observed_version": "21.0.12.1+1",
-      "baseline_status": "observed-version-only"
+      "baseline_status": "offline-original-Maven-healthy-runtime-fault-passed-unqualified"
     },
     {
       "tool": "jdk",
@@ -259,12 +259,12 @@
       "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.12.1_1.tar.gz",
       "archive_sha256": "23e37e026f12f3e706f18938ff611db3032d075b09d0879a25d06718c773e223",
       "metadata_url": "https://api.github.com/repos/adoptium/temurin21-binaries/releases/latest",
-      "status": "verified-archive-not-executed",
+      "status": "official-checksum-verified-offline-original-Maven-healthy-runtime-fault-passed-unqualified",
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.12.1_1.tar.gz",
       "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/jdk21-linux-arm64/jdk-21.0.12.1+1/bin/java",
       "binary_sha256": "95daec8bce7db9605dd12f77c0c16690fa015b5fadec8d5dc984e9f2aee046f4",
-      "observed_version": null,
-      "baseline_status": "not-executed"
+      "observed_version": "21.0.12.1+1",
+      "baseline_status": "offline-original-Maven-healthy-runtime-fault-passed-unqualified"
     },
     {
       "tool": "maven",
@@ -390,7 +390,7 @@
       "archive_sha256": "65fab701d9829d38cb77c14acdc431d2108bfdbf8979e40eb8ae567edf10b27c",
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/googletest-1.17.0.tar.gz",
       "status": "verified-archive-not-executed",
-      "baseline_status": "Mac-original-offline-healthy-runtime-fault-passed-unqualified"
+      "baseline_status": "Mac-Linux-original-offline-healthy-runtime-fault-passed-unqualified"
     },
     {
       "tool": "catch2",
@@ -400,7 +400,7 @@
       "archive_sha256": "a215c2a723bd7483efd236dc86066842a389cb4e344c61119c978acdf24d39be",
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/catch2-3.9.1.tar.gz",
       "status": "verified-archive-not-executed",
-      "baseline_status": "Mac-original-offline-healthy-runtime-fault-passed-unqualified"
+      "baseline_status": "Mac-Linux-original-offline-healthy-runtime-fault-passed-unqualified"
     },
     {
       "tool": "rules_cc",
@@ -418,7 +418,13 @@
       "platform": "linux-arm64",
       "manifest_digest": "sha256:4d47e00f64517a1e61a27bbc9112faf7e763ad25528759a0eb530f3e00b1e7a1",
       "image_ref": "php@sha256:4d47e00f64517a1e61a27bbc9112faf7e763ad25528759a0eb530f3e00b1e7a1",
-      "status": "selected-official-digest-not-pulled"
+      "status": "official-immutable-SDK-offline-original-PHPUnit-healthy-runtime-fault-passed-unqualified",
+      "image_id": "sha256:b3b934c92d674a0943edab8f407762f63f9b6ec1a15dea0fdda95b376f019011",
+      "observed_version": "8.4.24",
+      "observed_executable_path": "/usr/local/bin/php",
+      "observed_executable_sha256": "4827903bba3b7c13f68296c9c3a7a8126d1631f978a5fd7fd40a8c72c748303e",
+      "baseline_status": "official-immutable-SDK-offline-original-PHPUnit-healthy-runtime-fault-passed-unqualified",
+      "provisioning_status_before_baseline": "official-immutable-image-installed-not-framework-tested-unqualified"
     },
     {
       "package": "xunit",
@@ -551,10 +557,14 @@
       "official_metadata_url": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json",
       "url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.400/dotnet-sdk-10.0.400-osx-arm64.tar.gz",
       "published_sha512": "e440e9a58d4ff7741c8342ac3e086fa9ee2dadc25e01c0449a88317a74cfbd63625b8092c3b2a131ae14b16ab3401e9cc470e578e4c65a72a0b5786bd2308cde",
-      "status": "official-checksum-verified-archive-not-unpacked-or-executed",
+      "status": "official-archive-checksum-verified-before-private-unpack-observed-sdk-and-original-offline-three-framework-baselines-unqualified",
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/dotnet-sdk-10.0.400-osx-arm64.tar.gz",
       "archive_sha512": "e440e9a58d4ff7741c8342ac3e086fa9ee2dadc25e01c0449a88317a74cfbd63625b8092c3b2a131ae14b16ab3401e9cc470e578e4c65a72a0b5786bd2308cde",
-      "bytes": 230780622
+      "bytes": 230780622,
+      "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/dotnet-10.0.400-mac-arm64/dotnet",
+      "observed_version": "10.0.400",
+      "binary_sha256": "2ff302a3c5cecc4a371fd6482d2f5547c57d93eff9fe19919ef729a54f69ce04",
+      "binary_bytes": 141392
     },
     {
       "tool": "bun",
@@ -564,7 +574,11 @@
       "metadata_url": "https://api.github.com/repos/oven-sh/bun/releases/tags/bun-v1.3.14",
       "archive_sha256": "a27ffb63a8310375836e0d6f668ae17fa8d8d18b88c37c821c65331973a19a3b",
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/bun-linux-aarch64.zip",
-      "status": "verified-archive-not-executed"
+      "status": "official-publisher-checksum-verified-before-private-unpack; actual-Linux-offline-original-healthy-runtime-fault-passed-unqualified",
+      "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/bun-1.3.14-linux-arm64/bun-linux-aarch64/bun",
+      "binary_sha256": "37141662ebed915a2ab89313156e455e2a1374395f5f6760d06407f49406f086",
+      "binary_bytes": 91801560,
+      "observed_version": "1.3.14"
     },
     {
       "tool": "ruby",
@@ -573,7 +587,36 @@
       "tag": "ruby:4.0.7-bookworm",
       "manifest_digest": "sha256:e0c89bb12fd0f145e59cb61c9d6ce1ef61a351b172001ba4726e71d500398a17",
       "image_ref": "ruby@sha256:e0c89bb12fd0f145e59cb61c9d6ce1ef61a351b172001ba4726e71d500398a17",
-      "status": "selected-official-digest-not-pulled"
+      "status": "official-immutable-SDK-offline-original-RSpec-Minitest-healthy-runtime-fault-passed-unqualified",
+      "image_id": "sha256:a56ac6b69c05bf9ed9502c8744d27c81adfb0cfc16f1153e3848036502910617",
+      "provisioning_status_before_baseline": "official-immutable-image-installed-not-framework-tested-unqualified",
+      "observed_version": "4.0.7",
+      "observed_bundler_version": "4.0.20",
+      "ruby_executable_sha256": "72644ca1bb576ff77ef16438d92abb2f24d18acc21b30d50db81dde1b3a6768e",
+      "bundler_launcher_sha256": "36c71640b713fbcabcd995454f58a9338c33259a5b0e5da0a763fb23fc21f007"
+    },
+    {
+      "tool": "php",
+      "platform": "mac-arm64",
+      "version": "8.4.24",
+      "construction": "task-private-prefix build from official published-checksum verified PHP source using installed Apple clang/system SDK libraries",
+      "source_archive_sha256": "e127be09a8506f4327c5cfa78a614b00d210714484ec215ce0011b4a03c00731",
+      "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/php-8.4.24-mac-arm64/bin/php",
+      "binary_sha256": "aa5fdafcea38b4f76b3b06f7a593acdaa8505e6483dbcf9eb52a843daaa2b8ba",
+      "status": "observed-private-source-built-SDK-with-original-Mac-PHPUnit-baseline-unqualified"
+    },
+    {
+      "tool": "bazel-platforms",
+      "version": "0.0.10",
+      "publisher_metadata_url": "https://bcr.bazel.build/modules/platforms/0.0.10/source.json",
+      "source_metadata": {
+        "url": "https://github.com/bazelbuild/platforms/releases/download/0.0.10/platforms-0.0.10.tar.gz",
+        "integrity": "sha256-IY7+juc20mo1cmY7N0olPAErcW2K8MB+hC6C8jigp+4="
+      },
+      "archive_sha256": "218efe8ee736d26a3572663b374a253c012b716d8af0c07e842e82f238a0a7ee",
+      "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/platforms-0.0.10.tar.gz",
+      "status": "official-BCR-integrity-verified-before-unpack-not-executed",
+      "platform": "platform-independent-source"
     },
     {
       "tool": "cmake",
@@ -604,7 +647,7 @@
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/php-8.4.24.tar.xz",
       "archive_sha256": "e127be09a8506f4327c5cfa78a614b00d210714484ec215ce0011b4a03c00731",
       "bytes": 13752320,
-      "status": "official-published-checksum-verified-before-unpack-not-executed"
+      "status": "official-publisher-checksum-verified-before-private-SDK-build-and-original-Mac-framework-baseline; unqualified; Linux framework not yet tested"
     },
     {
       "tool": "phpunit-phar",
@@ -615,7 +658,7 @@
       "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/archives/phpunit-12.5.38.phar",
       "archive_sha256": "b7817c63e0eb62b83d4f5d8cb7d720e58b236fd2f466b98a84aa14eda9075799",
       "bytes": 6337212,
-      "status": "official-published-checksum-verified-before-unpack-not-executed"
+      "status": "official-publisher-checksum-verified-before-private-SDK-build-and-original-Mac-framework-baseline; unqualified; Linux framework not yet tested"
     },
     {
       "engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
@@ -726,12 +769,26 @@
       "observed_archive_sha256": "e56fa8e9bb4589fde964be3de451f3e5b251e4a1eafb1dc98d94add034dd5a86"
     },
     {
+      "engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+      "artifact": "engine_stamp.json",
+      "official_metadata_url": "https://storage.googleapis.com/storage/v1/b/flutter_infra_release/o/flutter%2F692136cb6582dbfc5af3fb33c2515a069f2f66d0%2Fengine_stamp.json",
+      "download_url": "https://storage.googleapis.com/flutter_infra_release/flutter/692136cb6582dbfc5af3fb33c2515a069f2f66d0/engine_stamp.json",
+      "published_md5_base64": "3whijdbfvAWLWs7eiP7CoQ==",
+      "published_crc32c_base64": "OXNefg==",
+      "generation": "1790731184783442",
+      "size": "237",
+      "status": "official-publisher-md5-verified-not-executed-derived-arm-component",
+      "archive": "/tmp/hayaku-language-acceptance-bdhM36/archives/flutter-engine-692136cb6582dbfc5af3fb33c2515a069f2f66d0-engine_stamp.json",
+      "observed_archive_sha256": "5c024f07cd98aa7dfafa887e227ce7876a6cd998cf522387bc956ebbb8c359ef"
+    },
+    {
       "tool": "jdk",
       "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/jdk21-mac-arm64/jdk-21.0.12.1+1/Contents/Home/bin/java",
       "binary_sha256": "9be1d0a740ff6502df1a762145e62860f5de4b7e17658d9cb9498da3acf9d16c",
-      "status": "actual-version-unqualified-candidate",
+      "status": "official-checksum-verified-offline-original-Maven-healthy-runtime-fault-passed-unqualified",
       "observed_version": "21.0.12.1+1",
-      "platform": "mac-arm64"
+      "platform": "mac-arm64",
+      "baseline_status": "offline-original-Maven-healthy-runtime-fault-passed-unqualified"
     },
     {
       "tool": "maven",
@@ -812,7 +869,7 @@
       "observed_version": "10.0.400",
       "image_id": "sha256:70b5de4a18461652574704cee7c7f8797788c54aa45a5de4918ea1cae97cd1e8",
       "official_repo_digest": "mcr.microsoft.com/dotnet/sdk@sha256:e1ffd2a92ae84c1291bc1b6887501f8af98e6331e7af6d4c8d37168c5e87a64c",
-      "baseline_status": "sdk-version-only-no-framework-tested"
+      "baseline_status": "offline-original-healthy-runtime-fault-passed-unqualified"
     }
   ],
   "independent_baselines": {
@@ -895,6 +952,36 @@
         }
       ],
       "status": "installed-unqualified-independent-baseline"
+    },
+    "bun-linux-baseline.json": {
+      "profile": "07A",
+      "platform": "linux-arm64",
+      "tool": "bun1.3.14",
+      "tool_sha256": "37141662ebed915a2ab89313156e455e2a1374395f5f6760d06407f49406f086",
+      "fixture_sha256": "c65f03b83369b13132ba3c764432d931c02d40a53ecf9e2947f323350d08de7c",
+      "manifest_sha256": "791da082035c11207617a86ff3a4c828f684d921d9aad8784de30a13de9c06d9",
+      "dependency_lock": "zero-dependency manifest; pinned Bun removes empty lockfile",
+      "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+      "network": "none",
+      "results": [
+        {
+          "phase": "healthy",
+          "exit": 0,
+          "native_outcomes": {
+            "alpha": "passed",
+            "beta": "passed"
+          }
+        },
+        {
+          "phase": "fault",
+          "exit": 1,
+          "native_outcomes": {
+            "alpha": "failed",
+            "beta": "passed"
+          }
+        }
+      ],
+      "status": "unqualified-offline-original-native-baseline"
     },
     "deno-mac-baseline.json": {
       "tool_path": "/tmp/hayaku-language-acceptance-bdhM36/tools/deno-2.9.7/mac-arm64/deno",
@@ -1107,6 +1194,117 @@
       ],
       "status": "unqualified-offline-original-native-baseline"
     },
+    "dotnet-baselines.json": {
+      "02A": {
+        "platform": "mac-arm64",
+        "sdk": "10.0.400",
+        "framework": "xunit",
+        "status": "unqualified-offline-native-baseline",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Alpha": "Passed",
+              "Beta": "Passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Failed"
+            }
+          }
+        ],
+        "lock_sha256": "6a2f56904a1ed4fd0541ca579966985064fa5d257b9ca44c523035a770f9addd",
+        "source_sha256": "af5843a2ac15db8fcf6f98a5459056c95e63da7e1eeec5a493b358c0b364b955"
+      },
+      "02B": {
+        "platform": "mac-arm64",
+        "sdk": "10.0.400",
+        "framework": "nunit",
+        "status": "unqualified-offline-native-baseline",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "Alpha": "Failed",
+              "Beta": "Passed"
+            }
+          }
+        ],
+        "lock_sha256": "7a5ba659da5d7bc51cfe363a98c57a7463aff9c63b110a429633a856e1d181bb",
+        "source_sha256": "30b3fbe8f07ae46802daad69144cc7ce81a5c50dff67dc1130dc6394dd8a3e68"
+      },
+      "02C": {
+        "platform": "mac-arm64",
+        "sdk": "10.0.400",
+        "framework": "mstest",
+        "status": "unqualified-offline-native-baseline",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "Alpha": "Failed",
+              "Beta": "Passed"
+            }
+          }
+        ],
+        "lock_sha256": "8ee201b98f68f1f887301e6dbac26644db401874e964686ed14fdf606f1c6887",
+        "source_sha256": "786656a784ab1dee002b9cb8bddd16c9427477ae1e6e513f844020e0e230b0cb"
+      }
+    },
+    "phpunit-mac-baseline.json": {
+      "profile": "04A",
+      "platform": "mac-arm64",
+      "php": "8.4.24",
+      "phpunit": "12.5.38",
+      "tool_sha256": "aa5fdafcea38b4f76b3b06f7a593acdaa8505e6483dbcf9eb52a843daaa2b8ba",
+      "phar_sha256": "b7817c63e0eb62b83d4f5d8cb7d720e58b236fd2f466b98a84aa14eda9075799",
+      "fixture_sha256": "dbdb18fdb9f5f47cd2fffccaedaaebc3b26c2fa705148d8b77929274db92e8d6",
+      "dependencies": "official-checksum-verified bundled PHAR; no dependency downloads",
+      "results": [
+        {
+          "phase": "healthy",
+          "exit": 0,
+          "native_outcomes": {
+            "testAlpha": "passed",
+            "testBeta": "passed"
+          }
+        },
+        {
+          "phase": "fault",
+          "exit": 1,
+          "native_outcomes": {
+            "testAlpha": "failed",
+            "testBeta": "passed"
+          }
+        }
+      ],
+      "status": "unqualified-offline-original-native-baseline",
+      "fixture_lock_sha256": "63c7e652c3e280ed15b19fd43b706aec3ee6ffe65dd1f05888c0d7936e0e3e1b",
+      "fixture_lock_path": "/tmp/hayaku-language-acceptance-bdhM36/fixtures/phpunit/fixture-lock.json"
+    },
     "cpp-baselines.json": {
       "06A": {
         "platform": "mac-arm64",
@@ -1175,7 +1373,509 @@
         ],
         "lock_sha256": "3dd3fb4f077c84941b17331d0fb9195f82dc2cef48129395a7860f53115f6a24"
       }
-    }
+    },
+    "cpp-linux-baselines.json": {
+      "06A": {
+        "platform": "linux-arm64",
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "compiler": "GCC12.2.0",
+        "cmake": "4.4.3",
+        "ninja": "1.13.2",
+        "framework": "gtest",
+        "fixture_lock_sha256": "33a5cecebc677424ee16a1175e3e10127ae6bb6220b53ea87bf16da5293a4ea5",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Alpha.Value": "passed",
+              "Beta.Control": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "Alpha.Value": "failed",
+              "Beta.Control": "passed"
+            }
+          }
+        ],
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline",
+        "fixture_lock_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/cpp-linux-export/cpp-gtest-fixture-lock.json"
+      },
+      "06B": {
+        "platform": "linux-arm64",
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "compiler": "GCC12.2.0",
+        "cmake": "4.4.3",
+        "ninja": "1.13.2",
+        "framework": "catch2",
+        "fixture_lock_sha256": "9a7cb86556dac725b07b5f558a7428fc39870828a76ef539ac71ca0c35daa0b8",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Beta": "passed",
+              "Alpha": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 42,
+            "native_outcomes": {
+              "Alpha": "failed",
+              "Beta": "passed"
+            }
+          }
+        ],
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline",
+        "fixture_lock_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/cpp-linux-export/cpp-catch2-fixture-lock.json"
+      },
+      "06C": {
+        "platform": "linux-arm64",
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "compiler": "GCC12.2.0",
+        "cmake": "4.4.3",
+        "ninja": "1.13.2",
+        "framework": "ctest",
+        "fixture_lock_sha256": "e502fb1278de65144e5622c073cd37cd3767d17d6802d6ab31206bdcb6a28cf2",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "whole-program": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 8,
+            "native_outcomes": {
+              "whole-program": "failed"
+            }
+          }
+        ],
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline",
+        "fixture_lock_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/cpp-linux-export/cpp-ctest-fixture-lock.json"
+      }
+    },
+    "dotnet-linux-baselines.json": {
+      "02A": {
+        "platform": "linux-arm64",
+        "sdk": "10.0.400",
+        "framework": "xunit",
+        "image_id": "sha256:70b5de4a18461652574704cee7c7f8797788c54aa45a5de4918ea1cae97cd1e8",
+        "network": "none",
+        "lock_sha256": "6a2f56904a1ed4fd0541ca579966985064fa5d257b9ca44c523035a770f9addd",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Failed"
+            }
+          }
+        ],
+        "status": "unqualified-offline-original-native-baseline"
+      },
+      "02B": {
+        "platform": "linux-arm64",
+        "sdk": "10.0.400",
+        "framework": "nunit",
+        "image_id": "sha256:70b5de4a18461652574704cee7c7f8797788c54aa45a5de4918ea1cae97cd1e8",
+        "network": "none",
+        "lock_sha256": "7a5ba659da5d7bc51cfe363a98c57a7463aff9c63b110a429633a856e1d181bb",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "Alpha": "Failed",
+              "Beta": "Passed"
+            }
+          }
+        ],
+        "status": "unqualified-offline-original-native-baseline"
+      },
+      "02C": {
+        "platform": "linux-arm64",
+        "sdk": "10.0.400",
+        "framework": "mstest",
+        "image_id": "sha256:70b5de4a18461652574704cee7c7f8797788c54aa45a5de4918ea1cae97cd1e8",
+        "network": "none",
+        "lock_sha256": "8ee201b98f68f1f887301e6dbac26644db401874e964686ed14fdf606f1c6887",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "Beta": "Passed",
+              "Alpha": "Failed"
+            }
+          }
+        ],
+        "status": "unqualified-offline-original-native-baseline"
+      }
+    },
+    "maven-linux-baselines.json": [
+      {
+        "profile": "01A",
+        "framework": "junit",
+        "platform": "linux-arm64",
+        "runtime": "Temurin21.0.12.1+1",
+        "java_sha256": "95daec8bce7db9605dd12f77c0c16690fa015b5fadec8d5dc984e9f2aee046f4",
+        "build_tool": "maven3.9.16",
+        "pom_sha256": "1c95c704ceaf92693be42fa1125b5115c1b29a4531adaad4825e9d4b95a27f64",
+        "source_sha256": "1aaf2de056ee74a547e53c72397651575334da2d3d170ab8835ea114855acecd",
+        "published_dependency_checksums": "/tmp/hayaku-language-acceptance-bdhM36/maven-linux-published-checksums.json",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "beta": "passed",
+              "alpha": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "beta": "passed",
+              "alpha": "failed"
+            }
+          }
+        ],
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline"
+      },
+      {
+        "profile": "01B",
+        "framework": "testng",
+        "platform": "linux-arm64",
+        "runtime": "Temurin21.0.12.1+1",
+        "java_sha256": "95daec8bce7db9605dd12f77c0c16690fa015b5fadec8d5dc984e9f2aee046f4",
+        "build_tool": "maven3.9.16",
+        "pom_sha256": "c34cd6204a6dbae17afb1c6bfe866c54fa1d6f56f963074c86c9dfb94d2e00f9",
+        "source_sha256": "266c47e43efcf9a2dc7e807097230ebc3e8d7236a022631164d0ed44719ab827",
+        "published_dependency_checksums": "/tmp/hayaku-language-acceptance-bdhM36/maven-linux-published-checksums.json",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "alpha": "passed",
+              "beta": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "alpha": "failed",
+              "beta": "passed"
+            }
+          }
+        ],
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline"
+      }
+    ],
+    "gradle-linux-baselines.json": [
+      {
+        "profile": "01C",
+        "framework": "junit",
+        "platform": "linux-arm64",
+        "runtime": "Temurin21.0.12.1+1",
+        "build_tool": "gradle8.14.3",
+        "java_sha256": "95daec8bce7db9605dd12f77c0c16690fa015b5fadec8d5dc984e9f2aee046f4",
+        "build_sha256": "5c43d93670ded6ab862db8639a70aa052efdf1e6f74829a2affdc0a874d2082f",
+        "lock_sha256": "3bd2292edc27d10e5408000aaca16e8c7696a4cd45206a10f54916daface0dba",
+        "source_sha256": "1aaf2de056ee74a547e53c72397651575334da2d3d170ab8835ea114855acecd",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "beta": "passed",
+              "alpha": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "beta": "passed",
+              "alpha": "failed"
+            }
+          }
+        ],
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline"
+      },
+      {
+        "profile": "01D",
+        "framework": "testng",
+        "platform": "linux-arm64",
+        "runtime": "Temurin21.0.12.1+1",
+        "build_tool": "gradle8.14.3",
+        "java_sha256": "95daec8bce7db9605dd12f77c0c16690fa015b5fadec8d5dc984e9f2aee046f4",
+        "build_sha256": "55be03f60d9a72aa1a06470ebbc40e99e39d0c2183a311cdacb71d35201c8874",
+        "lock_sha256": "cc302d02769d9575fc6d39186b1be9a330a10fa7724a21b42f430e76f1eee666",
+        "source_sha256": "266c47e43efcf9a2dc7e807097230ebc3e8d7236a022631164d0ed44719ab827",
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "alpha": "passed",
+              "beta": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "alpha": "failed",
+              "beta": "passed"
+            }
+          }
+        ],
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline"
+      }
+    ],
+    "phpunit-linux-baseline.json": {
+      "profile": "04A",
+      "platform": "linux-arm64",
+      "php": "8.4.24",
+      "phpunit": "12.5.38",
+      "image_id": "sha256:b3b934c92d674a0943edab8f407762f63f9b6ec1a15dea0fdda95b376f019011",
+      "official_repo_digest": "php@sha256:4d47e00f64517a1e61a27bbc9112faf7e763ad25528759a0eb530f3e00b1e7a1",
+      "tool_sha256": "4827903bba3b7c13f68296c9c3a7a8126d1631f978a5fd7fd40a8c72c748303e",
+      "phar_sha256": "b7817c63e0eb62b83d4f5d8cb7d720e58b236fd2f466b98a84aa14eda9075799",
+      "fixture_sha256": "dbdb18fdb9f5f47cd2fffccaedaaebc3b26c2fa705148d8b77929274db92e8d6",
+      "dependencies": "official-checksum-verified bundled PHAR; networknone native baseline",
+      "results": [
+        {
+          "phase": "healthy",
+          "exit": 0,
+          "native_outcomes": {
+            "testAlpha": "passed",
+            "testBeta": "passed"
+          }
+        },
+        {
+          "phase": "fault",
+          "exit": 1,
+          "native_outcomes": {
+            "testAlpha": "failed",
+            "testBeta": "passed"
+          }
+        }
+      ],
+      "status": "unqualified-offline-original-native-baseline"
+    },
+    "ruby-linux-baselines.json": [
+      {
+        "profile": "03A",
+        "framework": "rspec",
+        "ruby": "4.0.7",
+        "bundler": "4.0.20",
+        "platform": "linux-arm64",
+        "official_image": "ruby@sha256:e0c89bb12fd0f145e59cb61c9d6ce1ef61a351b172001ba4726e71d500398a17",
+        "image_id": "sha256:a56ac6b69c05bf9ed9502c8744d27c81adfb0cfc16f1153e3848036502910617",
+        "ruby_executable_sha256": "72644ca1bb576ff77ef16438d92abb2f24d18acc21b30d50db81dde1b3a6768e",
+        "bundler_launcher_sha256": "36c71640b713fbcabcd995454f58a9338c33259a5b0e5da0a763fb23fc21f007",
+        "lock_sha256": "67fbbb9860a1b664aa1c23058d488025bc95be9c42e15a984cf325f8de9d97c6",
+        "verified_archives": [
+          {
+            "package": "diff-lcs",
+            "version": "1.6.2",
+            "lock_publisher_sha256": "9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/diff-lcs-1.6.2.gem"
+          },
+          {
+            "package": "minitest",
+            "version": "6.0.0",
+            "lock_publisher_sha256": "4ca597fc1d735ea18d2b4b98c5fb1d5a6da4a6f35ddf32bd5fa3eded33a453be",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/minitest-6.0.0.gem"
+          },
+          {
+            "package": "prism",
+            "version": "1.9.0",
+            "lock_publisher_sha256": "7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/prism-1.9.0.gem"
+          },
+          {
+            "package": "rspec",
+            "version": "3.13.2",
+            "lock_publisher_sha256": "206284a08ad798e61f86d7ca3e376718d52c0bc944626b2349266f239f820587",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-3.13.2.gem"
+          },
+          {
+            "package": "rspec-core",
+            "version": "3.13.6",
+            "lock_publisher_sha256": "a8823c6411667b60a8bca135364351dda34cd55e44ff94c4be4633b37d828b2d",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-core-3.13.6.gem"
+          },
+          {
+            "package": "rspec-expectations",
+            "version": "3.13.5",
+            "lock_publisher_sha256": "33a4d3a1d95060aea4c94e9f237030a8f9eae5615e9bd85718fe3a09e4b58836",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-expectations-3.13.5.gem"
+          },
+          {
+            "package": "rspec-mocks",
+            "version": "3.13.8",
+            "lock_publisher_sha256": "086ad3d3d17533f4237643de0b5c42f04b66348c28bf6b9c2d3f4a3b01af1d47",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-mocks-3.13.8.gem"
+          },
+          {
+            "package": "rspec-support",
+            "version": "3.13.7",
+            "lock_publisher_sha256": "0640e5570872aafefd79867901deeeeb40b0c9875a36b983d85f54fb7381c47c",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-support-3.13.7.gem"
+          }
+        ],
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "alpha": "passed",
+              "beta": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "alpha": "failed",
+              "beta": "passed"
+            }
+          }
+        ],
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline"
+      },
+      {
+        "profile": "03B",
+        "framework": "minitest",
+        "ruby": "4.0.7",
+        "bundler": "4.0.20",
+        "platform": "linux-arm64",
+        "official_image": "ruby@sha256:e0c89bb12fd0f145e59cb61c9d6ce1ef61a351b172001ba4726e71d500398a17",
+        "image_id": "sha256:a56ac6b69c05bf9ed9502c8744d27c81adfb0cfc16f1153e3848036502910617",
+        "ruby_executable_sha256": "72644ca1bb576ff77ef16438d92abb2f24d18acc21b30d50db81dde1b3a6768e",
+        "bundler_launcher_sha256": "36c71640b713fbcabcd995454f58a9338c33259a5b0e5da0a763fb23fc21f007",
+        "lock_sha256": "67fbbb9860a1b664aa1c23058d488025bc95be9c42e15a984cf325f8de9d97c6",
+        "verified_archives": [
+          {
+            "package": "diff-lcs",
+            "version": "1.6.2",
+            "lock_publisher_sha256": "9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/diff-lcs-1.6.2.gem"
+          },
+          {
+            "package": "minitest",
+            "version": "6.0.0",
+            "lock_publisher_sha256": "4ca597fc1d735ea18d2b4b98c5fb1d5a6da4a6f35ddf32bd5fa3eded33a453be",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/minitest-6.0.0.gem"
+          },
+          {
+            "package": "prism",
+            "version": "1.9.0",
+            "lock_publisher_sha256": "7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/prism-1.9.0.gem"
+          },
+          {
+            "package": "rspec",
+            "version": "3.13.2",
+            "lock_publisher_sha256": "206284a08ad798e61f86d7ca3e376718d52c0bc944626b2349266f239f820587",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-3.13.2.gem"
+          },
+          {
+            "package": "rspec-core",
+            "version": "3.13.6",
+            "lock_publisher_sha256": "a8823c6411667b60a8bca135364351dda34cd55e44ff94c4be4633b37d828b2d",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-core-3.13.6.gem"
+          },
+          {
+            "package": "rspec-expectations",
+            "version": "3.13.5",
+            "lock_publisher_sha256": "33a4d3a1d95060aea4c94e9f237030a8f9eae5615e9bd85718fe3a09e4b58836",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-expectations-3.13.5.gem"
+          },
+          {
+            "package": "rspec-mocks",
+            "version": "3.13.8",
+            "lock_publisher_sha256": "086ad3d3d17533f4237643de0b5c42f04b66348c28bf6b9c2d3f4a3b01af1d47",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-mocks-3.13.8.gem"
+          },
+          {
+            "package": "rspec-support",
+            "version": "3.13.7",
+            "lock_publisher_sha256": "0640e5570872aafefd79867901deeeeb40b0c9875a36b983d85f54fb7381c47c",
+            "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-support-3.13.7.gem"
+          }
+        ],
+        "results": [
+          {
+            "phase": "healthy",
+            "exit": 0,
+            "native_outcomes": {
+              "alpha": "passed",
+              "beta": "passed"
+            }
+          },
+          {
+            "phase": "fault",
+            "exit": 1,
+            "native_outcomes": {
+              "alpha": "failed",
+              "beta": "passed"
+            }
+          }
+        ],
+        "network": "none",
+        "status": "unqualified-offline-original-native-baseline"
+      }
+    ]
   },
   "linux_nextest_baseline_log": "/tmp/hayaku-language-acceptance-bdhM36/nextest146-linux-baseline-exec.log",
   "profile_progress": {
@@ -1187,12 +1887,12 @@
       "01D": "mac-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "01E": "pending-locked-native-baseline",
       "01F": "pending-locked-native-baseline",
-      "02A": "pending-locked-native-baseline",
-      "02B": "pending-locked-native-baseline",
-      "02C": "pending-locked-native-baseline",
+      "02A": "mac-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "02B": "mac-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "02C": "mac-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "03A": "mac-locked-native-healthy-fault-baseline-passed-unqualified",
       "03B": "mac-locked-native-healthy-fault-baseline-passed-unqualified",
-      "04A": "pending-locked-native-baseline",
+      "04A": "mac-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "05A": "mac-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "05B": "pending-locked-native-baseline",
       "06A": "mac-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
@@ -1208,24 +1908,24 @@
   "linux_profile_progress": {
     "schema": 1,
     "profiles": {
-      "01A": "pending-offline-original-native-baseline",
-      "01B": "pending-offline-original-native-baseline",
-      "01C": "pending-offline-original-native-baseline",
-      "01D": "pending-offline-original-native-baseline",
+      "01A": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "01B": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "01C": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "01D": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "01E": "pending-offline-original-native-baseline",
       "01F": "pending-offline-original-native-baseline",
-      "02A": "pending-offline-original-native-baseline",
-      "02B": "pending-offline-original-native-baseline",
-      "02C": "pending-offline-original-native-baseline",
-      "03A": "pending-offline-original-native-baseline",
-      "03B": "pending-offline-original-native-baseline",
-      "04A": "pending-offline-original-native-baseline",
+      "02A": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "02B": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "02C": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "03A": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "03B": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "04A": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "05A": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "05B": "pending-offline-original-native-baseline",
-      "06A": "pending-offline-original-native-baseline",
-      "06B": "pending-offline-original-native-baseline",
-      "06C": "pending-offline-original-native-baseline",
-      "07A": "pending-offline-original-native-baseline",
+      "06A": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "06B": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "06C": "linux-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
+      "07A": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "08A": "linux-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "09A": "pending-offline-original-native-baseline"
     }
@@ -2324,6 +3024,55 @@
         "target_net10_selected_dependencies": []
       }
     ],
+    "nuget-normalized-hash-evidence.json": {
+      "sdk": "10.0.400",
+      "source_reference": "https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/PackageArchiveReader.cs",
+      "method": "GetContentHash(CancellationToken.None) on exact officially raw-SHA512 verified archives; signed content normalization differs from catalog raw archive hash",
+      "values": {
+        "nuget-xunit-2.9.3.nupkg": "TlXQBinK35LpOPKHAqbLY4xlEen9TBafjs0V5KnA4wZsoQLQJiirCR4CbIXvOH8NzkW4YeJKP5P/Bnrodm0h9Q==",
+        "nuget-xunit.runner.visualstudio-4.0.0.nupkg": "kzLFyBYUnoidpGOXvpNOfIo8C92gVgVR6X8ncHwhcrDYugiOut5rrhDkr0L3cWHd7J2pKXf6LgaeXoBBDlx1ag==",
+        "nuget-nunit-5.0.0.nupkg": "tW5Juazgh4CI4pXo5c9c2J9J4i9vwZMm/FJ+gRRe0plJHLCz7Ck/raPuE5q1xWmLAUwpao4Ht1Uy1uRN3Wo5sw==",
+        "nuget-nunit3testadapter-6.3.0.nupkg": "8ZD+0dIfDHsL4w4Gl/LPxWH0O4ky3hFXqTZjY+ry0ThI3cMVErr9Tjxal5O5wJxGXh50a9qkDEAWVca8KQYCEw==",
+        "nuget-mstest.testframework-4.4.1.nupkg": "zHyMqhT9A1qihb0S6qyFFEYze0GWC6FzkdoFqUYlSg89fIs/A/KQBWlkM0JNb43fKDskQU2OuFNKZFuXzRCvYg==",
+        "nuget-mstest.testadapter-4.4.1.nupkg": "UmeQj3uPc+R/Vu1pEHN6ZLQAsUlzCx9BkGH6HOQLILQFjjsFELettj1naMKJhKYyouSXiZum3shUeAF4QqyixA==",
+        "nuget-microsoft.net.test.sdk-18.10.1.nupkg": "SxCFvJE/2ltUQgCgv6+Ixagohw4sZc9hM7Wid2foaNM7paBscktoHLoRDz91fW8wbHG87Rg9Ku59/8PXumqUrA==",
+        "nuget-xunit.core-2.9.3.nupkg": "BiAEvqGvyme19wE0wTKdADH+NloYqikiU0mcnmiNyXaF9HyHmE6sr/3DC5vnBkgsWaE6yPyWszKSPSApWdRVeQ==",
+        "nuget-xunit.assert-2.9.3.nupkg": "/Kq28fCE7MjOV42YLVRAJzRF0WmEqsmflm0cfpMjGtzQ2lR5mYVj1/i0Y8uDAOLczkL3/jArrwehfMD0YogMAA==",
+        "nuget-xunit.analyzers-1.18.0.nupkg": "OtFMHN8yqIcYP9wcVIgJrq01AfTxijjAqVDy/WeQVSyrDC1RzBWeQPztL49DN2syXRah8TYnfvk035s7L95EZQ==",
+        "nuget-microsoft.testing.extensions.vstestbridge-2.3.3.nupkg": "JLovZjH6K10YiHO/BcidsaSHo/M2DfOe9FDjxjFdV6aoHO6VYTTYlLBNcyLJSo20q5gDTmNvmxYVH39A942aJA==",
+        "nuget-microsoft.testing.platform.msbuild-2.3.3.nupkg": "iVAvNbZ5JPDZSrTcIrCDoCsAkzjDxwDEt2mDuMd8ng1P6e2P2NCd0g0BsoBVG+nJLSmK//V+yeEvjCa3E2fxHw==",
+        "nuget-microsoft.extensions.dependencymodel-8.0.2.nupkg": "mUBDZZRgZrSyFOsJ2qJJ9fXfqd/kXJwf3AiDoqLD9m6TjY5OO/vLNOb9fb4juC0487eq4hcGN/M2Rh/CKS7QYw==",
+        "nuget-mstest.analyzers-4.4.1.nupkg": "Ccu+MKGCRCV2OauQjEIT0XeyP+AtOYyQNuhVI+yPUjJD6RQGi+lOkE8xz+gqe1IK3KiosQy7ZS+022tUTO4K1w==",
+        "nuget-microsoft.testing.extensions.telemetry-2.4.1.nupkg": "C+bq5ydHrBNCDXjvFtRa1/JcAS2Wq2dpXOnzy/TFYC8qb1dDEgB1XhQayBaYE/5BKviikByHb7mth8P+qJaOJw==",
+        "nuget-microsoft.testing.extensions.trxreport.abstractions-2.4.1.nupkg": "tDxLLic2IfeChbyo8oeGZj/eBdFpPe3Dp80hUoIOefSCqqMHbsob+lX1TfFWV75PJCPouxj2zz0zzPHZxiM4nQ==",
+        "nuget-microsoft.testing.platform.msbuild-2.4.1.nupkg": "K4W2hAATe9wA1xt4oEZWmUsnQqnLD5H18NXKsm81xclf9PI4AHieb3DxJpE/2uA6Xl9DtjpLXif7/9Sn8Y2y7w==",
+        "nuget-microsoft.testplatform.objectmodel-18.9.0.nupkg": "Fz/qXC52VXXopzHj7v2reCKcCqSxkTDCkEDfkNAH0vni/7qK/KLMiEYtRmnUanxO2F2g2zZZ60qCpxF0AF7URA==",
+        "nuget-microsoft.codecoverage-18.10.1.nupkg": "tV7tCyp/t+DuwQugLkCeUN7NBFFB4fEGRPr0gkMQ2nQgAvQQjmGlZZi1dsLzbyoe/A0mbnKybmkIh8qhT9p4Zw==",
+        "nuget-microsoft.testplatform.testhost-18.10.1.nupkg": "KYz2omqkoz9E2mWa4fdgT+Ycie1wi5968EmyJlusjlp87RxxtA2FvDm8tcBEYIDzLnkWGnsKjE4d13Z7/rxkQA==",
+        "nuget-xunit.extensibility.core-2.9.3.nupkg": "kf3si0YTn2a8J8eZNb+zFpwfoyvIrQ7ivNk5ZYA5yuYk1bEtMe4DxJ2CF/qsRgmEnDr7MnW1mxylBaHTZ4qErA==",
+        "nuget-xunit.extensibility.execution-2.9.3.nupkg": "yMb6vMESlSrE3Wfj7V6cjQ3S4TXdXpRqYeNEI3zsX31uTsGMJjEw6oD5F5u1cHnMptjhEECnmZSsPxB6ChZHDQ==",
+        "nuget-microsoft.testing.extensions.telemetry-2.3.3.nupkg": "nY8ceQyPWB9TRE1WE5Oe/sks2e10SxgPv61vBHsFYpgCeDtNwhpMZwmL29GklO3/etTdOsLdrCmNr4zJWaR2fg==",
+        "nuget-microsoft.testing.extensions.trxreport.abstractions-2.3.3.nupkg": "dceVNxnfTEjKnrIreLcMfkgrzzBY8kgCCJX5NAv7Lq/6vPlTP4VB5zxKeuYy0yfCoBtWuPkLjUG6qtOBMfpypA==",
+        "nuget-microsoft.testing.platform-2.3.3.nupkg": "ENbH4BQh9riXtOKc25KKITfiGGWhWMBJA7pZuNaF9zxzzSaVkp5AMeZxGQ6sXYaR6xb724NLz985Is6XIYqLSg==",
+        "nuget-microsoft.testplatform.objectmodel-18.4.0.nupkg": "4L6m2kS2pY5uJ9cpeRxzW22opr6ttScIRqsOpMDQpgENp/ZwxkkQCcmc6LRSURo2dFaaSW5KVflQZvroiJ7Wzg==",
+        "nuget-microsoft.testing.platform-2.4.1.nupkg": "3nW9NyhN1BnHRF994DCOOUQCqVA9pDT+gPpbuhI/xUntZnGnXO4ySovKxFlFuoT/48pnI74LK/DeKVlve1L3VQ==",
+        "nuget-microsoft.applicationinsights-2.23.0.nupkg": "nWArUZTdU7iqZLycLKWe0TDms48KKGE6pONH2terYNa8REXiqixrMOkf1sk5DHGMaUTqONU2YkS4SAXBhLStgw==",
+        "nuget-microsoft.testplatform.objectmodel-18.10.1.nupkg": "o+PuLDRVp1iwiVAPBADZItXgm9Ck23XtPhE4kZtZVi0uYnMiiz1Dx9Cjh75kJ+ijfqnORL3VOTOaQVKi0f/ixg==",
+        "nuget-xunit.abstractions-2.0.3.nupkg": "pot1I4YOxlWjIb5jmwvvQNbTrZ3lJQ+jUGkGjWE3hEFM0l5gOnBWS+H3qsex68s5cO52g+44vpGzhAt+42vwKg==",
+        "nuget-system.reflection.metadata-8.0.0.nupkg": "ptvgrFh7PvWI8bcVqG5rsA/weWM09EnthFHR5SCnS6IN+P4mj6rE1lBDC4U8HL9/57htKAqy4KQ3bBj84cfYyQ==",
+        "nuget-system.diagnostics.diagnosticsource-5.0.0.nupkg": "tCQTzPsGZh/A9LhhA6zrqCRV4hOHsK90/G7q3Khxmn6tnB1PuNU0cRaKANP2AWcF9bn0zsuOoZOSrHuJk6oNBA==",
+        "nuget-system.collections.immutable-8.0.0.nupkg": "AurL6Y5BA1WotzlEvVaIDpqzpIPvYnnldxru8oXJU2yFxFUy3+pNXjXd1ymO+RA0rq0+590Q8gaz2l3Sr7fmqg=="
+      },
+      "sdk_assembly_sha256": {
+        "NuGet.Packaging": "fac9a3c0b5f3fe66663ac79b1e429499cf5ef521e75b527124c25c7f24136c28",
+        "NuGet.Common": "97a075b652414c5cadf423d45fce69708839c4a544d4643e121f3a3b291f5d61",
+        "NuGet.Frameworks": "9d40b9b6815681d79ecdb7d49371eaf6af7811f625f89cb68d0505fc5bd15e2e",
+        "NuGet.Versioning": "7a9bbdbb46b1c366b4063cfac3768b52d319f24b488317f6cd40d2263c645d83",
+        "System.Security.Cryptography.Pkcs": "d3e2c36a3a2a2771c18d2519c89f1a2c61815411e6273387471cb638ba9e1718",
+        "Newtonsoft.Json": "b25d265a0eafffb2cb82bd229817f6a6bdcb5f4094d8a11e668d983c605008e4"
+      },
+      "qualification": "none"
+    },
     "flutter-tool-published-package-checksums.json": {
       "framework_commit": "5fc346839b5d0eef006ed8404392afb4dfae428d",
       "tool_pub_lock": "pinned-official-source-tool-lock",
@@ -3239,7 +3988,443 @@
         }
       ],
       "qualification": "none"
-    }
+    },
+    "ruby-published-package-checksums.json": [
+      {
+        "package": "diff-lcs",
+        "version": "1.6.2",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/diff-lcs/versions/1.6.2.json",
+        "published_sha256": "9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962",
+        "observed_archive_sha256": "9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/diff-lcs-1.6.2.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      },
+      {
+        "package": "minitest",
+        "version": "6.0.0",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/minitest/versions/6.0.0.json",
+        "published_sha256": "4ca597fc1d735ea18d2b4b98c5fb1d5a6da4a6f35ddf32bd5fa3eded33a453be",
+        "observed_archive_sha256": "4ca597fc1d735ea18d2b4b98c5fb1d5a6da4a6f35ddf32bd5fa3eded33a453be",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/minitest-6.0.0.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      },
+      {
+        "package": "prism",
+        "version": "1.9.0",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/prism/versions/1.9.0.json",
+        "published_sha256": "7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85",
+        "observed_archive_sha256": "7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/prism-1.9.0.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      },
+      {
+        "package": "rspec",
+        "version": "3.13.2",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/rspec/versions/3.13.2.json",
+        "published_sha256": "206284a08ad798e61f86d7ca3e376718d52c0bc944626b2349266f239f820587",
+        "observed_archive_sha256": "206284a08ad798e61f86d7ca3e376718d52c0bc944626b2349266f239f820587",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-3.13.2.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      },
+      {
+        "package": "rspec-core",
+        "version": "3.13.6",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/rspec-core/versions/3.13.6.json",
+        "published_sha256": "a8823c6411667b60a8bca135364351dda34cd55e44ff94c4be4633b37d828b2d",
+        "observed_archive_sha256": "a8823c6411667b60a8bca135364351dda34cd55e44ff94c4be4633b37d828b2d",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-core-3.13.6.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      },
+      {
+        "package": "rspec-expectations",
+        "version": "3.13.5",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/rspec-expectations/versions/3.13.5.json",
+        "published_sha256": "33a4d3a1d95060aea4c94e9f237030a8f9eae5615e9bd85718fe3a09e4b58836",
+        "observed_archive_sha256": "33a4d3a1d95060aea4c94e9f237030a8f9eae5615e9bd85718fe3a09e4b58836",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-expectations-3.13.5.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      },
+      {
+        "package": "rspec-mocks",
+        "version": "3.13.8",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/rspec-mocks/versions/3.13.8.json",
+        "published_sha256": "086ad3d3d17533f4237643de0b5c42f04b66348c28bf6b9c2d3f4a3b01af1d47",
+        "observed_archive_sha256": "086ad3d3d17533f4237643de0b5c42f04b66348c28bf6b9c2d3f4a3b01af1d47",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-mocks-3.13.8.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      },
+      {
+        "package": "rspec-support",
+        "version": "3.13.7",
+        "publisher_metadata_url": "https://rubygems.org/api/v2/rubygems/rspec-support/versions/3.13.7.json",
+        "published_sha256": "0640e5570872aafefd79867901deeeeb40b0c9875a36b983d85f54fb7381c47c",
+        "observed_archive_sha256": "0640e5570872aafefd79867901deeeeb40b0c9875a36b983d85f54fb7381c47c",
+        "archive_path": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-gems/ruby/4.0.0/cache/rspec-support-3.13.7.gem",
+        "status": "official-publisher-hash-reverified-before-linux-unpack-or-execution"
+      }
+    ],
+    "maven-linux-published-checksums.json": [
+      {
+        "artifact": "com/thoughtworks/qdox/qdox/2.2.0/qdox-2.2.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/com/thoughtworks/qdox/qdox/2.2.0/qdox-2.2.0.jar.sha1",
+        "verified_sha1": "39651eb3ce73d6e506490ea352e1e13eab6b55e8",
+        "observed_sha256": "c260c3230b2340af97d54bf01f7f67ebc57c901922736c881bb11cb981302be2"
+      },
+      {
+        "artifact": "commons-io/commons-io/2.16.1/commons-io-2.16.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/commons-io/commons-io/2.16.1/commons-io-2.16.1.jar.sha1",
+        "verified_sha1": "377d592e740dc77124e0901291dbfaa6810a200e",
+        "observed_sha256": "f41f7baacd716896447ace9758621f62c1c6b0a91d89acee488da26fc477c84f"
+      },
+      {
+        "artifact": "commons-io/commons-io/2.11.0/commons-io-2.11.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar.sha1",
+        "verified_sha1": "a2503f302b11ebde7ebc3df41daebe0e4eea3689",
+        "observed_sha256": "961b2f6d87dbacc5d54abf45ab7a6e2495f89b75598962d8c723cea9bc210908"
+      },
+      {
+        "artifact": "javax/inject/javax.inject/1/javax.inject-1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar.sha1",
+        "verified_sha1": "6975da39a7040257bd51d21a231b76c915872d38",
+        "observed_sha256": "91c77044a50c481636c32d916fd89c9118a72195390452c81065080f957de7ff"
+      },
+      {
+        "artifact": "org/webjars/jquery/3.7.1/jquery-3.7.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/webjars/jquery/3.7.1/jquery-3.7.1.jar.sha1",
+        "verified_sha1": "42088e652462c40a369b64d87e18e825644acfab",
+        "observed_sha256": "262016dd3a559df87aefbe392804e9bf620787c9204c0ab8522d4c231ea65097"
+      },
+      {
+        "artifact": "org/apache/maven/resolver/maven-resolver-util/1.4.1/maven-resolver-util-1.4.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-util/1.4.1/maven-resolver-util-1.4.1.jar.sha1",
+        "verified_sha1": "3f6d4f4bc3e24b46a776b47ccfeaed9d2ed01549",
+        "observed_sha256": "6b2184872fa7cc2ef5a90481b56af9711c15b371e69ab52f0f31bf24e910dd82"
+      },
+      {
+        "artifact": "org/apache/maven/resolver/maven-resolver-api/1.4.1/maven-resolver-api-1.4.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-api/1.4.1/maven-resolver-api-1.4.1.jar.sha1",
+        "verified_sha1": "ceee6b7ea1bc252afa585fa32f76c2cda206bdcd",
+        "observed_sha256": "33dc67306cc95da14e5444e8b494d967924abf1d01bae1894676164cbd3f6112"
+      },
+      {
+        "artifact": "org/apache/maven/shared/maven-filtering/3.4.0/maven-filtering-3.4.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-filtering/3.4.0/maven-filtering-3.4.0.jar.sha1",
+        "verified_sha1": "3f0659f3e7c2734e8e8eb5e5dedc9b1f3de8b753",
+        "observed_sha256": "ff04a5297c69d95f6face0af8934d6ee7bf1389dec50648bdd5e8569fb9d8e26"
+      },
+      {
+        "artifact": "org/apache/maven/shared/maven-shared-incremental/1.1/maven-shared-incremental-1.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-shared-incremental/1.1/maven-shared-incremental-1.1.jar.sha1",
+        "verified_sha1": "9d017a7584086755445c0a260dd9a1e9eae161a5",
+        "observed_sha256": "61988e54486a5dc38f06c70fdae5b108556c63bd433697b9f4305fcdb30fa40e"
+      },
+      {
+        "artifact": "org/apache/maven/shared/maven-common-artifact-filters/3.4.0/maven-common-artifact-filters-3.4.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-common-artifact-filters/3.4.0/maven-common-artifact-filters-3.4.0.jar.sha1",
+        "verified_sha1": "25855b1fa26fa5a1b387375de4b14ac39df23981",
+        "observed_sha256": "931a77aa9dad6c91f10fcfafa70adc7608c004576b4924c74ecbffb27568a880"
+      },
+      {
+        "artifact": "org/apache/maven/shared/maven-shared-utils/3.4.2/maven-shared-utils-3.4.2.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/shared/maven-shared-utils/3.4.2/maven-shared-utils-3.4.2.jar.sha1",
+        "verified_sha1": "bfa28296272a5915b08de9f11f34a94b0a818fd0",
+        "observed_sha256": "b613357e1bad4dfc1dead801691c9460f9585fe7c6b466bc25186212d7d18487"
+      },
+      {
+        "artifact": "org/apache/maven/plugins/maven-surefire-plugin/3.5.4/maven-surefire-plugin-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-surefire-plugin/3.5.4/maven-surefire-plugin-3.5.4.jar.sha1",
+        "verified_sha1": "0fbc7c5473cd7268a8c04e03c6e51287d912431c",
+        "observed_sha256": "d25d73f73b70bfc85dcf949c9c58eaa9ecf79709dd8be19d6f92d72b8720dd61"
+      },
+      {
+        "artifact": "org/apache/maven/plugins/maven-resources-plugin/3.4.0/maven-resources-plugin-3.4.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-resources-plugin/3.4.0/maven-resources-plugin-3.4.0.jar.sha1",
+        "verified_sha1": "3f2785076379ead77e412da8d91c85760dd071f4",
+        "observed_sha256": "72c7d66ea49256ea64a82b28a15df69177d13066d12afeb4a1ee0616da4648f1"
+      },
+      {
+        "artifact": "org/apache/maven/plugins/maven-compiler-plugin/3.14.1/maven-compiler-plugin-3.14.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-compiler-plugin/3.14.1/maven-compiler-plugin-3.14.1.jar.sha1",
+        "verified_sha1": "4b1fc3e423fc93c859e646cac460a28fa3541b99",
+        "observed_sha256": "85bc857c3bf91c87b65dfc15235154eb83b8f4539f0afbc7e6c93eb4a0bcdd38"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-booter/3.5.4/surefire-booter-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-booter/3.5.4/surefire-booter-3.5.4.jar.sha1",
+        "verified_sha1": "df67e932495e65ef99cf9d6fa2cefab8928b595f",
+        "observed_sha256": "d4dd6df150bd9a3630e3948917588af1317e7722c4f4d386ee6044ac681064c7"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.4/common-java5-3.5.4.jar.sha1",
+        "verified_sha1": "0e0e0ae77b90c8b2ff6778dd4a29128b842bc4c8",
+        "observed_sha256": "1e2285c65cf579059bec9f0c3d31ad60ea50598c8b8ff17c940aac94562e6e90"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-extensions-api/3.5.4/surefire-extensions-api-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-extensions-api/3.5.4/surefire-extensions-api-3.5.4.jar.sha1",
+        "verified_sha1": "3511e2a8583dab50283f45407724618ce1ec4515",
+        "observed_sha256": "d4bfeba02a1952f8524bf120d20415cfd507b0d56a442414765f8095e26fe0b1"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-api/3.5.4/surefire-api-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-api/3.5.4/surefire-api-3.5.4.jar.sha1",
+        "verified_sha1": "ab89c8e7867ba008d2c75f2ee67a26b70fc4715a",
+        "observed_sha256": "dbd7aa157b556cc3d76e0fd0a13793b789358117975565ad5c755e00e32e5619"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/maven-surefire-common/3.5.4/maven-surefire-common-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/maven-surefire-common/3.5.4/maven-surefire-common-3.5.4.jar.sha1",
+        "verified_sha1": "3af915951592e778f3ed03fe3c756f871fd4b69e",
+        "observed_sha256": "902e637f8936c1a11d9046e6d7cc9bcb6945f30cc1f7cf646077aa26816a7a44"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-extensions-spi/3.5.4/surefire-extensions-spi-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-extensions-spi/3.5.4/surefire-extensions-spi-3.5.4.jar.sha1",
+        "verified_sha1": "d6a142da8af84f1ca31ad7e471a983a543c6d697",
+        "observed_sha256": "68c7cde0ffde31a18e95433f122e0b55ec6cec9b08e0af16e6314e2c029cd2d2"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.4/surefire-junit-platform-3.5.4.jar.sha1",
+        "verified_sha1": "5c03b8c48e0847d42fc9bbf019f6021ec2344389",
+        "observed_sha256": "c3138b39df0109d262b706e9de551d4375061841c5de4d8dca98a71581509534"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-grouper/3.5.4/surefire-grouper-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-grouper/3.5.4/surefire-grouper-3.5.4.jar.sha1",
+        "verified_sha1": "7d1597ef19858d1bc7e006bee498bac8de9159d0",
+        "observed_sha256": "887d015712506adfb4c10ff7409c8220015dd059db2905d941b9b6926873228e"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-logger-api/3.5.4/surefire-logger-api-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-logger-api/3.5.4/surefire-logger-api-3.5.4.jar.sha1",
+        "verified_sha1": "747119bac4fca1fb299637be1745f0160647c626",
+        "observed_sha256": "e8ec1e4d85dc2a71819dfb4a27507258175569941aa4a27ee08ec899319dbd24"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-testng-utils/3.5.4/surefire-testng-utils-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-testng-utils/3.5.4/surefire-testng-utils-3.5.4.jar.sha1",
+        "verified_sha1": "e7360ae5de0e07c2be566ed52d3d09b68ec998eb",
+        "observed_sha256": "2b293d360c51cb3894e9a3dcb82f971d1f17240d597bf28623e2c3c83ed41a3a"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-shared-utils/3.5.4/surefire-shared-utils-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-shared-utils/3.5.4/surefire-shared-utils-3.5.4.jar.sha1",
+        "verified_sha1": "5892ef2008818dd217d0e28467a107201a6763c7",
+        "observed_sha256": "6cc66d1d5816d6088be1b45574f0e6dab733a03d021848556a3d810e865aee2e"
+      },
+      {
+        "artifact": "org/apache/maven/surefire/surefire-testng/3.5.4/surefire-testng-3.5.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-testng/3.5.4/surefire-testng-3.5.4.jar.sha1",
+        "verified_sha1": "aa838e93df96b4817736df0c0007e2e49f2a708f",
+        "observed_sha256": "1157e9fde3b43cb9e6ec963797b2a30e184a407ac0cda269998325c115ddd08f"
+      },
+      {
+        "artifact": "org/apache/commons/commons-lang3/3.20.0/commons-lang3-3.20.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.20.0/commons-lang3-3.20.0.jar.sha1",
+        "verified_sha1": "65897b3e5731220962e659e001904af3c3cbeba9",
+        "observed_sha256": "69e5c9fa35da7a51a5fd2099dfe56a2d8d32cf233e2f6d770e796146440263f4"
+      },
+      {
+        "artifact": "org/codehaus/plexus/plexus-compiler-manager/2.15.0/plexus-compiler-manager-2.15.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-compiler-manager/2.15.0/plexus-compiler-manager-2.15.0.jar.sha1",
+        "verified_sha1": "4c6d2fc56063e2c62b953a2da9ad60c19097474d",
+        "observed_sha256": "c13b12c32a18b00e457de9b93cfc3d5593bfa1fb992b2c46a3498be1a77c4889"
+      },
+      {
+        "artifact": "org/codehaus/plexus/plexus-xml/3.0.1/plexus-xml-3.0.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-xml/3.0.1/plexus-xml-3.0.1.jar.sha1",
+        "verified_sha1": "b0e73c21402f03c2765674b8dede21673b3288cf",
+        "observed_sha256": "c1a510a87a62bd2d74ac1472dd31c3f9e9b0b8b8568f37d77c0f135415bebd05"
+      },
+      {
+        "artifact": "org/codehaus/plexus/plexus-interpolation/1.27/plexus-interpolation-1.27.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-interpolation/1.27/plexus-interpolation-1.27.jar.sha1",
+        "verified_sha1": "8dc73f4ff5eafcbb7ec035ba54736e828b272533",
+        "observed_sha256": "3fb4fb6143fdf964024c3cb738551524b9ea84e5c211cd660c559ad0703e5230"
+      },
+      {
+        "artifact": "org/codehaus/plexus/plexus-compiler-javac/2.15.0/plexus-compiler-javac-2.15.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-compiler-javac/2.15.0/plexus-compiler-javac-2.15.0.jar.sha1",
+        "verified_sha1": "48069fe3c512b09e8aa32d77929c190a6faba790",
+        "observed_sha256": "89603334988453b9cf4d7ec404d4b54f140de28b678d6a8e8edc448240dd0e90"
+      },
+      {
+        "artifact": "org/codehaus/plexus/plexus-java/1.5.0/plexus-java-1.5.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-java/1.5.0/plexus-java-1.5.0.jar.sha1",
+        "verified_sha1": "0a5a869174398d74dc76eb7b6dd126e6e3afb7b2",
+        "observed_sha256": "df1186d2fc652c4bedd9809638292000787f21a157a1e15e880134fa9fcbedb2"
+      },
+      {
+        "artifact": "org/codehaus/plexus/plexus-compiler-api/2.15.0/plexus-compiler-api-2.15.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-compiler-api/2.15.0/plexus-compiler-api-2.15.0.jar.sha1",
+        "verified_sha1": "1bd59395d358ca695fddc7b9dc594483f4140601",
+        "observed_sha256": "d31d744eb69f77dffd3722dca4094758e0f90e79918a7b3b9fdc37ce49b60342"
+      },
+      {
+        "artifact": "org/codehaus/plexus/plexus-utils/4.0.2/plexus-utils-4.0.2.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.2/plexus-utils-4.0.2.jar.sha1",
+        "verified_sha1": "9526a9548b302572f23337fcc217fb4cc713b9c3",
+        "observed_sha256": "8957274e75fe2c278b1428dd16a0daeee1dd38152cb6eff816177ac28fccb697"
+      },
+      {
+        "artifact": "org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar.sha1",
+        "verified_sha1": "152ea56b3a72f655d4fd677fc0ef2596c3dd5e6e",
+        "observed_sha256": "48e2df636cab6563ced64dcdff8abb2355627cb236ef0bf37598682ddf742f1b"
+      },
+      {
+        "artifact": "org/sonatype/plexus/plexus-build-api/0.0.7/plexus-build-api-0.0.7.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/sonatype/plexus/plexus-build-api/0.0.7/plexus-build-api-0.0.7.jar.sha1",
+        "verified_sha1": "e6ba5cd4bfd8de00235af936e7f63eb24ed436e6",
+        "observed_sha256": "934171640fbd3d2495c50b79b0d9adb11e2c83e65bad157df8fe34bcac0ff798"
+      },
+      {
+        "artifact": "org/jcommander/jcommander/1.83/jcommander-1.83.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/jcommander/jcommander/1.83/jcommander-1.83.jar.sha1",
+        "verified_sha1": "c342a2ad17ec08db105146e27c7ba9c535c9bb46",
+        "observed_sha256": "e65f49c2119a1859b9076061e561fb5958a2fa6ffdb49f051ca8d59a0b3f87e4"
+      },
+      {
+        "artifact": "org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar.sha1",
+        "verified_sha1": "a231e0d844d2721b0fa1b238006d15c6ded6842a",
+        "observed_sha256": "b509448ac506d607319f182537f0b35d71007582ec741832a1f111e5b5b70b38"
+      },
+      {
+        "artifact": "org/ow2/asm/asm/9.8/asm-9.8.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/ow2/asm/asm/9.8/asm-9.8.jar.sha1",
+        "verified_sha1": "dc19ecb3f7889b7860697215cae99c0f9b6f6b4b",
+        "observed_sha256": "876eab6a83daecad5ca67eb9fcabb063c97b5aeb8cf1fca7a989ecde17522051"
+      },
+      {
+        "artifact": "org/testng/testng/7.11.0/testng-7.11.0.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/testng/testng/7.11.0/testng-7.11.0.jar.sha1",
+        "verified_sha1": "c75ee639e6fc9c0a406d32608d532d9ee9341941",
+        "observed_sha256": "2edbe6b2211186d8f5439cba7998697cce883432e5f14e0696f6b59d0d58582b"
+      },
+      {
+        "artifact": "org/junit/jupiter/junit-jupiter-engine/5.13.4/junit-jupiter-engine-5.13.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter-engine/5.13.4/junit-jupiter-engine-5.13.4.jar.sha1",
+        "verified_sha1": "d29fc8b6a28d21b8741f299ae4deb3e3aa68b2e8",
+        "observed_sha256": "027404a92fe618b72465792a257951495c503a7d5751e2791e0f51c87f67f5bc"
+      },
+      {
+        "artifact": "org/junit/jupiter/junit-jupiter/5.13.4/junit-jupiter-5.13.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter/5.13.4/junit-jupiter-5.13.4.jar.sha1",
+        "verified_sha1": "93547b3eca48a61f65f735c1898d3ec196e34149",
+        "observed_sha256": "b960f79217dd01c863031b678f07df4730bbf1eac650c74ad6b0c61faad78379"
+      },
+      {
+        "artifact": "org/junit/jupiter/junit-jupiter-params/5.13.4/junit-jupiter-params-5.13.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter-params/5.13.4/junit-jupiter-params-5.13.4.jar.sha1",
+        "verified_sha1": "0c8930eb7fcfbed0b191703ab53f48475a75bd17",
+        "observed_sha256": "3a8c6365716dbb698c0d49a05456c1e1ad05c406613c550f9dd50037872efc41"
+      },
+      {
+        "artifact": "org/junit/jupiter/junit-jupiter-api/5.13.4/junit-jupiter-api-5.13.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/jupiter/junit-jupiter-api/5.13.4/junit-jupiter-api-5.13.4.jar.sha1",
+        "verified_sha1": "2817f736551fe4949b79924715ef6f594ee072f4",
+        "observed_sha256": "d1bb81abfd9e03418306b4e6a3390c8db52c58372e749c2980ac29f0c08278f1"
+      },
+      {
+        "artifact": "org/junit/platform/junit-platform-launcher/1.13.4/junit-platform-launcher-1.13.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.13.4/junit-platform-launcher-1.13.4.jar.sha1",
+        "verified_sha1": "e72a4d00af6177569fd57df4c8c4bb241c6aa4b6",
+        "observed_sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+      },
+      {
+        "artifact": "org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.1/junit-platform-launcher-1.12.1.jar.sha1",
+        "verified_sha1": "ff5af5e325705fb1d5926a0235cc655c4e96bf1d",
+        "observed_sha256": "ebbb14e7b29f60730eaede862ed69d7de0d581ea0c038fa6a202955c7541f525"
+      },
+      {
+        "artifact": "org/junit/platform/junit-platform-commons/1.13.4/junit-platform-commons-1.13.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.13.4/junit-platform-commons-1.13.4.jar.sha1",
+        "verified_sha1": "8f63c7ed05b473d95cc63d1082054d7bfcf9c0e5",
+        "observed_sha256": "1c25ca641ebaae44ff3ad21ca1b2ef68d0dd84bfeb07c4805ba7840899b77408"
+      },
+      {
+        "artifact": "org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.1/junit-platform-commons-1.12.1.jar.sha1",
+        "verified_sha1": "d34adac31a6974eec6611cc129927a2e2cfe89ee",
+        "observed_sha256": "c316163581aaa5649280122b12ea36fe4e9c202a1a2267753fea7c9e1df055eb"
+      },
+      {
+        "artifact": "org/junit/platform/junit-platform-engine/1.13.4/junit-platform-engine-1.13.4.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.13.4/junit-platform-engine-1.13.4.jar.sha1",
+        "verified_sha1": "cdd49063ae6e25494d1a9a08f4a9ab5de2b73bcb",
+        "observed_sha256": "390c5f77b84283a64b644f88251b397e0b0debb80bdcc50f899881aecff43a5a"
+      },
+      {
+        "artifact": "org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.1/junit-platform-engine-1.12.1.jar.sha1",
+        "verified_sha1": "fc105f3430d6392a4d033fe6f9d58eddd1a03594",
+        "observed_sha256": "7fedff93fd92aec7d29fc60dc01fa027246b36b8088423a5efc4949e5f6affa4"
+      },
+      {
+        "artifact": "org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar.sha1",
+        "verified_sha1": "6c62681a2f655b49963a5983b8b0950a6120ae14",
+        "observed_sha256": "d3ef575e3e4979678dc01bf1dcce51021493b4d11fb7f1be8ad982877c16a1c0"
+      },
+      {
+        "artifact": "org/slf4j/slf4j-api/2.0.16/slf4j-api-2.0.16.jar",
+        "published_checksum_url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/2.0.16/slf4j-api-2.0.16.jar.sha1",
+        "verified_sha1": "0172931663a09a1fa515567af5fbef00897d3c04",
+        "observed_sha256": "a12578dde1ba00bd9b816d388a0b879928d00bab3c83c240f7013bf4196c579a"
+      }
+    ]
   },
-  "tool_identity_limit": "Individual executable and official archive digests are provisioning evidence; complete mutable installed runtime closure remains a separate admission requirement."
+  "tool_identity_limit": "Individual executable and official archive digests are provisioning evidence; complete mutable installed runtime closure remains a separate admission requirement.",
+  "setup_failures_before_framework_execution": {
+    "php-mac-initial-setup-failure.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/php-mac-initial-setup-failure.json",
+      "sha256": "a23e2b6a5bdc870536745e46e5f93f6d56cdab524c6ba7aed50636ce9f7b88c5",
+      "record": {
+        "stage": "archive-extraction-before-SDK-build",
+        "error": "TypeError: extractall() got an unexpected keyword argument filter",
+        "cause": "unqualified default PATH Python lacks the required standard tarfile data filter",
+        "correction": "use existing installed /opt/homebrew/bin/python3 with the required safe extraction API; no unsafe fallback",
+        "framework_executed": false,
+        "status": "retained-setup-failure-not-test-baseline"
+      }
+    },
+    "php-mac-libxml-setup-correction.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/php-mac-libxml-setup-correction.json",
+      "sha256": "6681dfc6ad91457b380f0d2b78e10732ddb521e7980ee7ec62a9e0c06d39d701",
+      "record": {
+        "stage": "private-SDK-configure-before-compile",
+        "error": "extension dom depends on extension libxml, which was disabled by explicit disable-all",
+        "correction": "explicitly enable system-SDK libxml with --with-libxml; selected installed libxml2.9.13 satisfies verified-source minimum2.9.4",
+        "framework_executed": false,
+        "status": "retained-setup-failure-not-test-baseline"
+      }
+    },
+    "ruby-linux-initial-version-oracle-failure.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/ruby-linux-initial-version-oracle-failure.json",
+      "sha256": "667a58c484fd4496b768f78622ba1a28e3809f33b9cdc7ac66551653171ca956",
+      "record": {
+        "status": "initial-version-display-oracle-failed-before-package-install-or-framework-execution",
+        "actual_bundler_version_stdout": "4.0.20",
+        "incorrect_expected_display": "Bundler version 4.0.20",
+        "corrected_exact_display": "4.0.20",
+        "retained_logs": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-linux-initial-version-oracle",
+        "framework_outcomes": "none; no RSpec or Minitest executed"
+      }
+    },
+    "ruby-linux-initial-frozen-flag-failure.json": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/ruby-linux-initial-frozen-flag-failure.json",
+      "sha256": "adb9f1efd80b5708512082202d2ba8f73de86d54c0cd05925d161c079f1fb2f8",
+      "record": {
+        "status": "SDK-install-flag-rejected-before-package-install-or-framework-execution",
+        "exact_error": "The `--frozen` flag has been removed because it relied on being remembered\nacross bundler invocations, which bundler no longer does. Instead please use\n`bundle config set frozen true`, and stop using this flag",
+        "correction": "Use supported BUNDLE_FROZEN=true; assert Bundler.settings[:frozen] is true before offline installation",
+        "retained_logs": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-linux-initial-frozen-flag",
+        "framework_outcomes": "none"
+      }
+    }
+  }
 }

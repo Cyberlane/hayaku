@@ -79,16 +79,21 @@ interpreter contract, Hayaku executable identity, Go runtime and host platform.
 Changing any bound context requires fresh execution. The producer digest is an
 invalidation input supplied by the caller, not proof of native equivalence.
 
-A private cache uses an invoking-user authority key and authenticated canonical
-receipts. Guests cannot access it. Forged, foreign, malformed or unavailable
+A private cache defaults to an invoking-user authority key and authenticated canonical
+receipts. Explicit [portable receipt policy](portable-cache.md) can instead
+select an Ed25519 issuer or public-key-only verifier; verification-only misses
+execute without signing a new receipt. Neither role relaxes the execution contract
+or its existing context keys. Guests cannot access signing material. Forged, foreign, malformed or unavailable
 receipts cause execution; only complete qualified passes are stored. The user,
 trusted executable/compiler and interpreter are inside this authority boundary.
 Sharing write access or authority keys with untrusted jobs defeats that model.
 Windows caching is disabled pending independent ACL qualification; capsules
 there execute uncached.
 
-`--no-reuse` removes the previous receipt before starting. Failed/interrupted
-audits cannot preserve it; output-digest mismatch against a trusted earlier pass
+`--no-reuse` removes the selected previous receipt before execution. An audit
+that fails during request/configuration validation before selecting that receipt
+can currently leave it intact; K48 in the [kanban](affected-tests-kanban.md)
+tracks cleanup for these early failures. Output-digest mismatch against a trusted earlier pass
 invalidates qualification and leaves no reusable pass. Failure to store a new
 receipt can leave a fresh execution passed, but the next run must execute again.
 

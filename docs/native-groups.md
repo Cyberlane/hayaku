@@ -139,9 +139,17 @@ are trusted. Original-host fallback commands retain ordinary native process acce
 and must also be trusted. Local authority protects bounded guests; it cannot
 protect against malicious host code replacing the controller, compiler or key.
 
-`--no-reuse` revokes all authenticated native receipts in that cache before
+[Portable receipt policy](portable-cache.md) optionally separates Ed25519 issuance
+from verification using shared `--cache-policy` and `--cache-signing-key` options.
+A verifier transports receipt files and public policy only; misses execute without
+publishing new passes. Exact native context keys and private producer admission
+remain required, so different boots, controllers or daemon contexts can miss.
+
+After configuration and authority admission, `--no-reuse` revokes all authenticated native receipts in that cache before
 capture/build, even if the invocation is cancelled before execution. Other
 receipt domains remain intact. New complete passes may be written afterward.
+Early configuration/compiler failures before that revocation are tracked by K48
+in the [kanban](affected-tests-kanban.md).
 Source/policy drift or incomplete aggregate evidence prevents success and revokes
 available receipts used/created by that invocation. Missing, invalid or unavailable caches execute again. The shared
 store's versioned envelope invalidates older WASI cache files; they execute again

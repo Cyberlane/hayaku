@@ -388,6 +388,17 @@ func (b Backend) executeCaptured(ctx context.Context, a Artifact, primary *captu
 // qualification is supplied only by reviewed in-process provider code, never
 // by a JSON declaration, previous coverage or user result report.
 func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit bool, decode func(process.Output, Artifact) (model.Outcomes, error)) (Result, error) {
+	return ExecuteWithOptions(ctx, b, a, ExecutionOptions{CacheDir: cacheDir, Audit: audit}, decode)
+}
+
+type ExecutionOptions struct {
+	CacheDir  string
+	Audit     bool
+	Authority *passcache.Authority
+}
+
+func ExecuteWithOptions(ctx context.Context, b Backend, a Artifact, options ExecutionOptions, decode func(process.Output, Artifact) (model.Outcomes, error)) (Result, error) {
+	cacheDir, audit := options.CacheDir, options.Audit
 	r := Result{Name: a.Name, Context: b.platform() + "-" + b.Architecture, Qualified: a.authority != nil, Cache: "disabled"}
 	// The operational envelope is not a reviewed language/runtime proof. Reject
 	// before cache lookup or audit mutation, including caller-supplied Proof.
@@ -415,7 +426,12 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 	r.Key = key
 	// A caller cannot substitute a decoder for the reviewed producer boundary.
 	decode = a.authority.decode
-	cache, cacheErr := passcache.Open(cacheDir, "hayaku-native-pure-pass-v1")
+	if options.Authority != nil {
+		if err := options.Authority.Verify(ctx); err != nil {
+			return r, err
+		}
+	}
+	cache, cacheErr := passcache.OpenWithAuthority(cacheDir, "hayaku-native-pure-pass-v1", options.Authority)
 	if cacheErr != nil {
 		r.Cache = "unavailable"
 	}
@@ -448,6 +464,11 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 		if _, _, e := verifyAuthority(ctx, b, a); e != nil {
 			r.Qualified = false
 			return r, e
+		}
+		if options.Authority != nil {
+			if err := options.Authority.Verify(ctx); err != nil {
+				return r, err
+			}
 		}
 		r.Outcomes = prior.Outcomes
 		r.Complete = true
@@ -487,19 +508,34 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 		r.Passed = false
 		err = e
 	}
+	if options.Authority != nil {
+		if e := options.Authority.Verify(ctx); e != nil {
+			r.Complete, r.Passed = false, false
+			_ = cache.Invalidate(r.Key)
+			err = e
+		}
+	}
 	if audit && valid && r.Passed && identity(prior.Outcomes) != identity(r.Outcomes) {
 		r.Qualified = false
 		r.Passed = false
 		err = errors.New("native audit outcome mismatch")
 	}
 	if r.Passed && passing(r.Outcomes, a) {
-		if e = cache.Store(ctx, r.Key, receipt{Schema: 1, Key: r.Key, Cases: a.Cases, Outcomes: r.Outcomes}); e != nil {
+		if cache != nil && !cache.CanStore() {
+			r.Cache = "verification-only"
+		} else if e = cache.Store(ctx, r.Key, receipt{Schema: 1, Key: r.Key, Cases: a.Cases, Outcomes: r.Outcomes}); e != nil {
 			r.Cache = "store-failed"
 			if ctx.Err() != nil {
 				r.Complete = false
 				r.Passed = false
 				return r, ctx.Err()
 			}
+		}
+	}
+	if options.Authority != nil {
+		if e := options.Authority.Verify(ctx); e != nil {
+			r.Complete, r.Passed = false, false
+			err = e
 		}
 	}
 	if !r.Complete {

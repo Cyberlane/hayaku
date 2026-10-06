@@ -38,7 +38,12 @@ func Run(ctx context.Context, request Request, options Options) (Result, error) 
 	backend := digest([]byte(BackendVersion + "\x00" + executable + "\x00" + runtime.Version() + "\x00" + runtime.GOOS + "/" + runtime.GOARCH))
 	key, inputs := identities(request, limits, backend)
 	result := Result{Schema: 1, Name: request.Name, Mode: "executed", Key: key, ModuleDigest: digest(request.Module), InputDigest: inputs, BackendDigest: backend, InputFiles: len(request.Files), Gaps: []string{}, Reason: "execution-incomplete"}
-	cache, cacheErr := openPassCache(options.CacheDir)
+	if options.Authority != nil {
+		if err := options.Authority.Verify(ctx); err != nil {
+			return result, err
+		}
+	}
+	cache, cacheErr := openPassCacheWithAuthority(options.CacheDir, options.Authority)
 	if cache != nil {
 		defer cache.cache.Close()
 	}
@@ -54,6 +59,11 @@ func Run(ctx context.Context, request Request, options Options) (Result, error) 
 		current, err := currentExecutableDigest(ctx)
 		if err != nil || current != executable {
 			return result, fmt.Errorf("capsule backend identity changed")
+		}
+		if options.Authority != nil {
+			if err := options.Authority.Verify(ctx); err != nil {
+				return result, err
+			}
 		}
 		result.Mode, result.Complete, result.Qualified, result.Passed = "reused", true, true, true
 		result.Reason = "authenticated-complete-pass"
@@ -78,6 +88,14 @@ func Run(ctx context.Context, request Request, options Options) (Result, error) 
 	if !result.Complete || !result.Qualified || !result.Passed {
 		return result, nil
 	}
+	if options.Authority != nil {
+		if err := options.Authority.Verify(ctx); err != nil {
+			_ = cache.invalidate(key)
+			result.Complete, result.Qualified, result.Passed = false, false, false
+			result.Reason = "cache-authority-changed"
+			return result, err
+		}
+	}
 	current, identityErr := currentExecutableDigest(ctx)
 	if identityErr != nil || current != executable {
 		result.Complete, result.Qualified, result.Passed = false, false, false
@@ -90,7 +108,9 @@ func Run(ctx context.Context, request Request, options Options) (Result, error) 
 		return result, fmt.Errorf("capsule audit did not reproduce the authenticated outcome")
 	}
 	if cache != nil {
-		if err := cache.store(ctx, result); err != nil {
+		if !cache.cache.CanStore() {
+			result.CacheStatus = "verification-only"
+		} else if err := cache.store(ctx, result); err != nil {
 			result.CacheStatus = "store-failed"
 			if ctx.Err() != nil {
 				result.Complete, result.Qualified, result.Passed = false, false, false
@@ -99,6 +119,14 @@ func Run(ctx context.Context, request Request, options Options) (Result, error) 
 			}
 		} else {
 			result.CacheStatus = "stored"
+		}
+	}
+	if options.Authority != nil {
+		if err := options.Authority.Verify(ctx); err != nil {
+			_ = cache.invalidate(key)
+			result.Complete, result.Qualified, result.Passed = false, false, false
+			result.Reason = "cache-authority-changed"
+			return result, err
 		}
 	}
 	return result, nil

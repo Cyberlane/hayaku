@@ -25,11 +25,27 @@ type passReceipt struct {
 type passCache struct{ cache *passcache.Cache }
 
 func openPassCache(directory string) (*passCache, error) {
-	c, err := passcache.Open(directory, "hayaku-wasi-capsule-pass-v1")
+	return openPassCacheWithAuthority(directory, nil)
+}
+func openPassCacheWithAuthority(directory string, authority *passcache.Authority) (*passCache, error) {
+	c, err := passcache.OpenWithAuthority(directory, "hayaku-wasi-capsule-pass-v1", authority)
 	if err != nil || c == nil {
 		return nil, err
 	}
 	return &passCache{cache: c}, nil
+}
+
+// Revoke removes this invocation's local receipt copies using the same captured
+// authority. It never falls back to generating a local signing secret.
+func Revoke(options Options, key string) error {
+	c, err := openPassCacheWithAuthority(options.CacheDir, options.Authority)
+	if err != nil {
+		return err
+	}
+	if c != nil {
+		defer c.cache.Close()
+	}
+	return c.invalidate(key)
 }
 func (c *passCache) load(result Result, limit int64) (passReceipt, string) {
 	if c == nil {

@@ -7,10 +7,10 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
+	apple "github.com/Cyberlane/hayaku/internal/adapter/swift"
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/process"
 	"github.com/Cyberlane/hayaku/internal/runner/native"
@@ -21,7 +21,16 @@ func command(w model.Workspace) ([]string, error) {
 		return nil, errors.New("Xcode reconciliation requires plain xcodebuild without prerequisites")
 	}
 	hasTest := false
-	for _, arg := range w.Command.Args {
+	values := map[string]bool{"-project": true, "-workspace": true, "-scheme": true, "-target": true, "-configuration": true, "-sdk": true, "-arch": true, "-destination": true, "-destination-timeout": true, "-derivedDataPath": true, "-testPlan": true, "-clonedSourcePackagesDirPath": true, "-parallel-testing-enabled": true, "-maximum-concurrent-test-simulator-destinations": true, "-maximum-concurrent-test-device-destinations": true, "-parallel-testing-worker-count": true, "-maximum-parallel-testing-workers": true, "-xcconfig": true, "-toolchain": true}
+	for i := 0; i < len(w.Command.Args); i++ {
+		arg := w.Command.Args[i]
+		if values[arg] {
+			if i+1 >= len(w.Command.Args) || w.Command.Args[i+1] == "" || strings.HasPrefix(w.Command.Args[i+1], "-") {
+				return nil, errors.New("missing Xcode option value")
+			}
+			i++
+			continue
+		}
 		if arg == "test" {
 			hasTest = true
 		}
@@ -37,69 +46,113 @@ func command(w model.Workspace) ([]string, error) {
 	return append([]string{}, w.Command.Args...), nil
 }
 
-func Collect(ctx context.Context, root string, w model.Workspace, c model.Context) ([]native.Case, error) {
-	args, err := command(w)
+func Collect(ctx context.Context, root string, w model.Workspace, c model.Context) (cases []native.Case, err error) {
+	closure, err := CaptureClosure(ctx, root, w, c)
 	if err != nil {
 		return nil, err
 	}
-	tmp, err := os.MkdirTemp("", "hayaku-xcode-inventory-")
-	if err != nil {
-		return nil, err
-	}
-	defer os.RemoveAll(tmp)
-	file := filepath.Join(tmp, "cases.json")
-	args = append(args, "-quiet", "-enumerate-tests", "-test-enumeration-style", "flat", "-test-enumeration-format", "json", "-test-enumeration-output-path", file, "-disableAutomaticPackageResolution", "-skipPackageUpdates")
-	out, err := process.Run(ctx, model.Command{Dir: w.Command.Dir, Executable: w.Command.Executable, Args: args}, filepath.Join(root, w.Root, w.Command.Dir), c.Env)
-	if err != nil || !out.Completed {
-		return nil, errors.New("Xcode test enumeration failed (native diagnostics withheld)")
-	}
-	data, err := os.ReadFile(file)
-	if err != nil {
-		return nil, errors.New("Xcode enumeration is missing")
-	}
-	return native.XcodeCases(data, w.ID+":suite")
+	defer func() {
+		if closeErr := closure.Close(); closeErr != nil {
+			cases = nil
+			err = closeErr
+		}
+	}()
+	return closure.Collect(ctx)
 }
 
-func ReadResult(ctx context.Context, bundle string, expected []native.Case, c model.Context) (native.Result, error) {
-	version, err := process.Run(ctx, model.Command{Dir: ".", Executable: "/usr/bin/xcodebuild", Args: []string{"-version"}}, filepath.Dir(bundle), c.Env)
-	if err != nil || !regexp.MustCompile(`^Xcode (26\.3|27\.0)\n`).Match(version.Stdout) {
-		return native.Result{}, errors.New("Xcode result reconciliation requires installed Xcode 26.3 or 27.0")
+func ReadResult(ctx context.Context, bundle string, expected []native.Case, c model.Context) (result native.Result, err error) {
+	if len(expected) > 100000 {
+		return result, errors.New("Xcode imported inventory exceeds bounds")
 	}
-	schema := "0.4.0"
-	if strings.HasPrefix(string(version.Stdout), "Xcode 26.3\n") {
-		schema = "0.1.0"
-	}
-	var data [][]byte
-	for _, kind := range []string{"tests", "summary"} {
-		out, err := process.Run(ctx, model.Command{Dir: ".", Executable: "/usr/bin/xcrun", Args: []string{"xcresulttool", "get", "test-results", kind, "--schema-version", schema, "--path", bundle, "--compact"}}, filepath.Dir(bundle), c.Env)
-		if err != nil || !out.Completed {
-			return native.Result{}, errors.New("xcresulttool export failed (native diagnostics withheld)")
+	owners := map[string]bool{}
+	var units []model.Unit
+	total := 0
+	for _, item := range expected {
+		total += len(item.Unit) + len(item.ID)
+		if len(item.Unit) > 8192 || len(item.ID) > 8192 || total > 8<<20 {
+			return result, errors.New("Xcode imported inventory text exceeds bounds")
 		}
-		data = append(data, out.Stdout)
+		if !owners[item.Unit] {
+			if len(owners) >= 50000 {
+				return result, errors.New("Xcode imported owners exceed bounds")
+			}
+			owners[item.Unit] = true
+			units = append(units, model.Unit{ID: item.Unit, Workspace: "result", Selector: "full", Kind: "suite"})
+		}
 	}
-	return native.ReconcileXCResult(data[0], data[1], expected)
+	if _, err := apple.AppleInventory(units, expected); err != nil {
+		return result, err
+	}
+	cases := append([]native.Case(nil), expected...)
+	// Imports keep the original result readonly. Reader-created databases belong
+	// only to a bounded private copy, a changed and unqualified native context.
+	w := model.Workspace{ID: "result", Root: ".", Command: model.Command{Dir: ".", Executable: "/usr/bin/xcodebuild"}}
+	captured, err := apple.CaptureAppleClosure(ctx, bundle, w, c)
+	if err != nil {
+		return result, err
+	}
+	tool, err := captured.CaptureTool(ctx, "/usr/bin/xcodebuild")
+	if err != nil {
+		return result, err
+	}
+	tool, err = captured.SelectAppleTool(ctx, "xcodebuild")
+	if err != nil {
+		return result, err
+	}
+	selected, err := captured.SelectAppleTool(ctx, "xcresulttool")
+	if err != nil {
+		return result, err
+	}
+	dir, err := captured.NewOutputRoot(ctx, "hayaku-xcode-import-")
+	if err != nil {
+		return result, err
+	}
+	closure := &Closure{apple: captured, tool: tool, resultTool: selected, dir: dir, cleanup: dir, workspace: "result", cases: cases}
+	defer func() {
+		if closeErr := closure.Close(); closeErr != nil {
+			result.Complete = false
+			err = errors.New("Xcode imported result cleanup failed")
+		}
+	}()
+	copy := filepath.Join(dir, "result.xcresult")
+	if err := captured.CopyInputTree(ctx, bundle, copy); err != nil {
+		return result, err
+	}
+	closure.seal = closure.requestDigest()
+	return closure.ReadResult(ctx, copy)
 }
 
 func Execute(ctx context.Context, root string, w model.Workspace, c model.Context) (out process.Output, result native.Result, err error) {
 	start := time.Now()
 	defer func() { out.Duration = time.Since(start) }()
-	cases, err := Collect(ctx, root, w, c)
+	closure, err := CaptureClosure(ctx, root, w, c)
 	if err != nil {
 		return process.Output{}, result, err
 	}
-	args, err := command(w)
-	if err != nil {
+	defer func() {
+		if closeErr := closure.Close(); closeErr != nil {
+			out.Completed = false
+			err = closeErr
+		}
+	}()
+	if _, err := closure.Collect(ctx); err != nil {
 		return process.Output{}, result, err
 	}
-	tmp, err := os.MkdirTemp("", "hayaku-xcode-result-")
-	if err != nil {
+	if err := closure.Verify(ctx); err != nil {
 		return process.Output{}, result, err
 	}
-	defer os.RemoveAll(tmp)
-	bundle := filepath.Join(tmp, "run.xcresult")
-	args = append(args, "-quiet", "-resultBundlePath", bundle, "-disableAutomaticPackageResolution", "-skipPackageUpdates")
-	out, runErr := process.Run(ctx, model.Command{Dir: w.Command.Dir, Executable: w.Command.Executable, Args: args}, filepath.Join(root, w.Root, w.Command.Dir), c.Env)
-	result, err = ReadResult(ctx, bundle, cases, c)
+	bundle := filepath.Join(closure.dir, "run.xcresult")
+	args := append(append([]string(nil), closure.args...), "-quiet", "-resultBundlePath", bundle)
+	out, runErr := closure.Run(ctx, args)
+	if !out.Completed {
+		return out, result, runErr
+	}
+	// Test execution may produce logs/results but must preserve compiled inputs.
+	if err := closure.Verify(ctx); err != nil {
+		out.Completed = false
+		return out, result, err
+	}
+	result, err = closure.ReadResult(ctx, bundle)
 	if err != nil {
 		return out, result, err
 	}

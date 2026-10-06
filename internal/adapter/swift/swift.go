@@ -24,7 +24,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/runner/native"
 )
 
-const Version = "swiftpm-xctest-v1"
+const Version = "swiftpm-xctest-v2-closure"
 
 type target struct {
 	Name         string   `json:"name"`
@@ -58,7 +58,7 @@ func dependencyIdentity(ctx context.Context, runtime *model.SwiftRuntime) (noder
 			} `json:"dependencies"`
 		} `json:"object"`
 	}
-	data, err := os.ReadFile(filepath.Join(runtime.Dependencies, "workspace-state.json"))
+	data, err := ReadAppleFile(ctx, filepath.Join(runtime.Dependencies, "workspace-state.json"), 1<<20)
 	var raw map[string]json.RawMessage
 	if err != nil || len(data) > 1<<20 || native.DecodeJSON(data, &raw) != nil || json.Unmarshal(data, &state) != nil || state.Object.Artifacts == nil || state.Object.Dependencies == nil || len(state.Object.Artifacts) != 0 {
 		return noderuntime.Fingerprint{}, errors.New("unsupported provisioned SwiftPM dependency state")
@@ -134,18 +134,27 @@ func contains(values []string, value string) bool {
 }
 
 type session struct {
-	dir       string
-	scratch   string
-	base      []string
-	env       map[string]string
-	workspace model.Workspace
+	cleanup    string
+	dir        string
+	scratch    string
+	base       []string
+	env        map[string]string
+	workspace  model.Workspace
+	closure    *AppleClosure
+	tool       string
+	generated  string
+	dependency string
 }
 
 func open(ctx context.Context, root string, w model.Workspace, c model.Context) (*session, error) {
+	if err := preflightAppleRequest(w, c); err != nil {
+		return nil, err
+	}
 	f, err := flags(w)
 	if err != nil {
 		return nil, err
 	}
+	sourceRoot := root
 	root, err = filepath.EvalSymlinks(root)
 	if err != nil {
 		return nil, err
@@ -158,11 +167,7 @@ func open(ctx context.Context, root string, w model.Workspace, c model.Context) 
 	if err != nil || !config.Relative(filepath.ToSlash(rel)) {
 		return nil, errors.New("Swift package escapes source snapshot")
 	}
-	tmp, err := os.MkdirTemp("", "hayaku-swift-")
-	if err != nil {
-		return nil, err
-	}
-	s := &session{dir: dir, scratch: tmp, workspace: w, env: map[string]string{}}
+	s := &session{dir: dir, workspace: w, env: map[string]string{}}
 	for k, v := range c.Env {
 		s.env[k] = v
 	}
@@ -178,6 +183,19 @@ func open(ctx context.Context, root string, w model.Workspace, c model.Context) 
 		s.close()
 		return nil, err
 	}
+	s.dependency = fingerprint.ModulesDigest
+	closureContext := c
+	closureContext.Env = s.env
+	s.closure, err = CaptureAppleClosure(ctx, sourceRoot, w, closureContext)
+	if err != nil {
+		s.close()
+		return nil, err
+	}
+	tmp, err := s.closure.NewOutputRoot(ctx, "hayaku-swift-")
+	if err != nil {
+		return nil, err
+	}
+	s.scratch, s.cleanup = tmp, tmp
 	build := filepath.Join(tmp, "build")
 	if w.SwiftRuntime != nil {
 		tool, err := os.Executable()
@@ -190,34 +208,88 @@ func open(ctx context.Context, root string, w model.Workspace, c model.Context) 
 			return nil, err
 		}
 	}
+	s.workspace = s.closure.workspace
+	s.tool, err = s.closure.CaptureTool(ctx, w.Command.Executable)
+	if err != nil {
+		s.close()
+		return nil, err
+	}
+	if runtime.GOOS == "darwin" && s.tool == "/usr/bin/swift" {
+		selected, resolveErr := s.closure.SelectAppleTool(ctx, "swift")
+		if resolveErr != nil {
+			s.close()
+			return nil, resolveErr
+		}
+		s.tool = selected
+	}
+	if runtime.GOOS == "darwin" {
+		if err := s.closure.CaptureAppleToolchain(ctx); err != nil {
+			s.close()
+			return nil, err
+		}
+	}
 	s.base = []string{"--package-path", dir, "--scratch-path", build, "--cache-path", filepath.Join(tmp, "cache"), "--config-path", filepath.Join(tmp, "configuration"), "--security-path", filepath.Join(tmp, "security"), "--disable-automatic-resolution", "--skip-update"}
 	// Package subcommands and test subcommands share build-context flags.
 	s.base = append(s.base, f...)
+	if err := s.verify(ctx); err != nil {
+		s.close()
+		return nil, err
+	}
 	return s, nil
 }
-func (s *session) close() { _ = os.RemoveAll(s.scratch) }
+func (s *session) close() error {
+	if err := os.RemoveAll(s.cleanup); err != nil {
+		return errors.New("Swift private build cleanup failed")
+	}
+	return nil
+}
 func (s *session) invoke(ctx context.Context, command string, extra ...string) (process.Output, error) {
 	args := append([]string{command}, s.base...)
 	args = append(args, extra...)
-	return process.Run(ctx, model.Command{Dir: ".", Executable: s.workspace.Command.Executable, Args: args}, s.dir, s.env)
+	if err := s.verifyDependencies(ctx); err != nil {
+		return process.Output{}, err
+	}
+	var out process.Output
+	var err error
+	if command == "test" || command == "build" {
+		out, err = s.closure.RunProducer(ctx, s.tool, args, []string{filepath.Join(s.scratch, "build")})
+	} else {
+		out, err = s.closure.Run(ctx, s.tool, args)
+	}
+	if verifyErr := s.verifyDependencies(ctx); verifyErr != nil {
+		s.closure.invalidate()
+		out.Completed = false
+		return out, verifyErr
+	}
+	return out, err
 }
 
-func Describe(ctx context.Context, root string, w model.Workspace, c model.Context) (model.Evidence, error) {
-	e := model.Evidence{Adapter: "swift", Version: Version, Workspace: w.ID, Inputs: map[string][]string{}, Gaps: []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "SwiftPM target metadata does not establish complete native runtime influence"}}}
+func Describe(ctx context.Context, root string, w model.Workspace, c model.Context) (e model.Evidence, err error) {
+	e = model.Evidence{Adapter: "swift", Version: Version, Workspace: w.ID, Inputs: map[string][]string{}, Gaps: []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "SwiftPM target metadata does not establish complete native runtime influence"}}}
 	s, err := open(ctx, root, w, c)
 	if err != nil {
 		return e, err
 	}
-	defer s.close()
+	defer func() {
+		if closeErr := s.close(); closeErr != nil {
+			err = closeErr
+		}
+	}()
+	return describe(ctx, root, w, c, s)
+}
+
+func describe(ctx context.Context, root string, w model.Workspace, c model.Context, s *session) (e model.Evidence, err error) {
+	e = model.Evidence{Adapter: "swift", Version: Version, Workspace: w.ID, Inputs: map[string][]string{}, Gaps: []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "SwiftPM target metadata does not establish complete native runtime influence"}}}
 	root, err = filepath.EvalSymlinks(root)
 	if err != nil {
 		return e, err
 	}
-	version, err := process.Run(ctx, model.Command{Dir: ".", Executable: w.Command.Executable, Args: []string{"--version"}}, s.dir, c.Env)
+	version, err := s.closure.Run(ctx, s.tool, []string{"--version"})
 	if err != nil || runtime.GOOS != "darwin" || !regexp.MustCompile(`Apple Swift version 6\.[0-4](\D|$)`).Match(version.Stdout) {
 		return e, errors.New("Swift XCTest adapter requires a supported installed Darwin Swift 6.0–6.4 toolchain")
 	}
-	e.Version += ":" + strings.TrimSpace(string(version.Stdout))
+	label := regexp.MustCompile(`Apple Swift version 6\.[0-4](?:\.[0-9]+)?`).Find(version.Stdout)
+	e.Version += ":" + string(label) + ":version-output:" + appleDigest(version.Stdout)
 	// Test-only flags are not accepted by `swift package`.
 	base := s.base
 	s.base = base[:12]
@@ -248,7 +320,7 @@ func Describe(ctx context.Context, root string, w model.Workspace, c model.Conte
 			return e, errors.New("Swift XCTest module names must match target names")
 		}
 		if t.Type == "plugin" || t.Type == "binary" || t.Type == "macro" {
-			return e, errors.New("SwiftPM plugins, binary targets and macros require a separate full command")
+			e.Gaps = append(e.Gaps, model.Gap{Code: "swift-generated-producer-unqualified", Workspace: w.ID, Detail: "SwiftPM plugins, binary targets and macros have incomplete generated/native producer closure"})
 		}
 		nodes[id(t.Name)] = true
 		targets[t.Name] = t
@@ -276,6 +348,9 @@ func Describe(ctx context.Context, root string, w model.Workspace, c model.Conte
 			}
 			nodes[id(dep)] = true
 			e.Edges = append(e.Edges, model.Edge{From: id(dep), To: id(t.Name), Reason: "SwiftPM product dependency"})
+		}
+		if t.Type == "plugin" || t.Type == "binary" || t.Type == "macro" {
+			continue
 		}
 		path := filepath.Join(s.dir, t.Path)
 		if err := filepath.WalkDir(path, func(path string, entry fs.DirEntry, err error) error {
@@ -312,6 +387,48 @@ func Describe(ctx context.Context, root string, w model.Workspace, c model.Conte
 	}
 	for n := range nodes {
 		e.Nodes = append(e.Nodes, n)
+	}
+	sourceOwner := w.ID + ":source:closure"
+	nodes[sourceOwner] = true
+	for _, unit := range e.Units {
+		e.Edges = append(e.Edges, model.Edge{From: sourceOwner, To: unit.ID, Reason: "Conservative complete source ownership"})
+	}
+	// Preserve precise target ownership while conservatively assigning every
+	// otherwise unowned source/resource/manifest/testplan to the full scope.
+	if err := filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		name := filepath.ToSlash(rel)
+		if len(e.Inputs[name]) == 0 {
+			e.Inputs[name] = []string{sourceOwner}
+		}
+		return nil
+	}); err != nil {
+		return e, err
+	}
+	for _, unit := range e.Units {
+		e.Effects = append(e.Effects, model.Effect{Owner: unit.ID, Kind: "unknown"})
+	}
+	e.Gaps = append(e.Gaps, model.Gap{Code: "apple-mixed-producer-stage-unqualified", Workspace: w.ID, Detail: "Private mixed compile/test stages bind old/new outputs and same-content artifact metadata generations; SDK/module caches and recopy writes have no incremental producer, writer-attribution or runtime metadata equivalence proof"})
+	e.Gaps = append(e.Gaps, model.Gap{Code: "apple-build-runtime-closure-unqualified", Workspace: w.ID, Detail: "Observed compiler, targets and source resources do not prove command-specific SDK selection (--sdk/-sdk), secondary tool dispatch, SDK/framework, plugins/macros, generated producers, Swift Testing, ambient context or complete native runtime influence"})
+	e.Nodes = append(e.Nodes, sourceOwner)
+	if err := boundAppleProjection(e, model.ExecutionInventory{}); err != nil {
+		return e, err
+	}
+	e.Version += ":dependencies:" + s.dependency + ":closure:" + s.contextDigest() + ":description:" + appleDigest(raw)
+	if err := s.verify(ctx); err != nil {
+		return e, err
 	}
 	sort.Strings(e.Nodes)
 	sort.Slice(e.Units, func(i, j int) bool { return e.Units[i].ID < e.Units[j].ID })
@@ -381,7 +498,35 @@ func collect(ctx context.Context, s *session, units []model.Unit) ([]native.Case
 			return nil, errors.New("Swift test target has no independently discovered XCTest cases")
 		}
 	}
-	return cases, nil
+	generated := filepath.Join(s.scratch, "build")
+	if err = s.closure.CaptureArtifactTree(ctx, generated); err != nil {
+		return nil, errors.New("Swift generated producer closure exceeds bounds or changed")
+	}
+	base := s.base
+	filtered := []string{}
+	for _, arg := range base {
+		if arg != "--disable-swift-testing" && arg != "--enable-xctest" && arg != "--no-parallel" {
+			filtered = append(filtered, arg)
+		}
+	}
+	s.base = filtered
+	bin, binErr := s.invoke(ctx, "build", "--show-bin-path")
+	s.base = base
+	if binErr != nil {
+		return nil, errors.New("Swift typed product discovery failed")
+	}
+	products := strings.TrimSpace(string(bin.Stdout))
+	rel, pathErr := filepath.Rel(s.scratch, products)
+	if !filepath.IsAbs(products) || pathErr != nil || !config.Relative(filepath.ToSlash(rel)) {
+		s.closure.invalidate()
+		return nil, errors.New("Swift products escape private build context")
+	}
+	if err := s.closure.CaptureArtifactTree(ctx, products); err != nil {
+		s.closure.invalidate()
+		return nil, err
+	}
+	s.generated = s.closure.TreeDigest(generated)
+	return cases, s.verify(ctx)
 }
 
 func Execute(ctx context.Context, root string, w model.Workspace, c model.Context, units []model.Unit, proposal bool) (out process.Output, result native.Result, err error) {
@@ -391,7 +536,17 @@ func Execute(ctx context.Context, root string, w model.Workspace, c model.Contex
 	if err != nil {
 		return process.Output{}, result, err
 	}
-	defer s.close()
+	defer func() {
+		if closeErr := s.close(); closeErr != nil {
+			out.Completed = false
+			err = closeErr
+		}
+	}()
+	w = s.closure.workspace
+	if len(units) > 50000 {
+		return process.Output{}, result, errors.New("Swift unit inventory exceeds bounds")
+	}
+	units = append([]model.Unit(nil), units...)
 	cases, err := collect(ctx, s, units)
 	if err != nil {
 		return process.Output{}, result, err
@@ -404,13 +559,18 @@ func Execute(ctx context.Context, root string, w model.Workspace, c model.Contex
 		}
 		extra = append(extra, cmd.Args[len(w.Command.Args):]...)
 	}
+	// invoke owns fresh dependency and full source/tool/artifact checks on
+	// both sides of the requested native command.
 	out, runErr := s.invoke(ctx, "test", extra...)
+	if !out.Completed {
+		if runErr != nil {
+			return out, result, runErr
+		}
+		return out, result, errors.New("Swift test process did not complete")
+	}
 	result, err = native.ReconcileXCTest(bytes.NewReader(out.Stdout), cases)
 	if err != nil {
 		return out, result, err
-	}
-	if !out.Completed {
-		return out, result, errors.New("Swift test process did not complete")
 	}
 	if runErr != nil {
 		return out, result, runErr
@@ -419,4 +579,23 @@ func Execute(ctx context.Context, root string, w model.Workspace, c model.Contex
 		return out, result, errors.New("Swift XCTest reports failure")
 	}
 	return out, result, nil
+}
+
+func (s *session) verify(ctx context.Context) error {
+	if err := s.verifyDependencies(ctx); err != nil {
+		return err
+	}
+	return s.closure.Verify(ctx)
+}
+func (s *session) verifyDependencies(ctx context.Context) error {
+	current, err := RuntimeIdentity(ctx, s.workspace.SwiftRuntime)
+	if err != nil || current != s.dependency {
+		s.closure.invalidate()
+		return errors.New("Swift provisioned dependency inputs changed")
+	}
+	return ctx.Err()
+}
+
+func (s *session) contextDigest() string {
+	return appleDigest([]any{s.closure.Digest(), s.dir, s.scratch, s.cleanup, s.base, s.env, s.workspace, s.tool, s.generated, s.dependency})
 }

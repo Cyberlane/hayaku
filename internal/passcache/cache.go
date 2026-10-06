@@ -1,10 +1,12 @@
-// Package passcache stores bounded, locally authenticated results. Callers own
-// qualification and identity checks; authentication never qualifies execution.
+// Package passcache stores bounded authenticated results. Local secrets are the
+// default; portable verification needs explicit trusted issuer policy. Callers
+// own qualification and identity checks; authentication never qualifies execution.
 package passcache
 
 import (
 	"bytes"
 	"context"
+	"crypto/ed25519"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -22,19 +24,30 @@ import (
 const MaxBytes = 1 << 20
 
 type Cache struct {
-	root   *os.Root
-	secret []byte
-	domain string
+	root      *os.Root
+	secret    []byte
+	domain    string
+	authority *Authority
 }
 type envelope struct {
-	Schema int             `json:"schema"`
-	Domain string          `json:"domain"`
-	Key    string          `json:"key"`
-	Value  json.RawMessage `json:"value"`
-	MAC    string          `json:"mac"`
+	Schema    int             `json:"schema"`
+	Domain    string          `json:"domain"`
+	Key       string          `json:"key"`
+	Value     json.RawMessage `json:"value"`
+	MAC       string          `json:"mac"`
+	Namespace string          `json:"namespace,omitempty"`
+	Epoch     uint64          `json:"epoch,omitempty"`
+	Issuer    string          `json:"issuer,omitempty"`
+	Signature string          `json:"signature,omitempty"`
 }
 
 func Open(directory, domain string) (*Cache, error) {
+	return OpenWithAuthority(directory, domain, nil)
+}
+
+// OpenWithAuthority never creates or restores a local secret in portable mode.
+// A nil authority is the explicit legacy local-only contract.
+func OpenWithAuthority(directory, domain string, authority *Authority) (*Cache, error) {
 	if directory == "" {
 		return nil, nil
 	}
@@ -52,7 +65,10 @@ func Open(directory, domain string) (*Cache, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := &Cache{root: root, domain: domain}
+	c := &Cache{root: root, domain: domain, authority: authority}
+	if authority != nil {
+		return c, nil
+	}
 	secret, err := readPrivate(root, "authority.key", 32)
 	if errors.Is(err, fs.ErrNotExist) {
 		secret = make([]byte, 32)
@@ -145,10 +161,17 @@ func (c *Cache) authenticate(e envelope) []byte {
 	return mac.Sum(nil)
 }
 func (c *Cache) Load(key string) ([]byte, string) {
+	return c.load(key, true)
+}
+
+func (c *Cache) load(key string, checkPolicy bool) ([]byte, string) {
 	if c == nil {
 		return nil, "disabled"
 	}
 	if !validKey(key) {
+		return nil, "invalid"
+	}
+	if checkPolicy && c.authority != nil && c.authority.Verify(context.Background()) != nil {
 		return nil, "invalid"
 	}
 	data, err := readPrivate(c.root, key+".json", MaxBytes)
@@ -165,12 +188,34 @@ func (c *Cache) Load(key string) ([]byte, string) {
 		return nil, "invalid"
 	}
 	canonical, _ := json.Marshal(e)
-	provided, err := hex.DecodeString(e.MAC)
-	if !bytes.Equal(data, canonical) || e.Schema != 2 || e.Domain != c.domain || e.Key != key || err != nil || !hmac.Equal(provided, c.authenticate(e)) {
+	if !bytes.Equal(data, canonical) || e.Domain != c.domain || e.Key != key || !c.authenticated(e) {
+		return nil, "invalid"
+	}
+	if checkPolicy && c.authority != nil && c.authority.Verify(context.Background()) != nil {
 		return nil, "invalid"
 	}
 	return e.Value, "hit"
 }
+
+func portableMessage(e envelope) []byte {
+	e.Signature = ""
+	data, _ := json.Marshal(e)
+	return append([]byte("hayaku-portable-pass-v1\x00"), data...)
+}
+
+func (c *Cache) authenticated(e envelope) bool {
+	if c.authority == nil {
+		provided, err := hex.DecodeString(e.MAC)
+		return e.Schema == 2 && e.Namespace == "" && e.Epoch == 0 && e.Issuer == "" && e.Signature == "" && err == nil && hmac.Equal(provided, c.authenticate(e))
+	}
+	a := c.authority
+	key, ok := a.keys[e.Issuer]
+	sig, err := hex.DecodeString(e.Signature)
+	return e.Schema == 3 && e.MAC == "" && e.Namespace == a.namespace && e.Epoch == a.epoch && ok && err == nil && hex.EncodeToString(sig) == e.Signature && len(sig) == ed25519.SignatureSize && ed25519.Verify(key, portableMessage(e), sig)
+}
+
+func (c *Cache) CanStore() bool { return c != nil && (c.authority == nil || c.authority.CanIssue()) }
+
 func (c *Cache) Invalidate(key string) error {
 	if c == nil {
 		return nil
@@ -188,11 +233,19 @@ func (c *Cache) Store(ctx context.Context, key string, value any) error {
 	if c == nil {
 		return nil
 	}
+	if !c.CanStore() {
+		return errors.New("portable pass cache is verification-only")
+	}
 	if !validKey(key) {
 		return errors.New("invalid pass identity")
 	}
 	if err := ctx.Err(); err != nil {
 		return err
+	}
+	if c.authority != nil {
+		if err := c.authority.Verify(ctx); err != nil {
+			return err
+		}
 	}
 	raw, err := json.Marshal(value)
 	if err != nil {
@@ -200,6 +253,14 @@ func (c *Cache) Store(ctx context.Context, key string, value any) error {
 	}
 	e := envelope{Schema: 2, Domain: c.domain, Key: key, Value: raw}
 	e.MAC = hex.EncodeToString(c.authenticate(e))
+	if c.authority != nil {
+		e.Schema = 3
+		e.MAC = ""
+		e.Namespace = c.authority.namespace
+		e.Epoch = c.authority.epoch
+		e.Issuer = c.authority.issuer
+		e.Signature = hex.EncodeToString(ed25519.Sign(c.authority.private, portableMessage(e)))
+	}
 	data, _ := json.Marshal(e)
 	if len(data) > MaxBytes {
 		return errors.New("pass receipt exceeds bound")
@@ -223,12 +284,23 @@ func (c *Cache) Store(ctx context.Context, key string, value any) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	if c.authority != nil {
+		if err := c.authority.Verify(ctx); err != nil {
+			return err
+		}
+	}
 	if err := c.root.Rename(name, key+".json"); err != nil {
 		return err
 	}
 	if err := ctx.Err(); err != nil {
 		_ = c.Invalidate(key)
 		return err
+	}
+	if c.authority != nil {
+		if err := c.authority.Verify(ctx); err != nil {
+			_ = c.Invalidate(key)
+			return err
+		}
 	}
 	return nil
 }
@@ -255,7 +327,9 @@ func (c *Cache) RevokeAll(ctx context.Context) error {
 			if key == name || !validKey(key) {
 				continue
 			}
-			if _, status := c.Load(key); status == "hit" {
+			// Revocation uses the captured policy to remove authenticated local
+			// copies even after policy-file drift. This is not distributed freshness.
+			if _, status := c.load(key, false); status == "hit" {
 				if err = c.Invalidate(key); err != nil {
 					return err
 				}
