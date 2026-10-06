@@ -13,6 +13,7 @@ import (
 
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/process"
+	"unicode/utf8"
 )
 
 //go:embed bridge.mjs
@@ -154,14 +155,21 @@ func discoverBound(ctx context.Context, root string, w model.Workspace, c model.
 		return e, errors.New("bound Vitest native graph discovery failed")
 	}
 	var inventory graphInventory
-	if err = json.Unmarshal(out.Stdout, &inventory); err != nil || inventory.Schema != 1 || !supportedAPIVersions(inventory.Version, inventory.ViteVersion) || len(inventory.Scopes) == 0 || len(inventory.Scopes) > 50000 {
+	if err = json.Unmarshal(out.Stdout, &inventory); err != nil || inventory.Schema != 1 || !supportedAPIVersions(inventory.Version, inventory.ViteVersion) || len(inventory.Scopes) == 0 || len(inventory.Scopes) > 50000 || len(inventory.Global) > 50000 {
 		return e, errors.New("invalid Vitest graph inventory")
 	}
 	e.Version = "vitest-vite-graph-v1:" + inventory.Version + ":vite:" + inventory.ViteVersion
 	e.Gaps = []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "Configured Vite transforms provide experimental import influence only; dynamic imports, external resources and arbitrary runtime effects remain unqualified"}}
 	global := map[string]bool{}
 	for _, p := range inventory.Global {
+		if p != "*" && (!validRelative(p) || !utf8.ValidString(p) || strings.ContainsAny(p, "\x00\r\n")) {
+			return e, errors.New("invalid Vitest global graph input")
+		}
 		global[p] = true
+	}
+	incomplete := global["*"]
+	if incomplete {
+		e.Gaps = append(e.Gaps, model.Gap{Code: "vite-global-incomplete", Workspace: w.ID, Detail: "A configured startup transform or dependency could not be captured; proposal retains all tests"})
 	}
 	owners := map[string][]string{}
 	seen := map[string]bool{}
@@ -188,9 +196,15 @@ func discoverBound(ctx context.Context, root string, w model.Workspace, c model.
 			owners[p] = append(owners[p], id)
 		}
 		if scope.Incomplete {
+			incomplete = true
 			e.Gaps = append(e.Gaps, model.Gap{Code: "vite-graph-incomplete", Workspace: w.ID, Detail: "A configured transform or dependency could not be captured; proposal retains all tests"})
 			global["*"] = true
 		}
+	}
+	if incomplete {
+		// An unresolved effect must broaden even with no mapped file change. A
+		// full-selection gap alone does not protect the descriptive proposal.
+		e.Effects = append(e.Effects, model.Effect{Owner: e.Nodes[0], Kind: "unknown"})
 	}
 	if err = workspaceInputs(ctx, root, w, &e); err != nil {
 		return e, err

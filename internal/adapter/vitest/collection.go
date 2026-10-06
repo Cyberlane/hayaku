@@ -115,7 +115,7 @@ func decodeCollection(out process.Output, workspace string, evidence model.Evide
 		return inventory, errors.New("Vitest collection process incomplete or failed")
 	}
 	var data collectedInventory
-	if config.DecodeValue(bytes.NewReader(out.Stdout), &data, process.MaxOutput) != nil || data.Schema != 1 || !supportedAPIVersions(data.Version, data.ViteVersion) || evidence.Version != "vitest-vite-graph-v1:"+data.Version+":vite:"+data.ViteVersion || len(data.Files) != len(evidence.Units) || len(data.Cases) > 100000 {
+	if config.DecodeValue(bytes.NewReader(out.Stdout), &data, process.MaxOutput) != nil || data.Schema != 1 || !supportedCollectionVersions(data.Version, data.ViteVersion) || evidence.Version != "vitest-vite-graph-v1:"+data.Version+":vite:"+data.ViteVersion || len(data.Files) != len(evidence.Units) || len(data.Cases) > 100000 {
 		return inventory, errors.New("invalid configured Vitest case inventory")
 	}
 	want := map[string]bool{}
@@ -168,4 +168,9 @@ func decodeCollection(out process.Output, workspace string, evidence model.Evide
 		return inventory.Cases[i].ID < inventory.Cases[j].ID
 	})
 	return inventory, nil
+}
+
+// Collection compatibility is independently accepted from discovery/execution.
+func supportedCollectionVersions(vitest, vite string) bool {
+	return vitest == "4.1.11" && vite == "8.2.2"
 }

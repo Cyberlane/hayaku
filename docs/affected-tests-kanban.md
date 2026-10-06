@@ -69,10 +69,11 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K08 | RUNTIME | K07 | Metadata, clocks and entropy policy | Each qualified context either enforces defined observable semantics or rejects these effects. Containment and interception are not assumed to establish native equivalence. |
-
-| K23 | RUST | K04, K02 | Cargo/nextest build and test closure | Features, build scripts, proc macros, generated inputs, binaries and case inventory have complete producer/context identities; unsupported build/runtime effects are gaps. |
-
+| K09 | RUNTIME | K07, K08 | Subprocess, native extension and service contracts | Controlled child programs and service state require complete identities and enforced boundaries; unsupported FFI, processes, networks and service state retain full execution. |
+| K10 | RUNTIME | K07, K08, K02 | Linux backend generalization | Extend the existing worker to supported non-Go artifacts with real file/process/network/metadata bypass probes, cancellation and cleanup; no runner-specific selection logic in the worker. |
+| K11 | RUNTIME | K07, K08, K02 | macOS backend | A native macOS context has actual enforcement and receipt authority tests; unsupported host capabilities execute the original full scope. Docker/Linux success is not macOS qualification. |
+| K30 | CORE | K05, K07, F03 | Monorepo and generated input closure | Cross-language consumers, workspace links and producers invalidate correctly; BASE/candidate generation stays independent, and provenance is enforced rather than declared. |
+| K31 | CORE | K04, K06, K07, F04 | Complete native receipt identity and lifecycle | Bind entire input closure, inventory, group, proof, runner/toolchain/backend and configuration; tampering, drift, skips, failed or incomplete execution cannot mint reusable passes. |
 | K25 | APPLE | K04, K02 | SwiftPM/Xcode build and test closure | Bind resources, generated code, build settings, test plans, lifecycle, case inventories and simulator/device identities; unsupported macros/plugins/modes remain explicit. |
 
 
@@ -80,18 +81,20 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-
-| K15 | TS | K04, K02 | TypeScript/Vitest complete configured graph and inventory | Extend configured Vite transforms for aliases, setup, mocks, dynamic collection/imports, plugins, generated assets and dependency inputs. Unresolved loaders/effects broaden. |
+| K43 | CORE | F01 | Bounded snapshot file hashing and drift checks | A file growing or being replaced after preflight cannot trigger unbounded allocation or yield a valid digest; independently challenge read bounds, identity, permissions and cancellation. |
 
 ## REVIEW
 
-None.
+| ID | Lane | Dependencies | Feature | Acceptance criterion |
+| --- | --- | --- | --- | --- |
+| K15 | TS | K04, K02 | TypeScript/Vitest complete configured graph and inventory | Extend configured Vite transforms for aliases, setup, mocks, dynamic collection/imports, plugins, generated assets and dependency inputs. Unresolved loaders/effects broaden. |
 
 ## DONE
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
 | K07 | RUNTIME | K04, F03 | Enforced native input envelopes | Bind and enforce files, absent paths, directories, environment, links and write/scratch rules; an outside access cannot leave a qualified pass. Protect capture and live drift boundaries. |
+| K08 | RUNTIME | K07 | Metadata, clocks and entropy policy | Each qualified context either enforces defined observable semantics or rejects these effects. Containment and interception are not assumed to establish native equivalence. |
 | K29 | OTHER | K04, K02 | Remaining language/runner context contracts | Define exact runner/build/runtime/version scopes for the nine L/R lanes below, with required behavior, exclusions and evidence. Multiple frameworks need explicit subcards before implementation; generic full-command support is not qualified omission. |
 | K03 | QA | F01, F02 | Representative baseline fixtures | Independently authored Go, TS, worker, Python, Rust and Apple workloads capture full-command behavior, discovery/startup failures and cold/warm costs; fixtures do not alter consumer repositories. |
 | K05 | CORE | K04 | Complete old/new invalidation | All qualified providers handle transitive changes, removed edges, additions/deletions/renames, configuration changes and new/deleted tests without losing influence. |
@@ -100,18 +103,14 @@ None.
 | K21 | PYTHON | K04, K02 | Python import, collection and fixture analysis | Interpreter/package/plugin identities, dynamic imports, discovery and pytest/unittest fixtures map to common inputs/groups; unknown influence broadens. |
 | K42 | CORE | F01 | Unix process-tree cancellation | Timeouts, cancellation and output overflow kill the invoked process group, including compiler/runner descendants; actual descendant probe passes. Escaping children and Windows cleanup stay explicitly unqualified. |
 | K01 | CORE | F01, F02, F05 | Supported-context and qualification contract | Document initial Go and TS/Vitest contexts, selection granularity, trusted components, forbidden effects and the reviewed conditions that permit reuse. Later contexts cannot inherit qualification merely through registration. |
-
 | K02 | QA | F01, F02, F04, F05 | Shared adversarial acceptance harness | Independent inventories and seeded faults exercise cold/warm/change/failure/fallback/audit behavior through reusable runner-neutral scenarios; incomplete installed fixtures are visible. |
-
 | K04 | CORE | K01 | Shared qualified execution model | Versioned inventory/group/input/effect/proof/context contracts compose existing providers; unknown effects and unsupported versions cannot produce skip authority. |
 
 ## BLOCKED
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K09 | RUNTIME | K07, K08 | Subprocess, native extension and service contracts | Controlled child programs and service state require complete identities and enforced boundaries; unsupported FFI, processes, networks and service state retain full execution. |
-| K10 | RUNTIME | K07, K08, K02 | Linux backend generalization | Extend the existing worker to supported non-Go artifacts with real file/process/network/metadata bypass probes, cancellation and cleanup; no runner-specific selection logic in the worker. |
-| K11 | RUNTIME | K07, K08, K02 | macOS backend | A native macOS context has actual enforcement and receipt authority tests; unsupported host capabilities execute the original full scope. Docker/Linux success is not macOS qualification. |
+| K23 | RUST | K04, K02, K43 | Cargo/nextest build and test closure | Features, build scripts, proc macros, generated inputs, binaries and case inventory have complete producer/context identities; unsupported build/runtime effects are gaps. |
 | K14 | GO | K13, K06, K10 | Broader Go qualification | Support documented Go constructs, external test packages, setup and fixture inputs with enforced effect contracts; unsupported interfaces/reflection/cgo/concurrency broaden rather than guess. |
 | K16 | TS | K15, K06, K10 | Node runtime qualification for TS/Vitest | Installed Node/module/runner identities and all startup/collection/execution effects fit an enforced context; native addons, JIT/runtime behavior and unsupported loaders cannot bypass qualification. |
 | K17 | JS | K16, K02 | Node test affected execution | Account for runner collection, hooks, module loading, concurrency and exact terminal inventory using common qualification/reuse machinery. |
@@ -123,8 +122,6 @@ None.
 | K26 | APPLE | K25, K06, K11, K09 | Swift/Xcode runtime qualification | Qualify documented host/simulator scopes with reset application/device state; UI/device/external-state tests cannot inherit host-unit qualification. |
 | K27 | BROWSER | K04, K06, K09, K10, K02 | Browser/application/service boundary | Bind browser bytes, application build, storage, requests, service fixtures and cleanup/reset semantics; uncontrolled services or device state prevent reuse. |
 | K28 | BROWSER | K27 | Playwright affected execution | Actual browser-based workloads reconcile discovery and outcomes and reuse only qualified isolated groups; browser-free reporter tests are insufficient. |
-| K30 | CORE | K05, K07, F03 | Monorepo and generated input closure | Cross-language consumers, workspace links and producers invalidate correctly; BASE/candidate generation stays independent, and provenance is enforced rather than declared. |
-| K31 | CORE | K04, K06, K07, F04 | Complete native receipt identity and lifecycle | Bind entire input closure, inventory, group, proof, runner/toolchain/backend and configuration; tampering, drift, skips, failed or incomplete execution cannot mint reusable passes. |
 | K32 | CORE | K05, K06, K31, K14, K16 | Selective execution coordinator | For initial Go and TS/Vitest contexts, execute changed groups, validate reused groups, and run complete original scopes on qualification gaps; no unrelated existing native gate is silently replaced. |
 | K33 | CORE | K32, K02 | Aggregate outcome reconciliation | Every required case/group has an executed terminal outcome or authenticated pass; startup/build/hook errors, unexpected identities, truncation, cancellation and drift cannot produce green. |
 | K34 | CI | K31, K02 | Trusted cache persistence across CI jobs | Authenticate portable receipts with an explicit trusted issuer/key lifecycle and context checks; fork/untrusted jobs cannot poison authority. Cache misses/unavailable storage execute again. |
@@ -265,21 +262,27 @@ Live fleet activity verified 2026-10-06 after the explicit restart request:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | ACTIVE | Integrate K07/Python wave; specify K29 framework manifests/subcards; coordinate dependency-ready macOS/Linux completion. |
-| `/root/runtime_implementation` | WAITING | K07 accepted, awaiting next K08 dispatch after local commit; `internal/native/envelope.go`, `envelope_test.go`, `backend.go`, `worker/main.go`, new `envelope_boundary_test.go`; operational enforcement integration and hard pre-cache unqualification guard. |
-| `/root/completion_review` | ACTIVE | Read-only K07/staged Mori and K29 specification accepted; K08 design accepted; K15 transitive setup blocker reproduced. |
-| `/root/completion_testing` | ACTIVE | Vitest aggregate680.095s, Python and independent Linux envelope passed; final full normal/race/vet passed; ready for next tests. |
+| `/root` | ACTIVE | Corrected K07/K08 accepted; reconcile/commit K15 descriptive wave, coordinate K43 and newly dependency-ready runtime/receipt cards. |
+| `/root/runtime_implementation` | ACTIVE | K07/K08 source frozen/accepted; K43 bounded snapshot hashing implementation in isolated /tmp/hayaku-k43-worktree. |
+| `/root/completion_review` | ACTIVE | Read-only K07 alias and K15 AST/graph correction review; K08 and K29 source/specification accepted. |
+| `/root/completion_testing` | ACTIVE | K07/K08/K15 independent checks passed; owns isolated K43 digest_adversarial_test.go, including bounded memory and actual drift probes. |
 
 Previous `/root/factory_*` agents are historical owners, not active assignments.
-K07/K29 completed their local card gates. Remaining integration and acceptance
-gates stay open; no new general native skipping is claimed.
+K07 and K08 passed their corrected local card gates after independent macOS/Linux
+checks, source review and full normal/race/vet checks. K15 descriptive source and
+fourth-pair acceptance are reviewed; older actual context and locked-fixture gates
+remain open. K43 is being implemented in an isolated checkout. No new general
+native skipping is claimed.
 
 Card claims and accumulated evidence (historical owners retained where useful):
 
 ```text
 ID | STATE | AGENT/TASK ID | EXACT FILE SCOPE OR WORKTREE | COMMIT/EVIDENCE | NEXT ACTION
+K08 | DONE | /root/runtime_implementation | NEW internal/native/observables.go; observables_test.go; internal/native/backend.go; independent tester NEW observable_boundary_test.go | Corrected K07 accepted; actual metadata/clock/entropy and dormant-effect probes independently passed; canonical staged Mori209/209+14/14focus reviewed; full normal/race/vet passed | Fixed reject-only policy/effect veto accepted; empty effects remain no proof, other external contracts K09
 K29 | DONE | /root | docs/language-contexts.md; docs/affected-tests-kanban.md | Independent specification review accepted; twenty named profiles and forty analysis/runtime subcards; 124 unique card DAG valid; installed candidate facts verified | Actual per-framework admission/qualification and acceptance remain separate; unresolved versions never wildcard-approved
-K07 | DONE | /root/runtime_implementation | internal/native/envelope.go; envelope_test.go; backend.go; worker/main.go; NEW envelope_boundary_test.go | Independent source/test review and canonical staged Mori accepted204/204; installed Linux probes15.240s independently14.196s; legacy43.413s; full normal/race/vet passed with bothPython and actualLinux contexts | Accepted operational envelope and hard pre-cache unqualification guard; metadata/equivalence/provider qualification remain separate
+K43 | DOING | /root/runtime_implementation + /root/completion_testing | isolated /tmp/hayaku-k43-worktree, branch factory/bounded-snapshot-20261006 from cca5939; internal/snapshot/digest.go; snapshot.go raw-file validation only; worker NEW digest_bounded_test.go; tester NEW digest_adversarial_test.go | Reviewer identified stat-then-os.ReadFile growth allocation in shared Digest; root confirmed same call in committed Git-blob validation; source findings, not yet independently reproduced | Implement one bounded reader with identity checks for both hashing paths before K23 reuses this boundary; isolated writers preserve current correction-wave integration snapshot
+K23 | BLOCKED | /root/runtime_implementation (read-only design) | proposed internal/adapter/cargo/cargo.go and NEW closure.go/tests, then serial nextest.go and NEW closure_test.go; no edits yet | Independent design review accepted conservative snapshot ownership and shared inventory; actual Cargo/rustc1.99 installed, nextest absent | Requires K43; metadata lacks harness semantics, native list/doctest completeness unresolved, producer/ambient context retain unknown effects; nextest actual acceptance needs provisioned runner
+K07 | DONE | /root/runtime_implementation | internal/native/envelope.go; envelope_test.go; backend.go; worker/main.go; NEW envelope_boundary_test.go | Independent source/test review and canonical staged Mori accepted204/204; installed Linux probes15.240s independently14.196s; legacy43.413s; full normal/race/vet passed with bothPython and actualLinux contexts | Final case/Unicode/source/copied/multi-root alias correction independently accepted: Mac normal0.525/race1.687, fresh Linux filesystem all variants, operational15.527s; full normal/race/vet and canonical Mori209/209+14/14focus passed. Guard still forbids envelope receipts
 K01 | DONE | /root | docs/qualified-contexts.md; shared core integration reserved | docs/qualified-contexts.md; read-only factory_review contract review, 2026-10-06 | Contract accepted; no new runtime qualification granted
 K04 | DONE | /root | internal/model/execution.go; internal/runner/exact.go and tests; native shared outcome integration | fdc139c | Exact inventory/binding validators and native integration; full Go test/race/vet and actual Linux acceptance pass; Mori canonical core review complete
 K42 | DONE | /root | internal/process/**; internal/adapter/golang/golang.go; internal/snapshot/snapshot.go and tests | 088d4a7; independent source/test review; full normal/race/vet and final Python delta checks pass; canonical staged Mori complete | Accepted within descriptive/common contract; runtime qualification and coordinator integration remain separate
@@ -288,7 +291,7 @@ K03 | DONE | /root/factory_testing | testdata/endtoend/**; internal/qualificatio
 K05 | DONE | /root | internal/planner; internal/influence | 088d4a7; independent source/test review; full normal/race/vet and final Python delta checks pass; canonical staged Mori complete | Accepted within descriptive/common contract; runtime qualification and coordinator integration remain separate
 K06 | DONE | /root/factory_implementation | internal/runner/groups.go; groups_test.go | 088d4a7; independent source/test review; full normal/race/vet and final Python delta checks pass; canonical staged Mori complete | Accepted within descriptive/common contract; runtime qualification and coordinator integration remain separate
 K13 | DONE | /root/factory_implementation | internal/adapter/golang/closure.go; closure_test.go; internal/native/goclosure.go; goclosure_test.go | 088d4a7; independent source/test review; full normal/race/vet and final Python delta checks pass; canonical staged Mori complete | Accepted within descriptive/common contract; runtime qualification and coordinator integration remain separate
-K15 | DOING | /root + /root/completion_testing | internal/adapter/vitest | independent case collection reviewed; installed fourth-pair adapter/stage tests pass; fresh uncontended installed application aggregate PASS680.095s, all five shared Vitest and eleven dedicated app checks; original case limits retained | Complete configured closure/runtime boundaries and older-pair collection evidence; locked fourth-pair CI fixture outstanding
+K15 | REVIEW | /root + /root/completion_testing | internal/adapter/vitest and internal/app/vitest_test.go (root), NEW startup_adversarial_test.go (independent tester) | configured startup transitive closure and original/transformed AST import analysis independently reviewed; computed/dormant/escaped/direct SSR loader regressions pass; installed fourth-pair adapter normal42.829s/race47.706s/vet pass | Fresh AST/closure application aggregate712.177s passed all5 shared and11 dedicated Vitest checks with original deadlines; snapshot preceded only legacy-specific deltas. Final typed/context normal3.970/race6.515/vet pass; latest source full normal/race/vet passed. Prior aggregate680.095s covered historical graph. Collection path admitted only on fourth pair; locked CI fixture and older actual pair evidence outstanding
 K21 | DONE | /root/completion_review + /root/completion_testing | internal/adapter/native/pythonclosure.go; pythonclosure.py; pythonclosure_test.go; pythonclosure_acceptance_test.go; unittest.py; pytest.py | Accepted baseline088d4a7; new strict Unicode serialization correction source-reviewed and focused normal/race passes | Strict Unicode correction full native normal/race and full project normal/race/vet pass; canonical staged Mori/source review accepted; runtime qualification separate
 REVIEW | DOING | /root/completion_review | read-only; no file ownership | K03/K05/K06/K13/K21/K42 accepted in described scope and committed088d4a7; K07 source and Python surrogate correction accepted | Review K08 and every next submitted wave; require fixes before DONE
 ```

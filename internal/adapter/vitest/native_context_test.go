@@ -46,8 +46,14 @@ func TestNativeBoundNodePoolsPreserveTerminalResults(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(evidence.Units) != 1 || len(evidence.Inputs["value.ts"]) != 1 || len(evidence.Gaps) != 1 || evidence.Gaps[0].Code != "runtime-unqualified" {
+			if len(evidence.Units) != 1 || len(evidence.Inputs["value.ts"]) != 1 || len(evidence.Gaps) == 0 || evidence.Gaps[0].Code != "runtime-unqualified" {
 				t.Fatalf("native context evidence: %+v", evidence)
+			}
+			if evidence.Version == "vitest-vite-graph-v1:4.1.11:vite:8.2.2" && len(evidence.Gaps) != 1 {
+				t.Fatalf("accepted installed TS parser lost its literal graph: %+v", evidence)
+			}
+			if len(evidence.Gaps) > 1 && (len(evidence.Effects) != 1 || evidence.Effects[0].Kind != "unknown") {
+				t.Fatal("unavailable original TS parser did not retain explicit unknown influence")
 			}
 			output, err := Execute(ctx, root, w, runtimeContext, nil)
 			if err != nil {

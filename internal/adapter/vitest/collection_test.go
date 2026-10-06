@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Cyberlane/hayaku/internal/model"
@@ -64,6 +65,25 @@ func TestIndependentCollectionRejectsIncompleteOrConflictingCases(t *testing.T) 
 	}
 }
 
+// Legacy discovery/run compatibility has not independently accepted this new
+// collection API. Those fixture jobs still exercise their original paths and
+// visibly skip collection acceptance, rather than falsely passing its cases.
+func requireCollectionFixture(t *testing.T, root string, workspace model.Workspace) {
+	t.Helper()
+	evidence, err := Discover(context.Background(), root, workspace, model.Context{Env: map[string]string{"CI": "true"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	pair := strings.TrimPrefix(evidence.Version, "vitest-vite-graph-v1:")
+	vitest, vite, ok := strings.Cut(pair, ":vite:")
+	if !ok {
+		t.Fatal("missing installed collection fixture pair identity")
+	}
+	if !supportedCollectionVersions(vitest, vite) {
+		t.Skip("independent collection not accepted for installed pair " + pair)
+	}
+}
+
 func TestInstalledVitestIndependentCasesWithoutExecutingBodies(t *testing.T) {
 	root, w := boundContextFixture(t, "export default { test: { globals: true, fileParallelism: false, pool: 'forks' } };\n")
 	source := `import { value } from './value';
@@ -76,6 +96,7 @@ test('computed ' + value, () => {});
 	if err := os.WriteFile(filepath.Join(root, "value.test.ts"), []byte(source), 0600); err != nil {
 		t.Fatal(err)
 	}
+	requireCollectionFixture(t, root, w)
 	collected, err := Collect(context.Background(), root, w, model.Context{Env: map[string]string{"CI": "true"}})
 	if err != nil {
 		t.Fatal(err)
@@ -133,6 +154,7 @@ func TestInstalledVitestCollectionFailuresCannotProduceInventory(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+			requireCollectionFixture(t, root, w)
 			execution := model.Context{Env: map[string]string{"CI": "true"}}
 			baseline, err := Collect(context.Background(), root, w, execution)
 			if err != nil {

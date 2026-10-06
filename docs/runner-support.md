@@ -10,7 +10,7 @@ to skip. Original native full commands remain required.
 | Runner | Evidence and proposal scope | Version/fixture boundary |
 | --- | --- | --- |
 | Go `testing` | Package/import/embed/build graph, package proposal, native execution/shadow | Installed Go context/tool bytes; cgo/runtime influence remains unqualified |
-| Vitest | Configured Vite graph, file/project proposal, native results/shadow, additive runtime observations and separate case collection | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; Node 22.18.0 fixture. Fourth pair: local adapter and complete application checks passed; locked CI fixture outstanding. New collection path tested only on fourth pair |
+| Vitest | Configured Vite graph, file/project proposal, native results/shadow, additive runtime observations and separate case collection | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; Node 22.18.0 fixture. Fourth pair: new AST/closure adapter checks and application aggregate712.177s passed; latter preceded only legacy-specific deltas. Locked CI fixture and renewed older graph acceptance outstanding. New collection path admits only fourth pair |
 | Node `node:test` | Explicit-file collection with bodies suppressed; native whole-file execution | Exact Node 22.18.0 and 25.2.1 gates/fixtures |
 | Python unittest | Native `TestLoader`, including `load_tests`, module scope and terminal results | Stable APIs accepted for Python 3.11–3.14; actual fixture 3.14.7 |
 | pytest | Collection and fixture-aware terminal execution, whole-file scope | Hook protocol 7–9 accepted; actual fixture 9.0.2 |

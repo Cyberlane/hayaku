@@ -13,7 +13,16 @@ Hayaku uses installed Vitest/Vite APIs for configured JS/TS import influence, fi
 
 These exact pairs are accepted; missing, mismatched, prerelease or other versions are rejected. The bridge resolves Vite from the installed Vitest package, binds both versions into its protocol, and verifies the returned pair in Go. v3 uses its `init`/vite-node SSR APIs; v4 uses standalone SSR environments. Current upstream documentation can describe a different version: the pinned installed API and fixture tests are the compatibility evidence.
 
-Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for the first three pairs. The fourth pair has passing local adapter checks and a complete local application aggregate (680.095s on 2026-10-06); its locked CI fixture remains outstanding. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
+Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for the first three pairs. The fourth pair has passing local adapter checks and a complete AST/transitive-closure application aggregate (712.177s on 2026-10-06), with original deadlines and no concurrent heavy workloads. The aggregate preceded only legacy SSR routing and older-pair assertion changes; fourth-pair behavior stayed unchanged. Its locked CI fixture remains outstanding. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
+
+Configured test, config, setup and global-setup entries share transitive closure
+capture. The bridge uses the already installed Vite parser on original and
+transformed syntax, resolves literal imports through the configured SSR resolver,
+and retains all proposed tests for unresolved or computed imports and escaped
+loader calls, including dormant code. Missing parsers or unsupported original
+TypeScript syntax produce explicit unknown influence. Older pairs need renewed
+actual graph acceptance; the new separate case-collection path currently admits
+only the tested 4.1.11/8.2.2 pair. Hayaku fetches no parser or runner dependencies.
 
 ## Configure an existing installation
 

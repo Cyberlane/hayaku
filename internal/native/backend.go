@@ -37,6 +37,9 @@ type Artifact struct {
 	Args                 []string
 	Env                  []string
 	Envelope             *Envelope `json:"-"`
+	// Effects is descriptive input data. Only a complete reviewed provider can
+	// establish its meaning; an empty summary never supplies a missing proof.
+	Effects []model.Effect
 }
 type Result struct {
 	Name      string         `json:"name"`
@@ -132,7 +135,7 @@ func (b Backend) inspect(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return identity([]string{contractVersion, boundaryVersion, b.Image, b.Architecture, b.Docker, dockerPath, docker, worker, controller, string(version.Stdout), string(info.Stdout)}), nil
+	return identity([]string{contractVersion, observablePolicyDigest(), boundaryVersion, b.Image, b.Architecture, b.Docker, dockerPath, docker, worker, controller, string(version.Stdout), string(info.Stdout)}), nil
 }
 func (b *Backend) Bind(ctx context.Context) error {
 	id, err := b.inspect(ctx)
@@ -308,14 +311,21 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 		r.Qualified = false
 		return r, errors.New("native artifact is not qualified")
 	}
+	if err := validateObservableEffects(a.Effects); err != nil {
+		r.Qualified = false
+		return r, err
+	}
 	program, err := fileDigest(a.Program)
 	if err != nil {
 		return r, err
 	}
 	r.Key, err = runner.BindingDigest(model.ExecutionBinding{
 		Schema: model.ExecutionSchema, Group: a.Name, ProgramDigest: program,
-		InputsDigest: identity(struct{ Args, Env []string }{a.Args, a.Env}),
-		ProofDigest:  a.Proof, PolicyDigest: digest([]byte(contractVersion)),
+		InputsDigest: identity(struct {
+			Args, Env []string
+			Effects   []model.Effect
+		}{a.Args, a.Env, a.Effects}),
+		ProofDigest: a.Proof, PolicyDigest: observablePolicyDigest(),
 		ContextDigest: b.Identity, Inventory: a.inventory(),
 	})
 	if err != nil {

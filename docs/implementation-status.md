@@ -27,6 +27,20 @@ The source and tests define current behavior. “Native” below means installed
 - Internal Vitest collection gathers cases separately from execution, retaining
   duplicate-name occurrences, parameterized cases, skips and todo cases. Import,
   setup, global setup, teardown and source-drift failures reject inventories.
+- Vitest startup files and tests share configured transitive dependency capture.
+  Installed Vite AST parsing checks both original and transformed code, resolves
+  literal imports through the configured resolver, and broadens unresolved,
+  computed, dormant or escaped loader influence explicitly. Parser availability
+  and original TypeScript support are not assumed for older accepted pairs.
+- Native input envelopes operationally capture and enforce declared resources,
+  absence, exact environment and bounded scratch. They cannot mint or reuse
+  receipts: complete provider equivalence remains unqualified. Source and copied
+  case/Unicode alias routing has actual macOS/Linux tests, including complete
+  ownership across overlapping roots; unsupported copied views reject before use.
+- A fixed observable policy rejects reported metadata, clocks, entropy and
+  unknown effects before native cache access. Empty effect data
+  cannot establish completeness; actual containment probes do not prove native
+  equivalence. Independent native probes and full normal/race/vet checks passed.
 - Internal Python collection binds installed interpreter/runner identities and
   independent pytest/unittest cases. Bounded captured source bytes supply import,
   fixture and dormant-effect evidence; unsupported runtime effects retain the
@@ -76,11 +90,16 @@ cards do not authorize native omission or change the capabilities listed here.
 `hayaku catalog` lists these distinctions. Report formats may require a runner-specific reporter/export step; an entry does not imply that every runner emits that dialect directly. [Runner support](runner-support.md) records exact fixture versions separately from accepted protocol ranges.
 
 The new independent Vitest collection path has actual installed-runner evidence
-for 4.1.11/8.2.2. The complete local application aggregate passed in 680.095s on
+for 4.1.11/8.2.2 only; other pairs are rejected by this new collection decoder.
+The newer AST/transitive-closure application aggregate passed in 712.177s on
 2026-10-06 with original per-case limits and no concurrent heavy builds: five
-shared Vitest scenarios and eleven dedicated application checks. A prior run
+shared Vitest scenarios and eleven dedicated application checks. Its source
+snapshot preceded only subsequent legacy SSR routing and older-pair assertion
+changes; fourth-pair behavior stayed unchanged. A historical graph aggregate
+passed in 680.095s. A prior run
 timed out one resource scenario under concurrent checks; it is retained as
-historical failed evidence. New collection behavior on older pairs remains unverified;
+historical failed evidence.
+Renewed configured-graph acceptance on older pairs remains unverified;
 a linked dependency tree outside the captured workspace is rejected rather than
 treated as complete evidence.
 
