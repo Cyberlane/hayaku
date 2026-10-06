@@ -100,8 +100,19 @@ The source and tests define current behavior. “Native” below means installed
 - Shared portable Ed25519 receipt authentication supports explicit protected
   issuer/verifier roles, namespace/epoch/key rotation and receipt-only transfer.
   Independent macOS/Linux tests and full composition checks passed. Hosted CI
-  trust, distributed freshness and early failed-audit cleanup remain separate
-  gates. See [portable receipts](portable-cache.md).
+  trust and distributed freshness remain separate gates. See [portable receipts](portable-cache.md).
+- Shared generated-input stages now capture independent BASE/candidate source,
+  tool, invocation and bounded output provenance, regenerate candidate products
+  before consumers and join generated changes to common invalidation. Independent
+  macOS/Linux fault controls and full composition checks passed. Unclosed host
+  generator effects retain complete original consumer scopes, including no-change
+  comparisons. See [generated inputs](generated-inputs.md).
+- Failed configured audits retain their admitted cache root/key and observe
+  actual new cache creation. Bounded cleanup revokes authenticated copies in the
+  provider domain on early validation, cancellation or later group/output failure,
+  preserving foreign domains and typed primary errors. Independent macOS/Linux
+  controls and full composition checks passed. Undecodable arguments or missing
+  trusted policy fail before safe cleanup admission.
 - General native affected-only qualification across imported packages,
   additional language certifiers and representative consumer CI savings
   remain unfinished. Original native plan gates remain full.
@@ -119,7 +130,7 @@ cards do not authorize native omission or change the capabilities listed here.
 | --- | --- | --- |
 | Enforced execution | WASI deterministic interface; restricted native Linux Docker/Landlock/seccomp and explicit macOS system-sandbox pure-Go contexts, exact args/env and real enforcement probes | General native equivalence, metadata/clocks/entropy virtualization, arbitrary services/FFI/subprocesses and Windows remain unqualified |
 | Actual reuse | Locally authenticated passing receipts bound to module, normalized inputs, producer, context, limits and backend; forced audits invalidate old receipts first | Windows ACL backend, distributed authority and general native affected-only execution |
-| Generated and linked inputs | Explicit multi-root envelope capture, bounded verified materialization, stable link/mode/provenance digest; capsule bridge normalizes the captured view | No candidate-generated overlay into BASE; no broader native generated/linked runtime qualification |
+| Generated and linked inputs | Explicit multi-root envelope capture, bounded verified materialization and independent BASE/candidate producer provenance; generated changes join common invalidation | No candidate-generated overlay into BASE; no broader native generated/linked runtime qualification |
 | Independent challenge/evidence | Existing fault corpus plus capsule capability/cache/audit adversaries, native inventory/result reconciliation and strict JUnit/TRX/Swift/libtest imports | Finite fixtures are not a soundness proof; more real incident and external-state workloads remain |
 | Honest performance | Per-suite executed/Hayaku-reused/upstream-cached evidence, phase costs, exact-context net comparisons and a self-pilot including capture/compile | Representative consumer savings, cold/warm workload policy and production acceptance |
 
@@ -162,14 +173,14 @@ The source includes pinned development fixtures and CI matrices. Local fixture s
 ## Isolated development acceptance progress
 
 The approved [runner provisioning](runner-provisioning.md) checkpoint records
-32 of 40 original framework/platform healthy and runtime-fault baselines: sixteen
-on macOS and sixteen on Linux. ScalaTest, MUnit, Flutter widget and Bazel C++
-baselines remain pending on both platforms. PHP PHAR controls do not cover
+33 of 40 original framework/platform healthy and runtime-fault baselines: seventeen
+on macOS and sixteen on Linux. ScalaTest, MUnit and Bazel C++ baselines remain pending on both platforms;
+Flutter widget controls passed on macOS and remain pending on Linux. PHP PHAR controls do not cover
 Composer autoload. These records qualify no discovery, affected execution or
 cache reuse; the corresponding language/runtime/acceptance cards remain open.
 
-Apple closure and portable receipt implementation passed independent review
-and full repository normal/race/vet composition checks. The [generated-input candidate](generated-inputs.md)
-has targeted macOS normal/race/vet evidence; independent Linux and complete
-composition gates remain pending. The [kanban](affected-tests-kanban.md) records
-file ownership, dependencies and outstanding work.
+Apple closure, portable receipts, generated-input provenance and failed-audit
+cleanup passed independent review and full repository normal/race/vet composition
+checks. Generated producer influence remains unqualified and retains original full
+consumer commands. The [kanban](affected-tests-kanban.md) records file ownership,
+dependencies and outstanding runtime/acceptance work.

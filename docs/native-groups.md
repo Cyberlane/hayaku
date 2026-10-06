@@ -145,11 +145,14 @@ A verifier transports receipt files and public policy only; misses execute witho
 publishing new passes. Exact native context keys and private producer admission
 remain required, so different boots, controllers or daemon contexts can miss.
 
-After configuration and authority admission, `--no-reuse` revokes all authenticated native receipts in that cache before
-capture/build, even if the invocation is cancelled before execution. Other
-receipt domains remain intact. New complete passes may be written afterward.
-Early configuration/compiler failures before that revocation are tracked by K48
-in the [kanban](affected-tests-kanban.md).
+`--no-reuse` admits the protected cache and authority before configuration
+validation. A failed configured invocation revokes authenticated native copies
+from its retained root using its captured key, including early validation or
+cancellation. Actual cache creation is observed and retained before use. Other
+provider domains remain intact; malformed authority and undecodable CLI arguments
+fail before safe cleanup admission. Valid Go audits revoke previous native passes
+before capture/build, and new complete passes may be written afterward. Independent
+macOS/Linux audit fault controls and full repository composition checks passed.
 Source/policy drift or incomplete aggregate evidence prevents success and revokes
 available receipts used/created by that invocation. Missing, invalid or unavailable caches execute again. The shared
 store's versioned envelope invalidates older WASI cache files; they execute again

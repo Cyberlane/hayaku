@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 )
@@ -105,6 +106,9 @@ func Validate(c model.Config) error {
 	if len(c.Workspaces) == 0 {
 		return errors.New("at least one workspace is required")
 	}
+	if err := ValidateProducerStages(c.Producers); err != nil {
+		return err
+	}
 	seen := map[string]bool{}
 	for _, w := range c.Workspaces {
 		if w.ID == "" || strings.ContainsAny(w.ID, ":\x00\n") || seen[w.ID] {
@@ -196,4 +200,49 @@ func Digest(value any) string {
 
 func HostContext() model.Context {
 	return model.Context{ID: "local", OS: runtime.GOOS, Arch: runtime.GOARCH}
+}
+
+// ValidateProducerStages applies the same bounded declaration policy to config
+// decoding and direct producer APIs. Filesystem admission happens at capture.
+func ValidateProducerStages(stages []model.ProducerStage) error {
+	if len(stages) > 32 {
+		return errors.New("producer stage count exceeds limit")
+	}
+	seen, mounts := map[string]bool{}, []string{}
+	argumentBytes := 0
+	for _, stage := range stages {
+		validText := func(value string) bool { return utf8.ValidString(value) && !strings.ContainsRune(value, 0) }
+		if len(stage.ID) == 0 || len(stage.ID) > 64 || seen[stage.ID] || len(stage.Output) > 4096 || len(stage.Command.Executable) > 4096 || len(stage.Command.Dir) > 4096 || len(stage.Command.Args) > 1024 || len(stage.DependsOn) > 32 {
+			return errors.New("invalid producer stage bounds")
+		}
+		for _, r := range stage.ID {
+			if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '-' || r == '_') {
+				return errors.New("invalid producer stage identity")
+			}
+		}
+		if !validText(stage.Output) || !validText(stage.Command.Executable) || !validText(stage.Command.Dir) || !Relative(stage.Output) || stage.Output == "." || !filepath.IsAbs(stage.Command.Executable) || filepath.Clean(stage.Command.Executable) != stage.Command.Executable || ValidateCommand(stage.Command) != nil {
+			return errors.New("invalid producer stage command or output")
+		}
+		for _, argument := range stage.Command.Args {
+			argumentBytes += len(argument)
+			if !validText(argument) || len(argument) > 32768 || argumentBytes > 1<<20 {
+				return errors.New("producer arguments exceed size limit")
+			}
+		}
+		dependencies := map[string]bool{}
+		for _, dependency := range stage.DependsOn {
+			if !seen[dependency] || dependencies[dependency] {
+				return errors.New("producer dependencies must name distinct earlier stages")
+			}
+			dependencies[dependency] = true
+		}
+		for _, previous := range mounts {
+			if previous == stage.Output || strings.HasPrefix(previous, stage.Output+"/") || strings.HasPrefix(stage.Output, previous+"/") {
+				return errors.New("producer output trees overlap")
+			}
+		}
+		seen[stage.ID] = true
+		mounts = append(mounts, stage.Output)
+	}
+	return nil
 }

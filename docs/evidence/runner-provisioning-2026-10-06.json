@@ -822,7 +822,8 @@
       "observed_version": "3.47.6",
       "observed_dart": "3.13.5",
       "observed_engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
-      "baseline_status": "version-only-not-widget-tested"
+      "baseline_status": "offline-original-healthy-runtime-fault-passed-unqualified",
+      "baseline_evidence": "/private/tmp/hayaku-language-acceptance-bdhM36/flutter-mac-baseline.json"
     },
     {
       "tool": "flutter",
@@ -1875,7 +1876,54 @@
         "network": "none",
         "status": "unqualified-offline-original-native-baseline"
       }
-    ]
+    ],
+    "flutter-mac-baseline.json": {
+      "profile": "05B",
+      "sdk": "Flutter3.47.6/Dart3.13.5",
+      "framework": "SDK-flutter_test",
+      "engine": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+      "platform": "mac-arm64",
+      "observed_sdk_version": {
+        "frameworkVersion": "3.47.6",
+        "channel": "stable",
+        "repositoryUrl": "https://github.com/flutter/flutter.git",
+        "frameworkRevision": "5fc346839b5d0eef006ed8404392afb4dfae428d",
+        "frameworkCommitDate": "2026-09-30 15:02:49 -0700",
+        "engineRevision": "692136cb6582dbfc5af3fb33c2515a069f2f66d0",
+        "engineCommitDate": "2026-09-30 00:56:59.000Z",
+        "engineContentHash": "b8c8d3d8d5d0095127057f8a29ca8cc53da2167c",
+        "engineBuildDate": "2026-09-29 18:19:13.915",
+        "dartSdkVersion": "3.13.5",
+        "devToolsVersion": "2.60.0",
+        "flutterVersion": "3.47.6",
+        "flutterRoot": "/private/tmp/hayaku-language-acceptance-bdhM36/tools/flutter-3.47.6-macos-arm64/flutter"
+      },
+      "test_network_policy": "macOS sandbox-exec denies external outbound network; localhost permitted for SDK runner IPC; actual test --no-pub",
+      "flutter_launcher_sha256": "7d486c33b30a0cf1ea5146231c68bb8f966cdb4e087c5cd8b37e14513f536e7d",
+      "dart_executable_sha256": "3e92921742f895c206143fbb5c6cdd7b9e32a21bc4a757dd18b65711bb7f2087",
+      "fixture_pubspec_sha256": "11ff3202b4a905dfff79e1940ab31c5ca2ba4d52c4c2aef33c7b60f7e2d8234d",
+      "lock_sha256": "8241a6d6f2e2644b5750196e22c751a1d117b977980d8f8dd68c09fe7c27846b",
+      "source_sha256": "a21043f68b264cd56f21c744f4c3720cbaa134ecb82d679b90c942698dbb4a46",
+      "results": [
+        {
+          "phase": "healthy",
+          "exit": 0,
+          "native_outcomes": {
+            "alpha": "success",
+            "beta": "success"
+          }
+        },
+        {
+          "phase": "fault",
+          "exit": 1,
+          "native_outcomes": {
+            "alpha": "error",
+            "beta": "success"
+          }
+        }
+      ],
+      "status": "unqualified-offline-native-baseline"
+    }
   },
   "linux_nextest_baseline_log": "/tmp/hayaku-language-acceptance-bdhM36/nextest146-linux-baseline-exec.log",
   "profile_progress": {
@@ -1894,7 +1942,7 @@
       "03B": "mac-locked-native-healthy-fault-baseline-passed-unqualified",
       "04A": "mac-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "05A": "mac-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
-      "05B": "pending-locked-native-baseline",
+      "05B": "mac-pinned-locked-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "06A": "mac-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "06B": "mac-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
       "06C": "mac-pinned-native-offline-healthy-runtime-fault-baseline-passed-unqualified",
@@ -4376,7 +4424,161 @@
         "verified_sha1": "0172931663a09a1fa515567af5fbef00897d3c04",
         "observed_sha256": "a12578dde1ba00bd9b816d388a0b879928d00bab3c83c240f7013bf4196c579a"
       }
-    ]
+    ],
+    "flutter-published-package-checksums.json": {
+      "packages": [
+        {
+          "package": "async",
+          "version": "2.13.1",
+          "metadata_url": "https://pub.dev/api/packages/async/versions/2.13.1",
+          "archive_url": "https://pub.dev/api/archives/async-2.13.1.tar.gz",
+          "verified_archive_sha256": "e2eb0491ba5ddb6177742d2da23904574082139b07c1e33b8503b9f46f3e1a37"
+        },
+        {
+          "package": "boolean_selector",
+          "version": "2.1.2",
+          "metadata_url": "https://pub.dev/api/packages/boolean_selector/versions/2.1.2",
+          "archive_url": "https://pub.dev/api/archives/boolean_selector-2.1.2.tar.gz",
+          "verified_archive_sha256": "8aab1771e1243a5063b8b0ff68042d67334e3feab9e95b9490f9a6ebf73b42ea"
+        },
+        {
+          "package": "characters",
+          "version": "1.4.1",
+          "metadata_url": "https://pub.dev/api/packages/characters/versions/1.4.1",
+          "archive_url": "https://pub.dev/api/archives/characters-1.4.1.tar.gz",
+          "verified_archive_sha256": "faf38497bda5ead2a8c7615f4f7939df04333478bf32e4173fcb06d428b5716b"
+        },
+        {
+          "package": "clock",
+          "version": "1.1.3",
+          "metadata_url": "https://pub.dev/api/packages/clock/versions/1.1.3",
+          "archive_url": "https://pub.dev/api/archives/clock-1.1.3.tar.gz",
+          "verified_archive_sha256": "e51d50bca3217c9a9fa2b41a30e4a38971133f5f9ec7a3d57bae095007f1d28e"
+        },
+        {
+          "package": "collection",
+          "version": "1.19.1",
+          "metadata_url": "https://pub.dev/api/packages/collection/versions/1.19.1",
+          "archive_url": "https://pub.dev/api/archives/collection-1.19.1.tar.gz",
+          "verified_archive_sha256": "2f5709ae4d3d59dd8f7cd309b4e023046b57d8a6c82130785d2b0e5868084e76"
+        },
+        {
+          "package": "fake_async",
+          "version": "1.3.3",
+          "metadata_url": "https://pub.dev/api/packages/fake_async/versions/1.3.3",
+          "archive_url": "https://pub.dev/api/archives/fake_async-1.3.3.tar.gz",
+          "verified_archive_sha256": "5368f224a74523e8d2e7399ea1638b37aecfca824a3cc4dfdf77bf1fa905ac44"
+        },
+        {
+          "package": "leak_tracker",
+          "version": "11.0.2",
+          "metadata_url": "https://pub.dev/api/packages/leak_tracker/versions/11.0.2",
+          "archive_url": "https://pub.dev/api/archives/leak_tracker-11.0.2.tar.gz",
+          "verified_archive_sha256": "33e2e26bdd85a0112ec15400c8cbffea70d0f9c3407491f672a2fad47915e2de"
+        },
+        {
+          "package": "leak_tracker_flutter_testing",
+          "version": "3.0.10",
+          "metadata_url": "https://pub.dev/api/packages/leak_tracker_flutter_testing/versions/3.0.10",
+          "archive_url": "https://pub.dev/api/archives/leak_tracker_flutter_testing-3.0.10.tar.gz",
+          "verified_archive_sha256": "1dbc140bb5a23c75ea9c4811222756104fbcd1a27173f0c34ca01e16bea473c1"
+        },
+        {
+          "package": "leak_tracker_testing",
+          "version": "3.0.2",
+          "metadata_url": "https://pub.dev/api/packages/leak_tracker_testing/versions/3.0.2",
+          "archive_url": "https://pub.dev/api/archives/leak_tracker_testing-3.0.2.tar.gz",
+          "verified_archive_sha256": "8d5a2d49f4a66b49744b23b018848400d23e54caf9463f4eb20df3eb8acb2eb1"
+        },
+        {
+          "package": "matcher",
+          "version": "0.12.20",
+          "metadata_url": "https://pub.dev/api/packages/matcher/versions/0.12.20",
+          "archive_url": "https://pub.dev/api/archives/matcher-0.12.20.tar.gz",
+          "verified_archive_sha256": "31bd099b47c10cd1aeb55146a2d46ce0277630ecef3f7dae54ad7873f36696cd"
+        },
+        {
+          "package": "material_color_utilities",
+          "version": "0.13.0",
+          "metadata_url": "https://pub.dev/api/packages/material_color_utilities/versions/0.13.0",
+          "archive_url": "https://pub.dev/api/archives/material_color_utilities-0.13.0.tar.gz",
+          "verified_archive_sha256": "9c337007e82b1889149c82ed242ed1cb24a66044e30979c44912381e9be4c48b"
+        },
+        {
+          "package": "meta",
+          "version": "1.19.0",
+          "metadata_url": "https://pub.dev/api/packages/meta/versions/1.19.0",
+          "archive_url": "https://pub.dev/api/archives/meta-1.19.0.tar.gz",
+          "verified_archive_sha256": "307249ce4ff29d58a18e97f6345f539382eb9c9c29ecda628900f31de0443dd9"
+        },
+        {
+          "package": "path",
+          "version": "1.9.1",
+          "metadata_url": "https://pub.dev/api/packages/path/versions/1.9.1",
+          "archive_url": "https://pub.dev/api/archives/path-1.9.1.tar.gz",
+          "verified_archive_sha256": "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5"
+        },
+        {
+          "package": "source_span",
+          "version": "1.10.2",
+          "metadata_url": "https://pub.dev/api/packages/source_span/versions/1.10.2",
+          "archive_url": "https://pub.dev/api/archives/source_span-1.10.2.tar.gz",
+          "verified_archive_sha256": "56a02f1f4cd1a2d96303c0144c93bd6d909eea6bee6bf5a0e0b685edbd4c47ab"
+        },
+        {
+          "package": "stack_trace",
+          "version": "1.12.2",
+          "metadata_url": "https://pub.dev/api/packages/stack_trace/versions/1.12.2",
+          "archive_url": "https://pub.dev/api/archives/stack_trace-1.12.2.tar.gz",
+          "verified_archive_sha256": "277654b3034d17ac6f9f1cb5595db011b1d5d41e8806866db28e0abaa101c490"
+        },
+        {
+          "package": "stream_channel",
+          "version": "2.1.4",
+          "metadata_url": "https://pub.dev/api/packages/stream_channel/versions/2.1.4",
+          "archive_url": "https://pub.dev/api/archives/stream_channel-2.1.4.tar.gz",
+          "verified_archive_sha256": "969e04c80b8bcdf826f8f16579c7b14d780458bd97f56d107d3950fdbeef059d"
+        },
+        {
+          "package": "string_scanner",
+          "version": "1.4.1",
+          "metadata_url": "https://pub.dev/api/packages/string_scanner/versions/1.4.1",
+          "archive_url": "https://pub.dev/api/archives/string_scanner-1.4.1.tar.gz",
+          "verified_archive_sha256": "921cd31725b72fe181906c6a94d987c78e3b98c2e205b397ea399d4054872b43"
+        },
+        {
+          "package": "term_glyph",
+          "version": "1.2.2",
+          "metadata_url": "https://pub.dev/api/packages/term_glyph/versions/1.2.2",
+          "archive_url": "https://pub.dev/api/archives/term_glyph-1.2.2.tar.gz",
+          "verified_archive_sha256": "7f554798625ea768a7518313e58f83891c7f5024f88e46e7182a4558850a4b8e"
+        },
+        {
+          "package": "test_api",
+          "version": "0.7.12",
+          "metadata_url": "https://pub.dev/api/packages/test_api/versions/0.7.12",
+          "archive_url": "https://pub.dev/api/archives/test_api-0.7.12.tar.gz",
+          "verified_archive_sha256": "2a122cbe059f8b610d3a5415f42e255b6c17b1f21eee1d960f31080237fb4f11"
+        },
+        {
+          "package": "vector_math",
+          "version": "2.4.3",
+          "metadata_url": "https://pub.dev/api/packages/vector_math/versions/2.4.3",
+          "archive_url": "https://pub.dev/api/archives/vector_math-2.4.3.tar.gz",
+          "verified_archive_sha256": "92b9910f66ed1057fd4da7b040ae7c74cafacf885bdc81be496928d5049b032d"
+        },
+        {
+          "package": "vm_service",
+          "version": "15.3.0",
+          "metadata_url": "https://pub.dev/api/packages/vm_service/versions/15.3.0",
+          "archive_url": "https://pub.dev/api/archives/vm_service-15.3.0.tar.gz",
+          "verified_archive_sha256": "5f37239c4851efcef929cea7824e76df7f2f0970aef85d66bbc430afa40e72f0"
+        }
+      ],
+      "before_framework_execution": true,
+      "download_verification": "SDK pub content-hash verification against official pub.dev metadata",
+      "reference": "https://dart.dev/tools/pub/cmd/pub-get"
+    }
   },
   "tool_identity_limit": "Individual executable and official archive digests are provisioning evidence; complete mutable installed runtime closure remains a separate admission requirement.",
   "setup_failures_before_framework_execution": {
@@ -4424,6 +4626,60 @@
         "correction": "Use supported BUNDLE_FROZEN=true; assert Bundler.settings[:frozen] is true before offline installation",
         "retained_logs": "/tmp/hayaku-language-acceptance-bdhM36/caches/ruby-linux-initial-frozen-flag",
         "framework_outcomes": "none"
+      }
+    },
+    "flutter-mac-initial-network-oracle-failure.json": {
+      "path": "/private/tmp/hayaku-language-acceptance-bdhM36/flutter-mac-initial-network-oracle-failure.json",
+      "sha256": "c59e81d3d9fe0b0d9589a25350d78e4b409a58b87b88f0a9aba1506c3c84001b",
+      "record": {
+        "stage": "native runner startup before widget cases",
+        "exit": 1,
+        "reason": "SDK requires127.0.0.1 server socket; deny-network-all test policy prevented native startup",
+        "framework_cases_executed": 0,
+        "evidence": [
+          {
+            "path": "caches/flutter-mac-initial-network-oracle/flutter-mac-healthy.stdout",
+            "sha256": "bdecd4081026838bac05191e61d60caef3fc79df52e53ac93332e80b54ee5c2c"
+          },
+          {
+            "path": "caches/flutter-mac-initial-network-oracle/flutter-mac-healthy.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "caches/flutter-mac-initial-network-oracle/flutter-mac-baseline-driver.log",
+            "sha256": "d3db4df6a798b488c5c4fa6e8ccecd5bbb83a5a68f5e069b0325ca0fc03c9f67"
+          }
+        ],
+        "qualification": false
+      }
+    }
+  },
+  "evidence_parser_failures_after_framework_execution": {
+    "flutter-mac-initial-result-oracle-failure.json": {
+      "path": "/private/tmp/hayaku-language-acceptance-bdhM36/flutter-mac-initial-result-oracle-failure.json",
+      "sha256": "1a8592e369e628e963581ce280b149c6bf5d6f3005d55ca48223298ee6ec4087",
+      "record": {
+        "stage": "baseline evidence parser after actual healthy and fault framework execution",
+        "reason": "pinned Flutter widget assertion emits testDone result=error, not generic Dart result=failure; actual TestFailure print and Alpha-only error with Beta success verified",
+        "framework_native_exits": [
+          0,
+          1
+        ],
+        "evidence": [
+          {
+            "path": "caches/flutter-mac-initial-result-oracle/flutter-mac-healthy.stdout",
+            "sha256": "1d5722741b7867931259f828047a6fb249d91556f62b632a05692a09708c04d1"
+          },
+          {
+            "path": "caches/flutter-mac-initial-result-oracle/flutter-mac-fault.stdout",
+            "sha256": "ceaf6ccbbec44d0d3caae66cba46d010358d1f6fa27d56fc580e335e6d01a253"
+          },
+          {
+            "path": "caches/flutter-mac-initial-result-oracle/flutter-mac-baseline-driver.log",
+            "sha256": "08bc22f07a90e0bd55fcb7c493c46931f5f7a473dbd34529135a9e5c4fd6ae2b"
+          }
+        ],
+        "qualification": false
       }
     }
   }

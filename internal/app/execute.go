@@ -51,6 +51,9 @@ func Execute(ctx context.Context, root string, c model.Config, p model.Plan) (Ex
 
 // Observe is a full-inventory diagnostic run, separate from required execution.
 func Observe(ctx context.Context, root string, c model.Config, p model.Plan) (Execution, error) {
+	if len(c.Producers) != 0 {
+		return Execution{}, errors.New("producer observation requires independent producer scopes; retain full execution")
+	}
 	for _, w := range c.Workspaces {
 		if !adapter.SupportsObserve(w) {
 			return Execution{}, errors.New("observe requires bound Vitest workspaces; preserve other full suite gates")
@@ -59,26 +62,49 @@ func Observe(ctx context.Context, root string, c model.Config, p model.Plan) (Ex
 	return executeMode(ctx, root, c, p, true)
 }
 
-func executeMode(ctx context.Context, root string, c model.Config, p model.Plan, observe bool) (Execution, error) {
-	result := Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "full", ConfigDigest: p.ConfigDigest, ToolsDigest: p.ToolsDigest, RunnerVersions: nativeVersions(p), Commands: []CommandResult{}}
+func executeMode(ctx context.Context, root string, c model.Config, p model.Plan, observe bool) (result Execution, returnedErr error) {
+	result = Execution{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, Mode: "full", ConfigDigest: p.ConfigDigest, ToolsDigest: p.ToolsDigest, RunnerVersions: nativeVersions(p), Commands: []CommandResult{}}
 	if observe {
 		result.Mode = "runtime-observation"
 	}
 	if p.Mode != "full-fallback" || config.Digest(c) != p.ConfigDigest {
 		return result, errors.New("execution identities differ from plan")
 	}
+	if (len(c.Producers) != 0) != (p.Generated != nil) {
+		return result, errors.New("producer declarations differ from plan")
+	}
 	if err := validateExecution(ctx, root, c, p); err != nil {
 		return result, err
 	}
 	executionRoot := root
 	revalidate := func() error { return validateExecution(ctx, root, c, p) }
-	if hasNodeRuntime(c) || hasApple(c) {
+	if hasNodeRuntime(c) || hasApple(c) || len(c.Producers) != 0 {
 		pair, err := snapshot.Capture(ctx, root, p.Candidate, p.Candidate)
 		if err != nil {
 			return result, err
 		}
 		defer pair.Close()
 		executionRoot = pair.CandidateDir
+		generated, err := prepareGenerated(ctx, executionRoot, p.Candidate, c)
+		if err != nil {
+			return result, err
+		}
+		if generated != nil {
+			defer func() {
+				if cleanupErr := generated.Close(); cleanupErr != nil {
+					result.Passed = false
+					returnedErr = errors.Join(returnedErr, cleanupErr)
+				}
+			}()
+			if p.Generated == nil || config.Digest(generated.records) != config.Digest(p.Generated.Candidate) {
+				return result, errors.New("fresh candidate producer inputs or outputs differ from plan")
+			}
+			executionRoot = generated.root
+			previous := revalidate
+			revalidate = func() error { return errors.Join(previous(), generated.verify(ctx)) }
+		} else if p.Generated != nil {
+			return result, errors.New("plan declares unconfigured producers")
+		}
 		if err := prepareNodeRuntimes(ctx, executionRoot, c); err != nil {
 			return result, err
 		}
@@ -200,6 +226,9 @@ type ShadowResult struct {
 func Shadow(ctx context.Context, root string, c model.Config, p model.Plan) (result ShadowResult, returnedErr error) {
 	result = ShadowResult{Schema: model.Schema, Candidate: p.Candidate, ContextDigest: p.ContextDigest, ObservedMisses: []string{}, Inconsistencies: []string{}, Assurance: "observational-only; no production omission authority"}
 	start := time.Now()
+	if len(c.Producers) != 0 {
+		return result, errors.New("producer shadow requires independent producer scopes; retain full execution")
+	}
 	defer func() { result.TotalDuration = time.Since(start) }()
 	defer func() {
 		if err := validateExecution(ctx, root, c, p); err != nil {

@@ -66,9 +66,10 @@ type Limits struct {
 }
 
 type Options struct {
-	CacheDir  string
-	Authority *passcache.Authority
-	Limits    Limits
+	CacheDir    string
+	Authority   *passcache.Authority
+	AuditHandle *passcache.Audit
+	Limits      Limits
 	// NoReuse executes an audit even if a valid receipt exists. The previous
 	// receipt is invalidated before the run, so an interrupted/failed audit
 	// cannot leave the old passing result authorized.

@@ -214,7 +214,7 @@ func ContextDigest(c model.Context) string {
 	}{c, runtime.GOOS, runtime.GOARCH, runtime.Version(), env})
 }
 
-func Build(ctx context.Context, root, base, candidate string, c model.Config, useCache bool) (model.Plan, error) {
+func Build(ctx context.Context, root, base, candidate string, c model.Config, useCache bool) (result model.Plan, returnedErr error) {
 	root, err := filepath.Abs(root)
 	if err != nil {
 		return model.Plan{}, err
@@ -243,6 +243,7 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 	}
 	defer pair.Close()
 	var old, current []model.Evidence
+	var oldGenerated, currentGenerated *generatedView
 	contextDigest := ""
 	selfPath, err := os.Executable()
 	if err != nil {
@@ -260,6 +261,24 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 		id, dir string
 		dest    *[]model.Evidence
 	}{{pair.Base, pair.BaseDir, &old}, {pair.Candidate, pair.CandidateDir, &current}} {
+		generated, err := prepareGenerated(ctx, tree.dir, tree.id, c)
+		if err != nil {
+			return model.Plan{}, err
+		}
+		if generated != nil {
+			defer func() {
+				if cleanupErr := generated.Close(); cleanupErr != nil {
+					result = model.Plan{}
+					returnedErr = errors.Join(returnedErr, cleanupErr)
+				}
+			}()
+			tree.dir = generated.root
+			if tree.dest == &old {
+				oldGenerated = generated
+			} else {
+				currentGenerated = generated
+			}
+		}
 		if err := prepareNodeRuntimes(ctx, tree.dir, c); err != nil {
 			return model.Plan{}, err
 		}
@@ -281,6 +300,9 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 				Source, Context, Version, Tools, Implementation string
 				Workspace                                       model.Workspace
 			}{tree.id, contextDigest, Version, toolDigest, selfIdentity, w})
+			if generated != nil {
+				key = config.Digest([]string{key, config.Digest(generated.records)})
+			}
 			var e model.Evidence
 			hit := false
 			if useCache {
@@ -307,6 +329,27 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 			}
 			*tree.dest = append(*tree.dest, e)
 		}
+		if err := generated.verify(ctx); err != nil {
+			return model.Plan{}, err
+		}
+	}
+	changes := append([]model.Change(nil), pair.Changes...)
+	if oldGenerated != nil {
+		if err := oldGenerated.verify(ctx); err != nil {
+			return model.Plan{}, err
+		}
+		if err := currentGenerated.verify(ctx); err != nil {
+			return model.Plan{}, err
+		}
+		changes = append(changes, generatedChanges(oldGenerated.entries, currentGenerated.entries)...)
+		for _, items := range [][]model.Evidence{old, current} {
+			if err := addProducerEvidence(items, c.Producers); err != nil {
+				return model.Plan{}, err
+			}
+			for i := range items {
+				adapter.Normalize(&items[i])
+			}
+		}
 	}
 	finalTools, err := toolsIdentity(ctx, c, root)
 	if err != nil {
@@ -315,7 +358,7 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 	if finalTools != toolDigest {
 		return model.Plan{}, errors.New("installed tools or runtime dependencies changed during planning")
 	}
-	p, err := planner.Build(old, current, pair.Changes, c)
+	p, err := planner.Build(old, current, changes, c)
 	if err != nil {
 		return p, err
 	}
@@ -326,6 +369,9 @@ func Build(ctx context.Context, root, base, candidate string, c model.Config, us
 	p.ConfigDigest = config.Digest(c)
 	p.ContextDigest = contextDigest
 	p.ToolsDigest = toolDigest
+	if oldGenerated != nil {
+		p.Generated = &model.GeneratedInputs{Base: oldGenerated.records, Candidate: currentGenerated.records}
+	}
 	renderProposalCommands(&p, c)
 	sort.Slice(p.Gaps, func(i, j int) bool {
 		a, b := p.Gaps[i], p.Gaps[j]

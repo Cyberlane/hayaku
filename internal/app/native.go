@@ -11,10 +11,11 @@ import (
 
 	"github.com/Cyberlane/hayaku/internal/config"
 	"github.com/Cyberlane/hayaku/internal/native"
+	"github.com/Cyberlane/hayaku/internal/passcache"
 	"github.com/Cyberlane/hayaku/internal/report"
 )
 
-func runNative(ctx context.Context, args []string, out, errout io.Writer) int {
+func runNative(ctx context.Context, args []string, out, errout io.Writer) (status int) {
 	flags := flag.NewFlagSet("native", flag.ContinueOnError)
 	flags.SetOutput(errout)
 	root := flags.String("root", ".", "source root")
@@ -34,17 +35,31 @@ func runNative(ctx context.Context, args []string, out, errout io.Writer) int {
 	if err != nil {
 		return failure(errout, err)
 	}
-	var c native.Config
-	if err = readToolJSON(abs, *name, &c); err != nil {
-		return failure(errout, err)
-	}
 	ctx, cancel := context.WithTimeout(ctx, *timeout)
 	defer cancel()
-	authority, err := cacheFlags.load(ctx, flags, abs, *cache)
+	authority, err := cacheFlags.loadInvocation(ctx, flags, abs, *cache, *audit)
 	if err != nil {
 		return failure(errout, err)
 	}
 	options := native.ExecutionOptions{CacheDir: *cache, Audit: *audit, Authority: authority}
+	var auditHandle *passcache.Audit
+	if *audit {
+		cleanup, err := native.BeginAuditWithOptions(options)
+		if err != nil {
+			return failure(errout, err)
+		}
+		options.AuditHandle = cleanup
+		auditHandle = cleanup
+		defer func() {
+			if err := cleanup.Finish(status != 0); err != nil {
+				status = failure(errout, errors.New("native audit cleanup incomplete"))
+			}
+		}()
+	}
+	var c native.Config
+	if err = readToolJSON(abs, *name, &c); err != nil {
+		return failure(errout, err)
+	}
 	value, runErr := native.GoWithOptions(ctx, abs, c, options)
 	var current native.Config
 	if readToolJSON(abs, *name, &current) != nil || !reflect.DeepEqual(c, current) || !stableCacheAuthority(ctx, authority) {
@@ -52,6 +67,15 @@ func runNative(ctx context.Context, args []string, out, errout io.Writer) int {
 		value.Passed = false
 		_ = native.RevokeWithOptions(options, value)
 		runErr = errors.New("native configuration changed during execution")
+	}
+	if auditHandle != nil {
+		if err := auditHandle.Check(runErr != nil || !value.Complete || !value.Passed); err != nil {
+			value.Complete, value.Passed = false, false
+			for i := range value.Groups {
+				value.Groups[i].Complete, value.Groups[i].Qualified, value.Groups[i].Passed = false, false, false
+			}
+			runErr = errors.Join(runErr, err)
+		}
 	}
 	if status := writeResult(out, errout, *output, func(w io.Writer) error { return report.JSON(w, value) }); status != 0 {
 		return status

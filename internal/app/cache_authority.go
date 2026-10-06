@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"time"
 
 	"github.com/Cyberlane/hayaku/internal/passcache"
 )
@@ -41,4 +42,16 @@ func (f cacheAuthorityFlags) load(ctx context.Context, flags *flag.FlagSet, root
 
 func stableCacheAuthority(ctx context.Context, authority *passcache.Authority) bool {
 	return authority == nil || authority.Verify(ctx) == nil
+}
+
+// An explicitly requested audit may need its trusted policy for cleanup even
+// when the invocation was already cancelled. Policy admission stays bounded;
+// an unavailable policy never selects local authentication as a fallback.
+func (f cacheAuthorityFlags) loadInvocation(ctx context.Context, flags *flag.FlagSet, root, cache string, audit bool) (*passcache.Authority, error) {
+	if !audit {
+		return f.load(ctx, flags, root, cache)
+	}
+	cleanup, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	return f.load(cleanup, flags, root, cache)
 }

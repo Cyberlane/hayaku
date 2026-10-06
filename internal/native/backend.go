@@ -392,9 +392,10 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 }
 
 type ExecutionOptions struct {
-	CacheDir  string
-	Audit     bool
-	Authority *passcache.Authority
+	CacheDir    string
+	Audit       bool
+	Authority   *passcache.Authority
+	AuditHandle *passcache.Audit
 }
 
 func ExecuteWithOptions(ctx context.Context, b Backend, a Artifact, options ExecutionOptions, decode func(process.Output, Artifact) (model.Outcomes, error)) (Result, error) {
@@ -431,7 +432,18 @@ func ExecuteWithOptions(ctx context.Context, b Backend, a Artifact, options Exec
 			return r, err
 		}
 	}
+	if audit && options.AuditHandle != nil {
+		if err := options.AuditHandle.Validate(cacheDir, "hayaku-native-pure-pass-v1", options.Authority); err != nil {
+			return r, err
+		}
+	}
 	cache, cacheErr := passcache.OpenWithAuthority(cacheDir, "hayaku-native-pure-pass-v1", options.Authority)
+	if audit && options.AuditHandle != nil {
+		if err := options.AuditHandle.Observe(cache); err != nil {
+			_ = cache.Close()
+			return r, err
+		}
+	}
 	if cacheErr != nil {
 		r.Cache = "unavailable"
 	}

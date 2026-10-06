@@ -74,7 +74,10 @@ func toolsIdentity(ctx context.Context, c model.Config, root string) (string, er
 	if err != nil {
 		return "", err
 	}
-	values := map[string]string{}
+	values, err := producerToolsIdentity(ctx, root, c)
+	if err != nil {
+		return "", err
+	}
 	for _, w := range c.Workspaces {
 		if w.Adapter == "swift" || w.Adapter == "xcode" {
 			id, err := swiftprovider.RuntimeIdentity(ctx, w.SwiftRuntime)

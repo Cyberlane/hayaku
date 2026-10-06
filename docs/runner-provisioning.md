@@ -77,7 +77,7 @@ used for those observations; future invocations must verify their actual bytes.
 At this checkpoint, macOS original full-command healthy and seeded runtime-fault
 baselines passed for Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter,
 Gradle/TestNG, xUnit, NUnit, MSTest, RSpec, Minitest, PHPUnit, Bun, Deno, Dart/package:test,
-GoogleTest, Catch2 and CTest (16 of 20 named profiles). Linux Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter, Gradle/TestNG, xUnit, NUnit,
+GoogleTest, Catch2, CTest and Flutter widget tests (17 of 20 named profiles). Linux Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter, Gradle/TestNG, xUnit, NUnit,
 MSTest, RSpec, Minitest, PHPUnit, Bun, Deno, Dart/package:test, GoogleTest, Catch2 and CTest baselines also
 passed (16 of 20). Rust/Nextest baselines passed on actual macOS and Linux, and all four exact Vitest/Vite
 pairs passed macOS baselines. The Deno record distinguishes an earlier type-check

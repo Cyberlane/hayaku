@@ -70,11 +70,16 @@ reports or a different host. Verification-only misses execute without issuing
 receipts. Policy distribution, untrusted hosted jobs and distributed freshness
 need separate acceptance.
 
-Audit mode removes the selected previous receipt before execution. Early
-request/configuration failures before receipt selection can currently leave old
-copies intact; corrective K48 tracks this gap. Output-digest mismatch invalidates
-qualification. A cache hit certifies the functional outcome of this bounded
-contract, not host-load timing or another command. See [capsules](capsules.md).
+Audit mode retains the admitted cache root and authentication key before
+request/configuration validation. Failed or incomplete configured audits revoke
+authenticated copies in their provider domain using bounded independent cleanup;
+renamed roots and newly created caches stay bound to actual opened handles.
+Malformed or unavailable trusted policy cannot imply safe revocation or select
+local authentication as a fallback. Undecodable CLI arguments fail before that
+admission boundary. Successful per-key audits compare previous output digests.
+A cache hit certifies this bounded functional outcome, not host-load timing or
+another command. Independent macOS/Linux audit fault controls and full
+repository composition checks passed; see [capsules](capsules.md).
 
 ## Separate restricted native group contract
 

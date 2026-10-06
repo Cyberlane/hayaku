@@ -15,7 +15,6 @@ import (
 	"slices"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/passcache"
@@ -347,9 +346,31 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 	return GoWithOptions(ctx, root, c, ExecutionOptions{CacheDir: cacheDir, Audit: audit})
 }
 
-func GoWithOptions(ctx context.Context, root string, c Config, options ExecutionOptions) (Report, error) {
+func GoWithOptions(ctx context.Context, root string, c Config, options ExecutionOptions) (report Report, returnedErr error) {
 	cacheDir, audit := options.CacheDir, options.Audit
-	report := Report{Schema: 1, Contract: contractVersion}
+	report = Report{Schema: 1, Contract: contractVersion}
+	var cleanup *passcache.Audit
+	if audit {
+		owned := options.AuditHandle == nil
+		var err error
+		cleanup, err = BeginAuditWithOptions(options)
+		if err != nil {
+			return report, err
+		}
+		options.AuditHandle = cleanup
+		if owned {
+			defer func() {
+				failed := returnedErr != nil || !report.Complete || !report.Passed
+				if err := cleanup.Finish(failed); err != nil {
+					returnedErr = errors.Join(returnedErr, err)
+					report.Complete, report.Passed = false, false
+				}
+			}()
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return report, err
+	}
 	if !audit && options.Authority != nil {
 		if err := options.Authority.Verify(ctx); err != nil {
 			return report, err
@@ -391,17 +412,16 @@ func GoWithOptions(ctx context.Context, root string, c Config, options Execution
 		}
 	}
 	if audit {
-		cache, e := passcache.OpenWithAuthority(cacheDir, "hayaku-native-pure-pass-v1", options.Authority)
-		if e != nil {
-			return report, errors.New("native audit authority unavailable")
+		cache, err := passcache.OpenWithAuthority(cacheDir, "hayaku-native-pure-pass-v1", options.Authority)
+		if err != nil {
+			return report, err
 		}
-		// Revocation is cleanup authorized by --no-reuse, including an already
-		// cancelled invocation. It has its own short bounded context.
-		revoke, stop := context.WithTimeout(context.Background(), 10*time.Second)
-		e = cache.RevokeAll(revoke)
-		stop()
-		cache.Close()
-		if e != nil {
+		err = cleanup.Observe(cache)
+		err = errors.Join(err, cache.Close())
+		if err != nil {
+			return report, err
+		}
+		if err := cleanup.Revoke(); err != nil {
 			return report, errors.New("native audit could not revoke previous passes")
 		}
 	}
@@ -430,7 +450,6 @@ func GoWithOptions(ctx context.Context, root string, c Config, options Execution
 	var backend Backend
 	backendReady := false
 	var backendErr error
-	var returnedErr error
 	var build goBuildContext
 	for index, p := range c.Packages {
 		group := Result{Name: p, Context: "original-host", Cache: "disabled"}

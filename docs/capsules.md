@@ -90,10 +90,14 @@ Sharing write access or authority keys with untrusted jobs defeats that model.
 Windows caching is disabled pending independent ACL qualification; capsules
 there execute uncached.
 
-`--no-reuse` removes the selected previous receipt before execution. An audit
-that fails during request/configuration validation before selecting that receipt
-can currently leave it intact; K48 in the [kanban](affected-tests-kanban.md)
-tracks cleanup for these early failures. Output-digest mismatch against a trusted earlier pass
+`--no-reuse` retains the admitted cache root/key before request validation, and
+removes the selected previous receipt before execution. Failed configured audits
+revoke authenticated copies in the WASI provider domain, including early
+validation/cancellation and a later failure after an earlier stored group.
+Cleanup follows retained handles across cache renames; it creates no cache or
+authority during failed validation. Undecodable CLI arguments and unavailable
+trusted policy fail before safe cleanup admission. Independent macOS/Linux audit
+fault controls and full repository composition checks passed. Output-digest mismatch against a trusted earlier pass
 invalidates qualification and leaves no reusable pass. Failure to store a new
 receipt can leave a fresh execution passed, but the next run must execute again.
 

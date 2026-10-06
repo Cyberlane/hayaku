@@ -26,7 +26,24 @@ const maxHostCalls = 1000000
 // Operational deadline, cancellation, platform exhaustion, traps and denied
 // capabilities cannot authorize reuse. A cache hit never certifies the outcome
 // or wall-clock timing of another native command or another host workload.
-func Run(ctx context.Context, request Request, options Options) (Result, error) {
+func Run(ctx context.Context, request Request, options Options) (result Result, returnedErr error) {
+	if options.NoReuse {
+		owned := options.AuditHandle == nil
+		audit, err := BeginAudit(options)
+		if err != nil {
+			return result, err
+		}
+		options.AuditHandle = audit
+		if owned {
+			defer func() {
+				failed := returnedErr != nil || !result.Complete || !result.Qualified || !result.Passed
+				if err := audit.Finish(failed); err != nil {
+					returnedErr = errors.Join(returnedErr, err)
+					result.Complete, result.Qualified, result.Passed = false, false, false
+				}
+			}()
+		}
+	}
 	request, limits, err := normalize(ctx, request, options.Limits)
 	if err != nil {
 		return Result{}, err
@@ -37,13 +54,19 @@ func Run(ctx context.Context, request Request, options Options) (Result, error) 
 	}
 	backend := digest([]byte(BackendVersion + "\x00" + executable + "\x00" + runtime.Version() + "\x00" + runtime.GOOS + "/" + runtime.GOARCH))
 	key, inputs := identities(request, limits, backend)
-	result := Result{Schema: 1, Name: request.Name, Mode: "executed", Key: key, ModuleDigest: digest(request.Module), InputDigest: inputs, BackendDigest: backend, InputFiles: len(request.Files), Gaps: []string{}, Reason: "execution-incomplete"}
+	result = Result{Schema: 1, Name: request.Name, Mode: "executed", Key: key, ModuleDigest: digest(request.Module), InputDigest: inputs, BackendDigest: backend, InputFiles: len(request.Files), Gaps: []string{}, Reason: "execution-incomplete"}
 	if options.Authority != nil {
 		if err := options.Authority.Verify(ctx); err != nil {
 			return result, err
 		}
 	}
 	cache, cacheErr := openPassCacheWithAuthority(options.CacheDir, options.Authority)
+	if options.NoReuse && cache != nil {
+		if err := options.AuditHandle.Observe(cache.cache); err != nil {
+			_ = cache.cache.Close()
+			return result, err
+		}
+	}
 	if cache != nil {
 		defer cache.cache.Close()
 	}

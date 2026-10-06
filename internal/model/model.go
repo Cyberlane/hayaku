@@ -9,6 +9,30 @@ type Command struct {
 	Args       []string `json:"argv"`
 }
 
+// ProducerStage is a configured declaration, not evidence of closed runtime
+// influence. Outputs are new repository paths; dependencies name prior stages.
+type ProducerStage struct {
+	ID        string   `json:"id"`
+	Output    string   `json:"output"`
+	Command   Command  `json:"command"`
+	DependsOn []string `json:"depends_on,omitempty"`
+}
+
+type ProducerRecord struct {
+	ID               string   `json:"id"`
+	Output           string   `json:"output"`
+	Revision         string   `json:"revision"`
+	InputsDigest     string   `json:"inputs_digest"`
+	InvocationDigest string   `json:"invocation_digest"`
+	OutputDigest     string   `json:"output_digest"`
+	DependsOn        []string `json:"depends_on,omitempty"`
+}
+
+type GeneratedInputs struct {
+	Base      []ProducerRecord `json:"base"`
+	Candidate []ProducerRecord `json:"candidate"`
+}
+
 type Workspace struct {
 	ID            string        `json:"id"`
 	Root          string        `json:"root"`
@@ -49,10 +73,11 @@ type Contract struct {
 }
 
 type Config struct {
-	Schema     int         `json:"schema"`
-	Context    Context     `json:"context"`
-	Workspaces []Workspace `json:"workspaces"`
-	Contracts  []Contract  `json:"contracts,omitempty"`
+	Schema     int             `json:"schema"`
+	Context    Context         `json:"context"`
+	Workspaces []Workspace     `json:"workspaces"`
+	Contracts  []Contract      `json:"contracts,omitempty"`
+	Producers  []ProducerStage `json:"producers,omitempty"`
 }
 
 type Change struct {
@@ -125,20 +150,21 @@ type Reason struct {
 }
 
 type Plan struct {
-	ToolsDigest      string     `json:"tools_digest"`
-	Schema           int        `json:"schema"`
-	Version          string     `json:"version"`
-	Base             string     `json:"base"`
-	Candidate        string     `json:"candidate"`
-	ConfigDigest     string     `json:"config_digest"`
-	ContextDigest    string     `json:"context_digest"`
-	Mode             string     `json:"mode"`
-	Changes          []Change   `json:"changes"`
-	Evidence         []Evidence `json:"evidence"`
-	Proposed         []Unit     `json:"proposed_units"`
-	Selected         []Unit     `json:"selected_units"`
-	Reasons          []Reason   `json:"reasons"`
-	Gaps             []Gap      `json:"gaps"`
-	Commands         []Command  `json:"commands"`
-	ProposalCommands []Command  `json:"proposal_commands"`
+	Generated        *GeneratedInputs `json:"generated_inputs,omitempty"`
+	ToolsDigest      string           `json:"tools_digest"`
+	Schema           int              `json:"schema"`
+	Version          string           `json:"version"`
+	Base             string           `json:"base"`
+	Candidate        string           `json:"candidate"`
+	ConfigDigest     string           `json:"config_digest"`
+	ContextDigest    string           `json:"context_digest"`
+	Mode             string           `json:"mode"`
+	Changes          []Change         `json:"changes"`
+	Evidence         []Evidence       `json:"evidence"`
+	Proposed         []Unit           `json:"proposed_units"`
+	Selected         []Unit           `json:"selected_units"`
+	Reasons          []Reason         `json:"reasons"`
+	Gaps             []Gap            `json:"gaps"`
+	Commands         []Command        `json:"commands"`
+	ProposalCommands []Command        `json:"proposal_commands"`
 }

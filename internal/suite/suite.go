@@ -19,9 +19,10 @@ type Group struct {
 	Limits  capsule.Limits
 }
 type Options struct {
-	CacheDir  string
-	NoReuse   bool
-	Authority *passcache.Authority
+	CacheDir    string
+	NoReuse     bool
+	Authority   *passcache.Authority
+	AuditHandle *passcache.Audit
 }
 type Result struct {
 	Schema   int              `json:"schema"`
@@ -40,6 +41,23 @@ type Result struct {
 // graph absence cannot remove an input from that envelope.
 func Run(ctx context.Context, groups []Group, options Options) (result Result, returnedErr error) {
 	result = Result{Schema: 1, Contract: capsule.BackendVersion, Groups: []capsule.Result{}}
+	if options.NoReuse {
+		owned := options.AuditHandle == nil
+		audit, err := capsule.BeginAudit(capsule.Options{CacheDir: options.CacheDir, Authority: options.Authority, AuditHandle: options.AuditHandle})
+		if err != nil {
+			return result, err
+		}
+		options.AuditHandle = audit
+		if owned {
+			defer func() {
+				failed := returnedErr != nil || !result.Complete || !result.Passed
+				if err := audit.Finish(failed); err != nil {
+					returnedErr = errors.Join(returnedErr, err)
+					result.Complete, result.Passed = false, false
+				}
+			}()
+		}
+	}
 	start := time.Now()
 	defer func() { result.Duration = time.Since(start) }()
 	if err := ctx.Err(); err != nil {
@@ -72,7 +90,7 @@ func Run(ctx context.Context, groups []Group, options Options) (result Result, r
 			result.Complete, result.Passed = false, false
 			return result, err
 		}
-		outcome, err := capsule.Run(ctx, group.Request, capsule.Options{CacheDir: options.CacheDir, Limits: group.Limits, NoReuse: options.NoReuse, Authority: options.Authority})
+		outcome, err := capsule.Run(ctx, group.Request, capsule.Options{CacheDir: options.CacheDir, Limits: group.Limits, NoReuse: options.NoReuse, Authority: options.Authority, AuditHandle: options.AuditHandle})
 		result.Groups = append(result.Groups, outcome)
 		if outcome.Mode == "executed" {
 			result.Executed++

@@ -88,5 +88,8 @@ Local tests include actual WASI execution, independent issuer/verifier
 processes, macOS pure-Go execution and receipt-only transfer, tampering,
 namespace/epoch/domain/key substitution, legacy HMAC rejection, authority-file
 drift, actual filesystem aliases, bounded FIFO handling, verifier audits and
-fresh execution without receipt storage. Remaining deployment, distributed-freshness and early failed-audit cleanup
-gates are recorded separately in the kanban.
+fresh execution without receipt storage. Failed configured audits retain admitted
+root/key handles and revoke authenticated provider-domain copies on early failure,
+cancellation and later output failure; independent macOS/Linux fault controls and
+full composition checks passed. Deployment and distributed freshness gates remain
+separate in the kanban.

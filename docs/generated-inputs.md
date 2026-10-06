@@ -1,9 +1,10 @@
 # Generated input provenance
 
-K30 development candidate in an isolated worktree; it is not yet integrated into
-the main CLI. Source review is provisional and targeted macOS normal,
-race and vet checks passed. Independent Linux acceptance, full composition checks
-and canonical review remain pending in the kanban.
+The K30 implementation is integrated locally. Independent source review,
+targeted macOS normal/race/vet, actual Linux producer/consumer fault tests and
+full repository normal/race/vet checks passed. Canonical source/test review
+covered all 25 files in the generated-input and audit composition. This is
+unreleased work; runtime qualification remains separate.
 
 Explicit `producers` configure generation separately from existing workspace
 `prerequisites`. Each stage declares a unique ID, a new repository-relative

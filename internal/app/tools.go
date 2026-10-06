@@ -18,6 +18,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/inputbundle"
 	"github.com/Cyberlane/hayaku/internal/metrics"
 	"github.com/Cyberlane/hayaku/internal/model"
+	"github.com/Cyberlane/hayaku/internal/passcache"
 	"github.com/Cyberlane/hayaku/internal/pilot"
 	"github.com/Cyberlane/hayaku/internal/report"
 	nativerunner "github.com/Cyberlane/hayaku/internal/runner/native"
@@ -66,7 +67,7 @@ type nativeInventory struct {
 
 // The tools have independent schemas. A diagnostic inventory or measurement
 // cannot be passed as a capsule receipt or authorize native omission.
-func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
+func runTool(ctx context.Context, args []string, out, errout io.Writer) (status int) {
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	fs.SetOutput(errout)
 	root := fs.String("root", ".", "input root")
@@ -132,9 +133,22 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 	if cachePath != "" && !filepath.IsAbs(cachePath) {
 		cachePath = filepath.Join(abs, cachePath)
 	}
-	authority, err := cacheFlags.load(ctx, fs, abs, cachePath)
+	authority, err := cacheFlags.loadInvocation(ctx, fs, abs, cachePath, *audit)
 	if err != nil {
 		return failure(errout, err)
+	}
+	var auditHandle *passcache.Audit
+	if *audit && (args[0] == "capsule" || args[0] == "suite") {
+		cleanup, err := capsule.BeginAudit(capsule.Options{CacheDir: cachePath, Authority: authority})
+		if err != nil {
+			return failure(errout, err)
+		}
+		auditHandle = cleanup
+		defer func() {
+			if err := cleanup.Finish(status != 0); err != nil {
+				status = failure(errout, errors.New("capsule audit cleanup incomplete"))
+			}
+		}()
 	}
 	var value any
 	var unsuccessful bool
@@ -212,7 +226,7 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 		if err != nil {
 			return failure(errout, err)
 		}
-		options := capsule.Options{CacheDir: cachePath, Limits: c.Limits, NoReuse: *audit, Authority: authority}
+		options := capsule.Options{CacheDir: cachePath, Limits: c.Limits, NoReuse: *audit, Authority: authority, AuditHandle: auditHandle}
 		r, runErr := capsule.Run(ctx, loaded.request, options)
 		var current capsuleConfig
 		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current) && loaded.verify(ctx, abs) == nil && stableCacheAuthority(ctx, authority)
@@ -249,7 +263,7 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 			loaded = append(loaded, item)
 			groups = append(groups, suite.Group{Request: item.request, Limits: group.Limits})
 		}
-		r, runErr := suite.Run(ctx, groups, suite.Options{CacheDir: cachePath, NoReuse: *audit, Authority: authority})
+		r, runErr := suite.Run(ctx, groups, suite.Options{CacheDir: cachePath, NoReuse: *audit, Authority: authority, AuditHandle: auditHandle})
 		var current suiteConfig
 		stable := readToolJSON(abs, *configuration, &current) == nil && reflect.DeepEqual(c, current) && stableCacheAuthority(ctx, authority)
 		for _, item := range loaded {
@@ -346,7 +360,23 @@ func runTool(ctx context.Context, args []string, out, errout io.Writer) int {
 		value = r
 		unsuccessful = r.Failed || len(r.Missing) > 0
 	}
-	status := writeResult(out, errout, *output, func(w io.Writer) error { return report.JSON(w, value) })
+	if auditHandle != nil {
+		if err := auditHandle.Check(unsuccessful); err != nil {
+			unsuccessful = true
+			switch result := value.(type) {
+			case capsule.Result:
+				invalidateCapsuleResult(&result)
+				value = result
+			case suite.Result:
+				result.Complete, result.Passed = false, false
+				for i := range result.Groups {
+					invalidateCapsuleResult(&result.Groups[i])
+				}
+				value = result
+			}
+		}
+	}
+	status = writeResult(out, errout, *output, func(w io.Writer) error { return report.JSON(w, value) })
 	if unsuccessful && status == 0 {
 		fmt.Fprintln(errout, "hayaku: tool result is failed, incomplete or incomparable")
 		return 1
