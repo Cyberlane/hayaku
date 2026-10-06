@@ -86,6 +86,17 @@ The source and tests define current behavior. “Native” below means installed
 - WASI input capture also uses confined nonblocking opens, admitted-size read
   bounds and cancellation checks. Independent macOS/Linux tests challenge FIFO
   substitution and detectable preflight and post-read file/metadata drift.
+- Shared snapshot source reads now use nonblocking opens, an admitted-size
+  buffer bounded to 64 MiB, growth detection and descriptor/name metadata guards.
+  The Go collector delegates its source reads to this common reader. Independent
+  macOS/Linux whole-package and collector controls passed; combined repository
+  normal/race/vet checks passed. Hashing retains its separate streaming bounds.
+- The shared private build session can observe a completed native nonzero exit
+  while sealing its generated reports, preserving exact native status and output
+  limits. Cancellation, overflow and source/tool/build drift remain unusable.
+  Existing successful-build calls retain their strict behavior. Independent
+  macOS/Linux controls and combined repository normal/race/vet checks passed.
+  These APIs grant no inventory, runtime qualification or receipt authority.
 - Snapshot file hashing streams through a fixed buffer with bounded growth
   detection, regular-file identity checks and final file/directory drift checks.
   Independent macOS/Linux tests cover allocation bounds, FIFO replacement and

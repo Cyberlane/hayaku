@@ -608,31 +608,7 @@ func closureGoSourceKind(kind string) bool {
 }
 
 func closureRead(ctx context.Context, name string, limit int64) ([]byte, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	before, err := os.Lstat(name)
-	if err != nil || !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > limit {
-		return nil, errors.New("Go closure input must be a bounded regular file")
-	}
-	f, err := os.Open(name)
-	if err != nil {
-		return nil, errors.New("Go closure input unavailable")
-	}
-	defer f.Close()
-	opened, err := f.Stat()
-	if err != nil || !os.SameFile(before, opened) {
-		return nil, errors.New("Go closure input changed")
-	}
-	data, err := io.ReadAll(io.LimitReader(f, limit+1))
-	after, e := os.Lstat(name)
-	if err != nil || e != nil || !os.SameFile(opened, after) || after.Size() != int64(len(data)) || int64(len(data)) > limit || !before.ModTime().Equal(after.ModTime()) {
-		return nil, errors.New("Go closure input changed or exceeds limit")
-	}
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	return data, nil
+	return snapshot.ReadFile(ctx, name, limit)
 }
 
 type closureImporter struct {

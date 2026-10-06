@@ -26,7 +26,12 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-const Version = "observed-build-closure-v1"
+const Version = "observed-build-closure-v2-native-stages"
+
+// ErrNativeFailure identifies a completed native nonzero exit. Only when the
+// session's integrity checks also pass does its output generation remain usable.
+// Observed native execution never supplies runtime or omission authority.
+var ErrNativeFailure = errors.New("observed native execution failed")
 
 type Request struct {
 	Source, Revision string
@@ -640,17 +645,28 @@ func (r contextReader) Read(p []byte) (int, error) {
 }
 
 func (s *Session) Run(ctx context.Context, command model.Command) (process.Output, error) {
-	return s.invoke(ctx, "", command)
+	return s.invoke(ctx, "", command, false, 32<<20, 1<<20)
 }
 
 func (s *Session) RunProducer(ctx context.Context, id string, command model.Command) (process.Output, error) {
 	if !text(id, 64) {
 		return process.Output{}, errors.New("invalid build stage identity")
 	}
-	return s.invoke(ctx, id, command)
+	return s.invoke(ctx, id, command, false, 32<<20, 1<<20)
 }
 
-func (s *Session) invoke(ctx context.Context, id string, command model.Command) (out process.Output, err error) {
+// ObserveNative records a native invocation and its report products even when
+// its completed exit is nonzero. Unlike successful build stages, assertion
+// failures are valid observations. Interruption, overflow or any integrity
+// failure invalidates the session and cannot return completed native evidence.
+func (s *Session) ObserveNative(ctx context.Context, id string, command model.Command, stdoutLimit, stderrLimit int) (process.Output, error) {
+	if id == "" || !text(id, 64) || stdoutLimit <= 0 || stderrLimit <= 0 || stdoutLimit > 32<<20 || stderrLimit > 32<<20 {
+		return process.Output{}, errors.New("invalid bounded native observation")
+	}
+	return s.invoke(ctx, id, command, true, stdoutLimit, stderrLimit)
+}
+
+func (s *Session) invoke(ctx context.Context, id string, command model.Command, observeNative bool, stdoutLimit, stderrLimit int) (out process.Output, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ctx, cancel := context.WithDeadline(ctx, s.deadline)
@@ -713,6 +729,7 @@ func (s *Session) invoke(ctx context.Context, id string, command model.Command) 
 	}
 	inputDigest := s.bindingDigest()
 	sealed := false
+	var nativeFailure error
 	defer func() {
 		check, stop := context.WithTimeout(context.Background(), 15*time.Second)
 		defer stop()
@@ -721,13 +738,34 @@ func (s *Session) invoke(ctx context.Context, id string, command model.Command) 
 			s.broken = true
 			out.Completed = false
 		}
+		// Join this after deciding whether guards failed. A completed nonzero
+		// exit alone leaves observed reports readable; a joined guard never does.
+		if err == nil {
+			err = nativeFailure
+		} else if nativeFailure != nil {
+			err = errors.Join(err, nativeFailure)
+		}
 	}()
-	out, err = process.RunEnvironmentLimits(ctx, command, dir, s.request.Environment, 32<<20, 1<<20)
-	if err != nil || !out.Completed || out.ExitCode != 0 {
+	out, err = process.RunEnvironmentLimits(ctx, command, dir, s.request.Environment, stdoutLimit, stderrLimit)
+	if observeNative && out.Completed && out.ExitCode > 0 && ctx.Err() == nil {
+		nativeFailure, err = ErrNativeFailure, nil
+	}
+	if err != nil || !out.Completed || (!observeNative && out.ExitCode != 0) {
 		if err == nil {
 			err = errors.New("build stage did not complete successfully")
 		}
 		return out, err
+	}
+	invocationDigest := identity(original)
+	if observeNative {
+		stdout, stderr := sha256.Sum256(out.Stdout), sha256.Sum256(out.Stderr)
+		invocationDigest = identity(struct {
+			Mode                       string
+			Command                    model.Command
+			StdoutLimit, StderrLimit   int
+			Exit                       int
+			StdoutDigest, StderrDigest string
+		}{"observed-native-v1", original, stdoutLimit, stderrLimit, out.ExitCode, hex.EncodeToString(stdout[:]), hex.EncodeToString(stderr[:])})
 	}
 	if id != "" {
 		var next *inputbundle.Bundle
@@ -741,7 +779,7 @@ func (s *Session) invoke(ctx context.Context, id string, command model.Command) 
 			return out, err
 		}
 		sealed = true
-		s.records = append(s.records, Record{id, inputDigest, identity(original), next.Manifest().Digest})
+		s.records = append(s.records, Record{id, inputDigest, invocationDigest, next.Manifest().Digest})
 	} else {
 		s.queries = append(s.queries, identity([]any{original, inputDigest, identity(out.Stdout), identity(out.Stderr)}))
 	}

@@ -39,6 +39,57 @@ func FileDigest(ctx context.Context, name string, limit int64) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+// ReadFile returns bytes from one drift-checked regular file. The caller may
+// choose a smaller positive limit; materialized reads never exceed maxBlob.
+// Like FileDigest, this observes current state without an atomic/history proof.
+func ReadFile(ctx context.Context, name string, limit int64) (data []byte, err error) {
+	defer func() {
+		err = errors.Join(err, ctx.Err())
+		if err != nil {
+			data = nil
+		}
+	}()
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if limit <= 0 {
+		return nil, errors.New("invalid file read limit")
+	}
+	if limit > maxBlob {
+		limit = maxBlob
+	}
+	before, err := os.Lstat(name)
+	if err != nil {
+		return nil, err
+	}
+	if !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > limit {
+		return nil, errors.New("snapshot input exceeds byte limit or is nonregular")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	buffer := admittedBytes{bytes: make([]byte, int(before.Size()))}
+	if _, err := digestFileWithLimit(ctx, name, before, &buffer, limit, limit); err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return buffer.bytes, nil
+}
+
+// The fixed buffer owns only preflight bytes. It discards the one growth
+// sentinel while reporting its consumed count to the shared read guard.
+type admittedBytes struct {
+	bytes   []byte
+	written int
+}
+
+func (b *admittedBytes) Write(p []byte) (int, error) {
+	b.written += copy(b.bytes[b.written:], p)
+	return len(p), nil
+}
+
 // DigestWithModules binds source outside separately content-bound module trees.
 // Only explicit node_modules directories can be excluded. Their bytes, internal
 // links and modes must additionally be checked by the Node runtime provider.
@@ -138,7 +189,7 @@ func verifyDigestEntries(ctx context.Context, admitted map[string]fs.FileInfo) e
 func digestFile(ctx context.Context, name string, before fs.FileInfo, destination io.Writer, remaining int64) (int64, error) {
 	return digestFileWithLimit(ctx, name, before, destination, remaining, maxBlob)
 }
-func digestFileWithLimit(ctx context.Context, name string, before fs.FileInfo, destination io.Writer, remaining, limit int64) (int64, error) {
+func digestFileWithLimit(ctx context.Context, name string, before fs.FileInfo, destination io.Writer, remaining, limit int64) (read int64, err error) {
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
@@ -150,13 +201,13 @@ func digestFileWithLimit(ctx context.Context, name string, before fs.FileInfo, d
 	if err != nil {
 		return 0, errors.New("snapshot input unavailable")
 	}
-	defer file.Close()
+	defer func() { err = errors.Join(err, file.Close(), ctx.Err()) }()
 	opened, err := file.Stat()
 	current, pathErr := os.Lstat(name)
 	if err != nil || pathErr != nil || !sameDigestEntry(before, opened) || !sameDigestEntry(before, current) {
 		return 0, errors.New("snapshot input changed while opening")
 	}
-	read, err := io.CopyBuffer(destination, digestReader{ctx, io.LimitReader(file, before.Size()+1)}, make([]byte, 32<<10))
+	read, err = io.CopyBuffer(destination, digestReader{ctx, io.LimitReader(file, before.Size()+1)}, make([]byte, 32<<10))
 	if err != nil {
 		return read, err
 	}

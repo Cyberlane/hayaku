@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "scope": "K50 shared bounded source reader and K51 observed native stage integration",
+  "status": "completed-local-shared-reader-and-native-stage-integration",
+  "platform_scope": [
+    "macOS ARM64 main repository gates",
+    "macOS and Linux isolated assigned package controls"
+  ],
+  "source_pins": {
+    "internal/snapshot/digest.go": "613ef5ff7a65fa5a5ae89929ccdf5fb445d498c33aa5b76ce636ff5f695ec1a1",
+    "internal/snapshot/read_test.go": "2e6b4783b7c7e64278697ac905813775d832c1f5dec1e72069d9adcc1794eaa6",
+    "internal/adapter/golang/closure.go": "bc4a53edfd7f2c3880430ce35a59fe6689489cb7a19b379a68b74b057ebcd96b",
+    "internal/adapter/buildclosure/session.go": "5ee232947d2434a41feb60503f200923d122ce0b1f5e04f3ed68ecb495922125",
+    "internal/adapter/buildclosure/observed_test.go": "a500aeb1c40d9e964d8b5c48990d11d8cae5d5cc01aa32b1cbd05cad390d1d86"
+  },
+  "whole_repository_source_file_count": 242,
+  "whole_repository_source_manifest_sha256": "b0afe3899125dfb70cdcedd69fb3c6eef67844a8914cd8fbe904a7926957e0fd",
+  "accepted_review_records": [
+    {
+      "name": "hayaku-p02-k50-final-disposition-20261007.json",
+      "sha256": "d286567cfe8ad25a132396ca66e25f8562304cb64e6e0372939ad2c53b3837b1"
+    },
+    {
+      "name": "hayaku-k51-k50-actual-context-review.json",
+      "sha256": "adc142a7138dff90bcb79fa51c82150701770baaaf19524efa8b60f909c495f0"
+    },
+    {
+      "name": "hayaku-k50-k51-preintegration-review.json",
+      "sha256": "59f8a44424c913f67e25fc60b504e0f6ac75db6e9102cd206197d5d1b0b88652"
+    },
+    {
+      "name": "hayaku-k50-k51-composed-advisory-review.json",
+      "sha256": "a42d0a6cfdb84c3ed84f74cab3d015ba5357032ee06d64a15141eba0f6f667d6"
+    }
+  ],
+  "assigned_controls": {
+    "K50": {
+      "macOS": [
+        "whole snapshot/Go collector normal",
+        "whole snapshot/Go collector race",
+        "package vet"
+      ],
+      "Linux": [
+        "whole snapshot reader package",
+        "whole compatible Go collector package"
+      ],
+      "required_control_skips": 0
+    },
+    "K51": {
+      "macOS": [
+        "whole buildclosure normal",
+        "whole buildclosure race",
+        "package vet"
+      ],
+      "Linux": [
+        "whole buildclosure package"
+      ],
+      "required_control_skips": 0
+    }
+  },
+  "whole_repository_gates": {
+    "normal": {
+      "exit_code": 0,
+      "seconds": 727.629,
+      "log_sha256": "ba6c9ef2609561d8050e8302d962020b61a3c16541401a17691ef2fd2644dd60",
+      "joined": true
+    },
+    "race": {
+      "exit_code": 0,
+      "seconds": 1256.142,
+      "log_sha256": "a6e2d1d45eae7cdf97acaba86126fdf1d1d1fe17af2ef7dc4c94b9837e2d3512",
+      "joined": true
+    },
+    "vet": {
+      "exit_code": 0,
+      "seconds": 2.04,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "joined": true
+    }
+  },
+  "native_inventory_or_runtime_qualification_added": false,
+  "receipt_authority_added": false,
+  "external_acceptance": "not executed",
+  "limits": {
+    "shared_read_payload_bytes": 67108864,
+    "file_digest_streaming_bytes": 536870912,
+    "observed_max_each_stream_bytes": 33554432
+  },
+  "boundaries": [
+    "Per-file observations do not establish atomic filesystem history.",
+    "Observed native nonzero is usable only after completion and all independent source/tool/build/context guards.",
+    "Cancellation, overflow, launch/wait errors and drift cannot mint passing evidence.",
+    "Existing successful producer APIs keep strict successful-exit semantics.",
+    "K10D addon changes remain excluded from this integration."
+  ],
+  "whole_repository_logs": {
+    "normal": {
+      "sha256": "ba6c9ef2609561d8050e8302d962020b61a3c16541401a17691ef2fd2644dd60",
+      "bytes": 2478
+    },
+    "race": {
+      "sha256": "a6e2d1d45eae7cdf97acaba86126fdf1d1d1fe17af2ef7dc4c94b9837e2d3512",
+      "bytes": 2483
+    },
+    "vet": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  }
+}
