@@ -30,6 +30,7 @@ var workerSource embed.FS
 
 type Config struct {
 	Schema       int      `json:"schema"`
+	Platform     string   `json:"platform,omitempty"`
 	Image        string   `json:"image"`
 	Architecture string   `json:"architecture"`
 	Packages     []string `json:"packages"`
@@ -43,7 +44,10 @@ type Report struct {
 }
 
 func buildEnvironment(arch string) []string {
-	return process.Environment(map[string]string{"GOENV": "off", "GOFLAGS": "", "GOWORK": "off", "GOTOOLCHAIN": "local", "GOPROXY": "off", "GOSUMDB": "off", "GOVCS": "*:off", "CGO_ENABLED": "0", "GOOS": "linux", "GOARCH": arch, "GODEBUG": "", "GOEXPERIMENT": "", "GOAMD64": "v1", "GOARM64": "v8.0", "GOFIPS140": "off"})
+	return buildEnvironmentForPlatform("linux", arch)
+}
+func buildEnvironmentForPlatform(platform, arch string) []string {
+	return process.Environment(map[string]string{"GOENV": "off", "GOFLAGS": "", "GOWORK": "off", "GOTOOLCHAIN": "local", "GOPROXY": "off", "GOSUMDB": "off", "GOVCS": "*:off", "CGO_ENABLED": "0", "GOOS": platform, "GOARCH": arch, "GODEBUG": "", "GOEXPERIMENT": "", "GOAMD64": "v1", "GOARM64": "v8.0", "GOFIPS140": "off"})
 }
 func runGo(ctx context.Context, goTool, dir string, env []string, args ...string) (process.Output, error) {
 	return process.RunEnvironment(ctx, model.Command{Executable: goTool, Args: args}, dir, env)
@@ -75,7 +79,13 @@ type goBuildContext struct {
 }
 
 func captureGoBuild(ctx context.Context, tool, arch string) (goBuildContext, error) {
-	build := goBuildContext{tool: tool, env: slices.Clone(buildEnvironment(arch))}
+	return captureGoBuildForPlatform(ctx, tool, "linux", arch)
+}
+func captureGoBuildForPlatform(ctx context.Context, tool, platform, arch string) (goBuildContext, error) {
+	build := goBuildContext{tool: tool, env: slices.Clone(buildEnvironmentForPlatform(platform, arch))}
+	if (platform != "linux" && platform != "darwin") || (arch != "amd64" && arch != "arm64") {
+		return build, errors.New("unsupported native Go build platform")
+	}
 	output, err := runGo(ctx, tool, "", build.env, "env", "-json", "GOROOT", "GOVERSION", "GOTOOLDIR")
 	if err != nil {
 		return build, err
@@ -335,7 +345,10 @@ func treeIdentity(ctx context.Context, root string) (string, error) {
 }
 func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool) (Report, error) {
 	report := Report{Schema: 1, Contract: contractVersion}
-	if c.Schema != 1 || len(c.Packages) == 0 || len(c.Packages) > 1000 || (c.Architecture != "arm64" && c.Architecture != "amd64") {
+	if c.Platform == "" {
+		c.Platform = "linux"
+	}
+	if c.Schema != 1 || len(c.Packages) == 0 || len(c.Packages) > 1000 || (c.Architecture != "arm64" && c.Architecture != "amd64") || (c.Platform != "linux" && c.Platform != "darwin") || (c.Platform == "darwin" && c.Image != "") {
 		return report, errors.New("invalid native Go configuration")
 	}
 	seen := map[string]bool{}
@@ -419,15 +432,22 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 		} else {
 			if !backendReady && backendErr == nil {
 				var docker, worker string
-				build, backendErr = captureGoBuild(ctx, goTool, c.Architecture)
-				if backendErr == nil {
+				build, backendErr = captureGoBuildForPlatform(ctx, goTool, c.Platform, c.Architecture)
+				if backendErr == nil && c.Platform == "linux" {
 					docker, backendErr = ResolveDocker()
 				}
 				if backendErr == nil {
-					worker, backendErr = prepareWorkerEnvironment(ctx, goTool, temporary, c.Architecture, build.env)
+					if c.Platform == "darwin" {
+						worker, backendErr = prepareDarwinWorker(ctx, goTool, temporary, build.env)
+					} else {
+						worker, backendErr = prepareWorkerEnvironment(ctx, goTool, temporary, c.Architecture, build.env)
+					}
 				}
 				if backendErr == nil {
-					backend = Backend{Docker: docker, Image: c.Image, Worker: worker, Architecture: c.Architecture}
+					backend = Backend{Docker: docker, Image: c.Image, Worker: worker, Architecture: c.Architecture, Platform: c.Platform}
+					if c.Platform == "darwin" {
+						backend.Sandbox = "/usr/bin/sandbox-exec"
+					}
 					backendErr = backend.Bind(ctx)
 					backendReady = backendErr == nil
 				}

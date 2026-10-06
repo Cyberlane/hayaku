@@ -16,6 +16,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"syscall"
 )
 
 const MaxBytes = 1 << 20
@@ -94,27 +95,46 @@ func readPrivate(root *os.Root, name string, limit int64) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 || info.Size() > limit {
+	if limit < 0 || limit > MaxBytes || !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 || info.Size() < 0 || info.Size() > limit {
 		return nil, errors.New("pass object must be private and bounded")
 	}
-	f, err := root.Open(name)
+	return readPrivateEntry(root, name, info)
+}
+
+// Keep opening nonblocking even when a FIFO replaces the preflight file. The
+// admitted size bounds allocation; inode and full metadata drift reject reuse.
+func readPrivateEntry(root *os.Root, name string, info os.FileInfo) ([]byte, error) {
+	f, err := root.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 	opened, err := f.Stat()
-	if err != nil || !opened.Mode().IsRegular() || !os.SameFile(info, opened) {
+	current, pathErr := root.Lstat(name)
+	if err != nil || pathErr != nil || !samePrivateFile(info, opened) || !samePrivateFile(info, current) {
 		return nil, errors.New("pass object changed")
 	}
-	data, err := io.ReadAll(io.LimitReader(f, limit+1))
-	if err != nil || int64(len(data)) > limit {
+	data, err := io.ReadAll(io.LimitReader(f, info.Size()+1))
+	if err != nil {
 		return nil, errors.New("pass object exceeds bound")
 	}
-	current, err := root.Lstat(name)
-	if err != nil || !current.Mode().IsRegular() || current.Mode().Perm()&0077 != 0 || !os.SameFile(opened, current) || int64(len(data)) != current.Size() {
-		return nil, errors.New("pass object changed")
+	if err := validatePrivateRead(root, name, f, info, int64(len(data))); err != nil {
+		return nil, err
 	}
 	return data, nil
+}
+
+func validatePrivateRead(root *os.Root, name string, f *os.File, before os.FileInfo, read int64) error {
+	after, err := f.Stat()
+	current, pathErr := root.Lstat(name)
+	if err != nil || pathErr != nil || read != before.Size() || !samePrivateFile(before, after) || !samePrivateFile(before, current) {
+		return errors.New("pass object changed")
+	}
+	return nil
+}
+
+func samePrivateFile(before, after os.FileInfo) bool {
+	return before != nil && after != nil && after.Mode().IsRegular() && os.SameFile(before, after) && before.Mode() == after.Mode() && before.Size() == after.Size() && before.ModTime().Equal(after.ModTime())
 }
 func (c *Cache) authenticate(e envelope) []byte {
 	e.MAC = ""

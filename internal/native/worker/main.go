@@ -22,7 +22,7 @@ import (
 	"unsafe"
 )
 
-const version = "hayaku-linux-boundary-v3"
+const version = "hayaku-linux-boundary-v4"
 const childOutputLimit = 128 << 10
 const childTimeout = 30 * time.Second
 
@@ -89,7 +89,10 @@ func main() {
 	if contract.Child != nil && !child {
 		start = 5
 	}
-	if _, err := call(436, start, ^uintptr(0), 0); err != nil {
+	// Keep the Go runtime poller alive until exec atomically closes inherited
+	// descriptors. Immediate close_range races other runtime threads.
+	const closeRangeCloexec = 1 << 2
+	if _, err := call(436, start, ^uintptr(0), closeRangeCloexec); err != nil {
 		fail(err)
 	}
 	resources := "/input"

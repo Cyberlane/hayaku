@@ -70,9 +70,11 @@ contract, not host-load timing or another command. See [capsules](capsules.md).
 
 ## Separate restricted native group contract
 
-The unreleased `native` command adds actual Linux Go package reuse for a
-statically checked pure subset. The shared backend enforces copied files,
-explicit args/env, Landlock/seccomp and container restrictions. A fresh platform
+The unreleased `native` command adds actual Linux and explicit macOS Go package
+reuse for a statically checked pure subset. Linux enforces copied files, explicit
+args/env, Landlock/seccomp and container restrictions. The macOS context binds
+the installed fixed system sandbox, loader and kernel/OS/boot identities, with
+its narrower platform scope documented separately. A fresh platform
 probe is required even when every test group reuses. Only the provider's full
 source whitelist can supply a qualification proof; no declaration, trace or
 coverage threshold does so. Unsupported code/platforms run complete original-host

@@ -5,13 +5,7 @@ import (
 	"context"
 	"debug/elf"
 	"errors"
-	"os"
-	"path/filepath"
-	"strings"
 	"time"
-	"unicode/utf8"
-
-	"github.com/Cyberlane/hayaku/internal/inputbundle"
 )
 
 // Only the initial managed launch is fixed. These bounds do not establish
@@ -35,10 +29,9 @@ type ChildRequest struct {
 }
 
 type capturedChild struct {
-	files                *inputbundle.Bundle
-	data                 []byte
-	args, env            []string
-	architecture, digest string
+	*capturedExecutable
+	args, env []string
+	digest    string
 }
 
 type childContract struct {
@@ -50,35 +43,14 @@ func captureChild(ctx context.Context, request *ChildRequest) (*capturedChild, e
 	if request == nil {
 		return nil, nil
 	}
-	if len(request.Program) == 0 || len(request.Program) > 4096 || !filepath.IsAbs(request.Program) || !utf8.ValidString(request.Program) || strings.ContainsAny(request.Program, "\x00\r\n") || validateNativeArguments(request.Args, request.Env) != nil {
+	if validateNativeArguments(request.Args, request.Env) != nil {
 		return nil, errors.New("invalid native managed child declaration")
 	}
-	source := filepath.Clean(request.Program)
-	bundle, err := inputbundle.Capture(ctx, inputbundle.Request{
-		Roots:  []inputbundle.Root{{Name: "helper", Path: filepath.Dir(source), Mount: "."}},
-		Inputs: []inputbundle.Input{{Root: "helper", Path: filepath.Base(source)}},
-	})
+	executable, err := captureStaticExecutable(ctx, request.Program)
 	if err != nil {
 		return nil, err
 	}
-	data, err := readBounded(source, inputbundle.MaxFileBytes)
-	if err != nil {
-		return nil, err
-	}
-	architecture, err := staticChildArchitecture(data)
-	if err != nil {
-		return nil, err
-	}
-	match := false
-	for _, entry := range bundle.Manifest().Entries {
-		if entry.Path == filepath.Base(source) && entry.Kind == "file" && entry.SHA256 == digest(data) {
-			match = true
-		}
-	}
-	if !match {
-		return nil, errors.New("native managed child changed during capture")
-	}
-	c := &capturedChild{files: bundle, data: data, args: append([]string(nil), request.Args...), env: append([]string(nil), request.Env...), architecture: architecture}
+	c := &capturedChild{capturedExecutable: executable, args: append([]string(nil), request.Args...), env: append([]string(nil), request.Env...)}
 	c.digest = c.currentDigest()
 	if err := c.verifySources(ctx); err != nil {
 		return nil, err
@@ -127,7 +99,7 @@ func staticChildArchitecture(data []byte) (string, error) {
 }
 
 func (c *capturedChild) currentDigest() string {
-	if c == nil || c.files == nil {
+	if c == nil || c.capturedExecutable == nil || c.files == nil {
 		return ""
 	}
 	return identity(struct {
@@ -138,38 +110,30 @@ func (c *capturedChild) currentDigest() string {
 	}{childPolicy, c.files.Manifest().Digest, digest(c.data), c.architecture, c.args, c.env, ChildOutputLimit, int64(ChildTimeout)})
 }
 func (c *capturedChild) verifySources(ctx context.Context) error {
-	if c == nil || c.files == nil || c.digest == "" || c.currentDigest() != c.digest || validateNativeArguments(c.args, c.env) != nil {
+	if c == nil || c.capturedExecutable == nil || c.files == nil || c.digest == "" || c.currentDigest() != c.digest || validateNativeArguments(c.args, c.env) != nil {
 		return errors.New("native managed child identity changed")
 	}
-	arch, err := staticChildArchitecture(c.data)
-	if err != nil || arch != c.architecture {
-		return errors.New("native managed child identity changed")
+	if err := c.capturedExecutable.verifySources(ctx); err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		return errors.New("declared input envelope changed")
 	}
-	return c.files.VerifySources(ctx)
+	return nil
 }
 func (c *capturedChild) materialize(ctx context.Context, name, architecture string) error {
 	if err := c.verifySources(ctx); err != nil {
 		return err
 	}
-	if c.architecture != architecture {
-		return errors.New("native managed child platform mismatch")
-	}
-	if err := os.WriteFile(name, c.data, 0555); err != nil {
-		return err
-	}
-	return c.verifyCopy(name)
+	return c.capturedExecutable.materialize(ctx, name, architecture)
 }
 func (c *capturedChild) verifyCopy(name string) error {
-	info, err := os.Lstat(name)
-	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0555 || info.Mode()&os.ModeType != 0 {
-		return errors.New("native managed child copy changed")
-	}
-	data, err := readBounded(name, inputbundle.MaxFileBytes)
-	if err != nil || !bytes.Equal(data, c.data) {
+	if c == nil || c.capturedExecutable == nil || c.capturedExecutable.verifyCopy(name) != nil {
 		return errors.New("native managed child copy changed")
 	}
 	return nil
 }
+
 func (c *capturedChild) contract() *childContract {
 	if c == nil {
 		return nil

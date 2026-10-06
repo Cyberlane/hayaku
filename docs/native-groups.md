@@ -2,7 +2,7 @@
 
 `hayaku native` can skip execution of an unchanged **qualified pure Go package**
 by reusing its authenticated complete pass. It compiles and executes actual
-Linux Go test binaries, not WASI modules. Qualification checks all package code,
+native Go test binaries in the explicit Linux or macOS context. Qualification checks all package code,
 including branches and helpers that no test has previously covered.
 
 ```json
@@ -57,7 +57,8 @@ runs those complete commands; incomplete native execution evidence broadens to
 the complete original-host group. Cancellation and live source drift prevent
 aggregate success. Build failures remain failures.
 
-Reports distinguish `linux-<architecture>` from `original-host` outcomes, as
+Reports distinguish `linux-<architecture>` / `darwin-<architecture>` from
+`original-host` outcomes, as
 well as executed, reused, qualified, complete and passed. A skipped test remains
 a successful runner skip, but that group cannot mint an all-cases-passed receipt.
 Failed assertions prevent aggregate success and are never cached. No raw source,
@@ -68,6 +69,40 @@ ordinary `hayaku run` full native gates, certify equivalence with arbitrary
 native commands, or qualify other languages/frameworks. An explicit package
 list cannot authorize omissions from an existing broader CI suite. Independent
 review and consumer CI acceptance remain outstanding.
+
+## Restricted macOS context
+
+The explicit `"platform": "darwin"` context passed local repository and
+independent boundary review.
+It uses actual installed macOS enforcement; Docker/Linux evidence is separate.
+An omitted platform keeps the Linux default. The macOS configuration omits
+`image` and must match the host architecture:
+
+```json
+{"schema": 1, "platform": "darwin", "architecture": "arm64", "packages": ["./math", "./validation"]}
+```
+
+The same pure-Go whitelist, complete inventories, authenticated receipt store
+and original-host fallback apply. The installed system `sandbox-exec`, its fixed
+profile, installed loader profile, enforcement-probe bytes, controller and
+kernel/OS/boot context are bound and checked. A fresh fixed probe runs even when
+all groups could reuse. Apple kernel and system loader are trusted components;
+this does not claim a complete byte identity for the dyld shared cache.
+
+The program is copied into a private directory and runs with explicit argv/env,
+empty stdin, closed extra descriptors and bounded output. Outside data access,
+writes, foreign execution and TCP/Unix connections must be denied. Actual local
+controls exercise healthy execution and denial, cancellation, output overflow,
+source/copy drift and cleanup failure. Cleanup or interrupted execution cannot
+return a completed pass. Reports identify `darwin-<architecture>` groups.
+
+Loader files, system metadata, clocks and entropy remain observable operational
+exceptions; arbitrary native programs cannot qualify through this profile.
+The original cwd is replaced by the private execution directory, and libc
+`getcwd` is denied in the tested context. The Go certifier excludes user access
+to these observations. macOS resource envelopes, the Linux child broker and
+additional language runtimes remain unqualified. The local candidate tests do
+not authorize replacing a consumer's CI suite.
 
 ## Shared boundary and authority
 
@@ -111,6 +146,32 @@ Source/policy drift or incomplete aggregate evidence prevents success and revoke
 available receipts used/created by that invocation. Missing, invalid or unavailable caches execute again. The shared
 store's versioned envelope invalidates older WASI cache files; they execute again
 and repopulate, without a migration that grants new authority.
+
+## Operational static program transport
+
+The internal `CaptureProgram` / `RunProgram` API captures an installed static
+Linux ELF program and its initial arguments. It reuses executable validation
+and materialization with the controlled child broker. An explicit input envelope
+supplies the exact environment, copied resources and bounded scratch. Dynamic
+loaders, interpreter libraries and JIT execution require separate contracts.
+The program, envelope and optional helper share the 512 MiB input bound; each
+captured executable retains the existing 64 MiB file bound.
+
+Source bytes, ancestor aliases, file identity and copied executable identity are
+checked before and after launch. Execution lasts at most 30 seconds, with bounded
+post-validation and cleanup. Each guest output stream admits exactly 32 MiB;
+fixed enforcement framing has its own allowance and is removed from raw results.
+Inherited worker descriptors close atomically at exec, preserving the worker's
+runtime poller until that transition. Only the declared broker's protocol
+descriptors remain when a managed child is configured.
+
+Actual static C and Rust controls, repeated startup, exact-limit/overflow cases,
+resource totals, cancellation, alias retargeting and source/copy drift passed on
+Linux arm64. The API returns raw operational results and cannot issue receipts.
+Ignored denials, observable clocks/entropy/metadata and self-execution remain
+outside qualification. `Execute` rejects every nonnil envelope before
+provider authority, cache lookup or audit. This API does not qualify an arbitrary runner or make
+an installed static CLI's process orchestration supported.
 
 ## Verification
 

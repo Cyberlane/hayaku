@@ -30,12 +30,14 @@ reviewed fixtures; do not invent versions or download tools during discovery.
 Every change to a pin, platform, invocation mode or policy requires revalidation.
 Descriptions and imported records never create in-process qualification authority.
 
-As of this specification, Ruby 4.0.7/Minitest 6.0.0, Bun 1.3.14 and CMake 4.4.3
-are locally installed candidates only. None has the required admitted context.
-A .NET SDK image is installed, but an image alone proves neither runner presence
-nor acceptance. JVM, PHP, Dart/Flutter, Deno and Bazel fixture pins remain
-unresolved in this workspace. Missing tools block their acceptance, not the
-execution of an available original full command.
+The initial specification recorded locally installed Ruby, Bun and CMake
+candidates and unresolved additional runner fixtures. Approved isolated
+[runner provisioning](runner-provisioning.md) now records exact candidate
+identities and original healthy/fault baselines for nine named macOS profiles,
+plus Rust and Vitest compatibility fixtures. SDK-only records and unresolved
+framework baselines remain explicit. None of these setup records is the complete
+admitted context above; missing qualification retains an available original
+full command.
 
 ## Named framework scopes
 

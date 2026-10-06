@@ -58,6 +58,10 @@ The source and tests define current behavior. “Native” below means installed
   library trees and per-binary loader context are bound and rechecked. Build
   scripts, proc macros, custom harnesses, doctests and ambient/native effects
   remain explicit gaps; these descriptive APIs grant no omission authority.
+- Authenticated cache key/receipt reads now use confined nonblocking opens,
+  admitted-size bounds and pre/post inode/full metadata checks. Actual macOS
+  race and Linux stale-FIFO and post-read drift tests passed. Combined normal,
+  race and vet checks passed for the final shared-worker composition. This does not add portable CI authority.
 - Shared input-envelope capture rejects regular-file replacement by a FIFO
   through nonblocking opens. Independent macOS/Linux tests verify rejection
   without a writer and preserve captured byte accounting.
@@ -76,6 +80,18 @@ The source and tests define current behavior. “Native” below means installed
   statically checked pure subset, with Docker/Landlock/seccomp enforcement,
   shared authenticated receipts and full original-host fallback. See
   [native groups](native-groups.md).
+- An explicit macOS pure-Go candidate uses a fixed installed system sandbox
+  profile, bound kernel/OS/boot/loader context and a fresh enforcement probe.
+  Independent actual boundary, authority, cache and audit controls passed normal
+  and race tests and vet. Final combined repository checks and the Linux
+  worker regressions passed.
+  Resource envelopes and additional macOS language runtimes remain unqualified.
+- Shared immutable static Linux program capture now uses the same executable
+  validation and resource transport as controlled helpers. Independent actual
+  C and Rust probes cover file/process/network enforcement, exact output limits,
+  aggregate inputs, cancellation and source/copy drift. Raw operational results
+  have no decoder, cache, proof or receipt authority; dynamic runtimes remain a
+  separate unfinished contract. Final composition checks passed.
 - General native affected-only qualification across imported packages,
   additional language certifiers and representative consumer CI savings
   remain unfinished. Original native plan gates remain full.
@@ -91,7 +107,7 @@ cards do not authorize native omission or change the capabilities listed here.
 
 | Area | Implemented scope | Remaining boundary |
 | --- | --- | --- |
-| Enforced execution | WASI deterministic interface; restricted native Linux Docker/Landlock/seccomp boundary, exact args/env and real enforcement probes | General native equivalence, metadata/clocks/entropy virtualization, arbitrary services/FFI/subprocesses and other OS backends remain unqualified |
+| Enforced execution | WASI deterministic interface; restricted native Linux Docker/Landlock/seccomp and explicit macOS system-sandbox pure-Go contexts, exact args/env and real enforcement probes | General native equivalence, metadata/clocks/entropy virtualization, arbitrary services/FFI/subprocesses and Windows remain unqualified |
 | Actual reuse | Locally authenticated passing receipts bound to module, normalized inputs, producer, context, limits and backend; forced audits invalidate old receipts first | Windows ACL backend, distributed authority and general native affected-only execution |
 | Generated and linked inputs | Explicit multi-root envelope capture, bounded verified materialization, stable link/mode/provenance digest; capsule bridge normalizes the captured view | No candidate-generated overlay into BASE; no broader native generated/linked runtime qualification |
 | Independent challenge/evidence | Existing fault corpus plus capsule capability/cache/audit adversaries, native inventory/result reconciliation and strict JUnit/TRX/Swift/libtest imports | Finite fixtures are not a soundness proof; more real incident and external-state workloads remain |
