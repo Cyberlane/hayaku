@@ -45,6 +45,11 @@ The source and tests define current behavior. “Native” below means installed
   independent pytest/unittest cases. Bounded captured source bytes supply import,
   fixture and dormant-effect evidence; unsupported runtime effects retain the
   original full scope. Source/tool/context drift rejects the evidence.
+- Snapshot file hashing streams through a fixed buffer with bounded growth
+  detection, regular-file identity checks and final file/directory drift checks.
+  Independent macOS/Linux tests cover allocation bounds, FIFO replacement and
+  Git SHA-1/SHA-256 validation. These observations do not provide an atomic
+  filesystem history; directory-name enumeration allocation is outside this fix.
 - Unix commands now cancel their process groups, including descendants holding
   pipes after their parent exits. Windows and children that leave the group need
   separate enforcement; process cleanup is not a runtime isolation proof.

@@ -155,6 +155,7 @@ func validateRawFiles(ctx context.Context, root, id string) error {
 	if err != nil {
 		return err
 	}
+	admitted := map[string]os.FileInfo{}
 	for _, entry := range bytes.Split(bytes.TrimSuffix(tree, []byte{0}), []byte{0}) {
 		if len(entry) == 0 {
 			continue
@@ -172,22 +173,21 @@ func validateRawFiles(ctx context.Context, root, id string) error {
 		if err != nil || !info.Mode().IsRegular() || info.Size() > maxBlob {
 			return errors.New("execution input is missing or unsupported")
 		}
+		if len(admitted) >= maxFiles {
+			return errors.New("execution input count exceeds limit")
+		}
+		admitted[path] = info
 		if (string(fields[0]) != "100644" && string(fields[0]) != "100755") || (info.Mode().Perm()&0111 != 0) != (string(fields[0]) == "100755") {
 			return errors.New("execution file mode differs from candidate tree")
-		}
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		if len(data) > maxBlob {
-			return errors.New("execution input exceeds byte limit")
 		}
 		var h hash.Hash = sha1.New()
 		if len(id) == 64 {
 			h = sha256.New()
 		}
-		_, _ = fmt.Fprintf(h, "blob %d\x00", len(data))
-		_, _ = h.Write(data)
+		_, _ = fmt.Fprintf(h, "blob %d\x00", info.Size())
+		if _, err := digestFile(ctx, path, info, h, maxBlob); err != nil {
+			return err
+		}
 		if fmt.Sprintf("%x", h.Sum(nil)) != string(fields[2]) {
 			return errors.New("execution input bytes differ from candidate tree")
 		}
@@ -195,7 +195,7 @@ func validateRawFiles(ctx context.Context, root, id string) error {
 			return err
 		}
 	}
-	return nil
+	return verifyDigestEntries(ctx, admitted)
 }
 
 func repositoryRoot(ctx context.Context, root string) (string, error) {

@@ -69,11 +69,10 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K09 | RUNTIME | K07, K08 | Subprocess, native extension and service contracts | Controlled child programs and service state require complete identities and enforced boundaries; unsupported FFI, processes, networks and service state retain full execution. |
+| K23 | RUST | K04, K02, K43 | Cargo/nextest build and test closure | Features, build scripts, proc macros, generated inputs, binaries and case inventory have complete producer/context identities; unsupported build/runtime effects are gaps. |
 | K10 | RUNTIME | K07, K08, K02 | Linux backend generalization | Extend the existing worker to supported non-Go artifacts with real file/process/network/metadata bypass probes, cancellation and cleanup; no runner-specific selection logic in the worker. |
 | K11 | RUNTIME | K07, K08, K02 | macOS backend | A native macOS context has actual enforcement and receipt authority tests; unsupported host capabilities execute the original full scope. Docker/Linux success is not macOS qualification. |
 | K30 | CORE | K05, K07, F03 | Monorepo and generated input closure | Cross-language consumers, workspace links and producers invalidate correctly; BASE/candidate generation stays independent, and provenance is enforced rather than declared. |
-| K31 | CORE | K04, K06, K07, F04 | Complete native receipt identity and lifecycle | Bind entire input closure, inventory, group, proof, runner/toolchain/backend and configuration; tampering, drift, skips, failed or incomplete execution cannot mint reusable passes. |
 | K25 | APPLE | K04, K02 | SwiftPM/Xcode build and test closure | Bind resources, generated code, build settings, test plans, lifecycle, case inventories and simulator/device identities; unsupported macros/plugins/modes remain explicit. |
 
 
@@ -81,7 +80,8 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K43 | CORE | F01 | Bounded snapshot file hashing and drift checks | A file growing or being replaced after preflight cannot trigger unbounded allocation or yield a valid digest; independently challenge read bounds, identity, permissions and cancellation. |
+| K09 | RUNTIME | K07, K08 | Subprocess, native extension and service contracts | Controlled child programs and service state require complete identities and enforced boundaries; unsupported FFI, processes, networks and service state retain full execution. |
+| K31 | CORE | K04, K06, K07, F04 | Complete native receipt identity and lifecycle | Bind entire input closure, inventory, group, proof, runner/toolchain/backend and configuration; tampering, drift, skips, failed or incomplete execution cannot mint reusable passes. |
 
 ## REVIEW
 
@@ -93,6 +93,7 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
+| K43 | CORE | F01 | Bounded snapshot file hashing and drift checks | A file growing or being replaced after preflight cannot trigger unbounded allocation or yield a valid digest; independently challenge read bounds, identity, permissions and cancellation. |
 | K07 | RUNTIME | K04, F03 | Enforced native input envelopes | Bind and enforce files, absent paths, directories, environment, links and write/scratch rules; an outside access cannot leave a qualified pass. Protect capture and live drift boundaries. |
 | K08 | RUNTIME | K07 | Metadata, clocks and entropy policy | Each qualified context either enforces defined observable semantics or rejects these effects. Containment and interception are not assumed to establish native equivalence. |
 | K29 | OTHER | K04, K02 | Remaining language/runner context contracts | Define exact runner/build/runtime/version scopes for the nine L/R lanes below, with required behavior, exclusions and evidence. Multiple frameworks need explicit subcards before implementation; generic full-command support is not qualified omission. |
@@ -110,7 +111,6 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K23 | RUST | K04, K02, K43 | Cargo/nextest build and test closure | Features, build scripts, proc macros, generated inputs, binaries and case inventory have complete producer/context identities; unsupported build/runtime effects are gaps. |
 | K14 | GO | K13, K06, K10 | Broader Go qualification | Support documented Go constructs, external test packages, setup and fixture inputs with enforced effect contracts; unsupported interfaces/reflection/cgo/concurrency broaden rather than guess. |
 | K16 | TS | K15, K06, K10 | Node runtime qualification for TS/Vitest | Installed Node/module/runner identities and all startup/collection/execution effects fit an enforced context; native addons, JIT/runtime behavior and unsupported loaders cannot bypass qualification. |
 | K17 | JS | K16, K02 | Node test affected execution | Account for runner collection, hooks, module loading, concurrency and exact terminal inventory using common qualification/reuse machinery. |
@@ -262,16 +262,16 @@ Live fleet activity verified 2026-10-06 after the explicit restart request:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | ACTIVE | Corrected K07/K08 accepted; reconcile/commit K15 descriptive wave, coordinate K43 and newly dependency-ready runtime/receipt cards. |
-| `/root/runtime_implementation` | ACTIVE | K07/K08 source frozen/accepted; K43 bounded snapshot hashing implementation in isolated /tmp/hayaku-k43-worktree. |
-| `/root/completion_review` | ACTIVE | Read-only K07 alias and K15 AST/graph correction review; K08 and K29 source/specification accepted. |
-| `/root/completion_testing` | ACTIVE | K07/K08/K15 independent checks passed; owns isolated K43 digest_adversarial_test.go, including bounded memory and actual drift probes. |
+| `/root` | ACTIVE | K43 full checks passed; reconcile/commit bounded reader wave. Implement K31 private authority in isolated checkout; coordinate K09 broker. |
+| `/root/runtime_implementation` | ACTIVE | Implement K09 fixed-helper broker in isolated /tmp/hayaku-k09-worktree; exact production/test scope recorded below. |
+| `/root/completion_review` | ACTIVE | Read-only final K43 staged review and K31 authority contract/source review. |
+| `/root/completion_testing` | ACTIVE | K43 independent Mac/Linux checks passed; independent K31 authority adversaries assigned in isolated checkout. |
 
 Previous `/root/factory_*` agents are historical owners, not active assignments.
 K07 and K08 passed their corrected local card gates after independent macOS/Linux
 checks, source review and full normal/race/vet checks. K15 descriptive source and
 fourth-pair acceptance are reviewed; older actual context and locked-fixture gates
-remain open. K43 is being implemented in an isolated checkout. No new general
+remain open. K43 passed integrated full normal/race/vet checks and independent macOS/Linux filesystem and Git checks. No new general
 native skipping is claimed.
 
 Card claims and accumulated evidence (historical owners retained where useful):
@@ -280,8 +280,10 @@ Card claims and accumulated evidence (historical owners retained where useful):
 ID | STATE | AGENT/TASK ID | EXACT FILE SCOPE OR WORKTREE | COMMIT/EVIDENCE | NEXT ACTION
 K08 | DONE | /root/runtime_implementation | NEW internal/native/observables.go; observables_test.go; internal/native/backend.go; independent tester NEW observable_boundary_test.go | Corrected K07 accepted; actual metadata/clock/entropy and dormant-effect probes independently passed; canonical staged Mori209/209+14/14focus reviewed; full normal/race/vet passed | Fixed reject-only policy/effect veto accepted; empty effects remain no proof, other external contracts K09
 K29 | DONE | /root | docs/language-contexts.md; docs/affected-tests-kanban.md | Independent specification review accepted; twenty named profiles and forty analysis/runtime subcards; 124 unique card DAG valid; installed candidate facts verified | Actual per-framework admission/qualification and acceptance remain separate; unresolved versions never wildcard-approved
-K43 | DOING | /root/runtime_implementation + /root/completion_testing | isolated /tmp/hayaku-k43-worktree, branch factory/bounded-snapshot-20261006 from cca5939; internal/snapshot/digest.go; snapshot.go raw-file validation only; worker NEW digest_bounded_test.go; tester NEW digest_adversarial_test.go | Reviewer identified stat-then-os.ReadFile growth allocation in shared Digest; root confirmed same call in committed Git-blob validation; source findings, not yet independently reproduced | Implement one bounded reader with identity checks for both hashing paths before K23 reuses this boundary; isolated writers preserve current correction-wave integration snapshot
-K23 | BLOCKED | /root/runtime_implementation (read-only design) | proposed internal/adapter/cargo/cargo.go and NEW closure.go/tests, then serial nextest.go and NEW closure_test.go; no edits yet | Independent design review accepted conservative snapshot ownership and shared inventory; actual Cargo/rustc1.99 installed, nextest absent | Requires K43; metadata lacks harness semantics, native list/doctest completeness unresolved, producer/ambient context retain unknown effects; nextest actual acceptance needs provisioned runner
+K09 | DOING | /root/runtime_implementation | isolated /tmp/hayaku-k09-worktree, branch factory/controlled-child-20261006 from2979914; NEW internal/native/child.go/child_test.go; envelope.go/tests; backend.go controlled-child execution only; worker/main.go; tester child_boundary_test.go reserved | Reviewed fixed RUN-only broker design, static immutable helper, least-privilege main/child and joined bounded cleanup; K07/K08 DONE | Implement and independently test exact managed initial launch, forbidden process/native/network/service capabilities and malformed/EOF/deadline/overflow cleanup. Envelope receipt authority remains disabled; general FFI/services unsupported
+K31 | DOING | /root | isolated /tmp/hayaku-k31-worktree, branch factory/native-authority-20261006 from2979914; NEW internal/native/authority.go/tests, backend.go authority binding only, go.go Go issuer/tool identity only, observable_boundary_test.go synthetic producer fixture only | K07/K08 dependencies DONE; existing public Proof string cannot be authority for future provider integration | Implement private in-process artifact seals binding complete reviewed provider/source/tool/program/inventory/context data; JSON and caller strings cannot issue; preserve pureGo reuse and before-cache negative gates
+K43 | DONE | /root/runtime_implementation + /root/completion_testing | isolated /tmp/hayaku-k43-worktree, branch factory/bounded-snapshot-20261006 from cca5939; internal/snapshot/digest.go; snapshot.go raw-file validation only; worker NEW digest_bounded_test.go; tester NEW digest_adversarial_test.go | Frozen four-file correction independently source-reviewed; package normal/race/vet pass; actual Mac/Linux64MiB bounded-memory, growth/replacement, earlier-file/directory drift and no-writerFIFO probes pass; Git SHA1/SHA256 healthy/content/mode faults pass on both OSes | Integrated onto2979914; full normal/race/vet passed with bothPython+actualLinux; canonical staged Mori211/211+4/4focus accepted, final docs refresh next; entry metadata observations are not atomic/history proof, directory-name enumeration allocation is outside scope
+K23 | READY | /root/runtime_implementation (read-only design) | proposed internal/adapter/cargo/cargo.go and NEW closure.go/tests, then serial nextest.go and NEW closure_test.go; no edits yet | Independent design review accepted conservative snapshot ownership and shared inventory; actual Cargo/rustc1.99 installed, nextest absent | K43 completed; metadata lacks harness semantics, native list/doctest completeness unresolved, producer/ambient context retain unknown effects; nextest actual acceptance needs provisioned runner
 K07 | DONE | /root/runtime_implementation | internal/native/envelope.go; envelope_test.go; backend.go; worker/main.go; NEW envelope_boundary_test.go | Independent source/test review and canonical staged Mori accepted204/204; installed Linux probes15.240s independently14.196s; legacy43.413s; full normal/race/vet passed with bothPython and actualLinux contexts | Final case/Unicode/source/copied/multi-root alias correction independently accepted: Mac normal0.525/race1.687, fresh Linux filesystem all variants, operational15.527s; full normal/race/vet and canonical Mori209/209+14/14focus passed. Guard still forbids envelope receipts
 K01 | DONE | /root | docs/qualified-contexts.md; shared core integration reserved | docs/qualified-contexts.md; read-only factory_review contract review, 2026-10-06 | Contract accepted; no new runtime qualification granted
 K04 | DONE | /root | internal/model/execution.go; internal/runner/exact.go and tests; native shared outcome integration | fdc139c | Exact inventory/binding validators and native integration; full Go test/race/vet and actual Linux acceptance pass; Mori canonical core review complete

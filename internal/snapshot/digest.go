@@ -6,15 +6,18 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 // Digest binds all materialized source inputs, including empty directories,
 // permissions and raw file bytes. No ignore policy or native normalization is
 // applied. A changed digest after discovery invalidates that evidence.
 // It observes filesystem state, not historical transient writes or services.
+// Pre/post checks reject detectable drift; this is not an atomic tree snapshot.
 func Digest(ctx context.Context, dir string) (string, error) {
 	return DigestWithModules(ctx, dir, nil)
 }
@@ -40,6 +43,7 @@ func DigestWithModules(ctx context.Context, dir string, modules []string) (strin
 	}
 	h := sha256.New()
 	count, total := 0, int64(0)
+	admitted := map[string]fs.FileInfo{}
 	err = filepath.WalkDir(dir, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -68,6 +72,7 @@ func DigestWithModules(ctx context.Context, dir string, modules []string) (strin
 		if !info.IsDir() && !info.Mode().IsRegular() {
 			return errors.New("snapshot digest contains symlink or nonregular input")
 		}
+		admitted[path] = info
 		_, _ = fmt.Fprintf(h, "%d:%s:%o:", len(name), name, info.Mode())
 		if info.IsDir() {
 			_, _ = h.Write([]byte("directory\x00"))
@@ -79,20 +84,85 @@ func DigestWithModules(ctx context.Context, dir string, modules []string) (strin
 		if info.Size() > maxBlob || info.Size() < 0 {
 			return errors.New("snapshot digest input exceeds byte limit")
 		}
-		data, err := os.ReadFile(path)
+		_, _ = fmt.Fprintf(h, "%d:", info.Size())
+		read, err := digestFile(ctx, path, info, h, maxTree-total)
 		if err != nil {
 			return err
 		}
-		total += int64(len(data))
-		if len(data) > maxBlob || total > maxTree {
-			return errors.New("snapshot digest exceeds byte limit")
-		}
-		_, _ = fmt.Fprintf(h, "%d:", len(data))
-		_, _ = h.Write(data)
+		total += read
 		return nil
 	})
 	if err != nil {
 		return "", err
 	}
+	if err := verifyDigestEntries(ctx, admitted); err != nil {
+		return "", err
+	}
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func verifyDigestEntries(ctx context.Context, admitted map[string]fs.FileInfo) error {
+	for name, before := range admitted {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		after, err := os.Lstat(name)
+		if err != nil || !sameDigestEntry(before, after) {
+			return errors.New("snapshot entry changed during digest")
+		}
+	}
+	return ctx.Err()
+}
+
+// digestFile streams at most the preflight size plus one sentinel byte. Stable
+// bytes keep their original digest framing; detectable replacement or metadata
+// drift invalidates the whole digest, even when replacement bytes are identical.
+// This is a bounded observation, not an atomic or historical filesystem view.
+func digestFile(ctx context.Context, name string, before fs.FileInfo, destination io.Writer, remaining int64) (int64, error) {
+	if err := ctx.Err(); err != nil {
+		return 0, err
+	}
+	if before == nil || !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > maxBlob || before.Size() > remaining {
+		return 0, errors.New("snapshot input exceeds byte limit or is nonregular")
+	}
+	// A FIFO substituted after preflight must not block opening indefinitely.
+	file, err := os.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return 0, errors.New("snapshot input unavailable")
+	}
+	defer file.Close()
+	opened, err := file.Stat()
+	current, pathErr := os.Lstat(name)
+	if err != nil || pathErr != nil || !sameDigestEntry(before, opened) || !sameDigestEntry(before, current) {
+		return 0, errors.New("snapshot input changed while opening")
+	}
+	read, err := io.CopyBuffer(destination, digestReader{ctx, io.LimitReader(file, before.Size()+1)}, make([]byte, 32<<10))
+	if err != nil {
+		return read, err
+	}
+	if err := ctx.Err(); err != nil {
+		return read, err
+	}
+	after, err := file.Stat()
+	current, pathErr = os.Lstat(name)
+	if err != nil || pathErr != nil || read != before.Size() || !sameDigestEntry(before, after) || !sameDigestEntry(before, current) {
+		return read, errors.New("snapshot input changed during read")
+	}
+	return read, ctx.Err()
+}
+
+func sameDigestEntry(before, after fs.FileInfo) bool {
+	return os.SameFile(before, after) && before.Mode() == after.Mode() && before.Size() == after.Size() && before.ModTime().Equal(after.ModTime())
+}
+
+type digestReader struct {
+	ctx    context.Context
+	reader io.Reader
+}
+
+func (r digestReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.reader.Read(p)
 }
