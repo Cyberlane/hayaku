@@ -22,6 +22,11 @@ The source and tests define current behavior. “Native” below means installed
 
 These source capabilities are not a published release or production acceptance.
 
+The dependency-linked [affected-test execution kanban](affected-tests-kanban.md)
+tracks the remaining shared engine, language/runtime qualification and end-to-end
+acceptance work, with agent ownership rules and completion gates. Its planned
+cards do not authorize native omission or change the capabilities listed here.
+
 ## Five improvement areas
 
 | Area | Implemented scope | Remaining boundary |
