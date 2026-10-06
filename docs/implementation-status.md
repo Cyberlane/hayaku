@@ -53,6 +53,11 @@ The source and tests define current behavior. “Native” below means installed
   independent pytest/unittest cases. Bounded captured source bytes supply import,
   fixture and dormant-effect evidence; unsupported runtime effects retain the
   original full scope. Source/tool/context drift rejects the evidence.
+- Internal Cargo/Nextest closure APIs share configured metadata, producer
+  records, private build artifacts and observed native cases. Compiler/runtime
+  library trees and per-binary loader context are bound and rechecked. Build
+  scripts, proc macros, custom harnesses, doctests and ambient/native effects
+  remain explicit gaps; these descriptive APIs grant no omission authority.
 - Shared input-envelope capture rejects regular-file replacement by a FIFO
   through nonblocking opens. Independent macOS/Linux tests verify rejection
   without a writer and preserve captured byte accounting.
@@ -97,7 +102,7 @@ cards do not authorize native omission or change the capabilities listed here.
 | Integration | Implemented evidence | Assurance |
 | --- | --- | --- |
 | Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted pure-package Linux reuse | Ordinary native plans remain full; imports/cgo/external inputs are outside native group qualification |
-| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected. The fourth pair has local adapter and complete application acceptance; a locked CI fixture remains outstanding |
+| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected. Renewed local adapter checks passed for all four locked fixtures; the fourth CI job is defined locally, with hosted acceptance outstanding |
 | Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
@@ -118,7 +123,7 @@ changes; fourth-pair behavior stayed unchanged. A historical graph aggregate
 passed in 680.095s. A prior run
 timed out one resource scenario under concurrent checks; it is retained as
 historical failed evidence.
-Renewed configured-graph acceptance on older pairs remains unverified;
+Renewed macOS configured-graph adapter acceptance passed on all older pairs;
 a linked dependency tree outside the captured workspace is rejected rather than
 treated as complete evidence.
 

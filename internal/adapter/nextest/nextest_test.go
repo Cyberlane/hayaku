@@ -39,6 +39,11 @@ func fixture(t *testing.T) (string, model.Workspace) {
 			t.Fatal(err)
 		}
 	}
+	// Supply the configured store before collection: native list otherwise
+	// mutates the captured source tree by creating these empty directories.
+	if err := os.MkdirAll(filepath.Join(root, "target", "nextest", "ci"), 0700); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := process.Run(context.Background(), model.Command{Executable: "cargo", Args: []string{"generate-lockfile", "--offline"}}, root, map[string]string{"CARGO_NET_OFFLINE": "true", "RUSTUP_AUTO_INSTALL": "0"}); err != nil {
 		t.Fatal("offline fixture lockfile generation", err)
 	}

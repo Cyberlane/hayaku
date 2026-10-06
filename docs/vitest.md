@@ -9,19 +9,19 @@ Hayaku uses installed Vitest/Vite APIs for configured JS/TS import influence, fi
 | 3.2.7 | 6.4.3 | `testdata/vitest-runtime-v3` |
 | 4.1.11 | 7.3.1 | `testdata/vitest-runtime` |
 | 4.1.11 | 8.1.5 | `testdata/vitest-runtime-v4-vite8` |
-| 4.1.11 | 8.2.2 | Locally provisioned installation; locked CI fixture outstanding |
+| 4.1.11 | 8.2.2 | `testdata/vitest-runtime-v4-vite822` |
 
 These exact pairs are accepted; missing, mismatched, prerelease or other versions are rejected. The bridge resolves Vite from the installed Vitest package, binds both versions into its protocol, and verifies the returned pair in Go. v3 uses its `init`/vite-node SSR APIs; v4 uses standalone SSR environments. Current upstream documentation can describe a different version: the pinned installed API and fixture tests are the compatibility evidence.
 
-Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for the first three pairs. The fourth pair has passing local adapter checks and a complete AST/transitive-closure application aggregate (712.177s on 2026-10-06), with original deadlines and no concurrent heavy workloads. The aggregate preceded only legacy SSR routing and older-pair assertion changes; fourth-pair behavior stayed unchanged. Its locked CI fixture remains outstanding. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
+Node 22.18.0 is the pinned native fixture context. The local CI definition now includes Linux and macOS checks for all four locked pairs; the new job has not run in hosted CI. The fourth pair has passing local adapter checks and a complete AST/transitive-closure application aggregate (712.177s on 2026-10-06), with original deadlines and no concurrent heavy workloads. The aggregate preceded only legacy SSR routing and older-pair assertion changes; fourth-pair behavior stayed unchanged. Renewed actual macOS adapter suites passed for all four isolated locked installations on 2026-10-06. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
 
 Configured test, config, setup and global-setup entries share transitive closure
 capture. The bridge uses the already installed Vite parser on original and
 transformed syntax, resolves literal imports through the configured SSR resolver,
 and retains all proposed tests for unresolved or computed imports and escaped
 loader calls, including dormant code. Missing parsers or unsupported original
-TypeScript syntax produce explicit unknown influence. Older pairs need renewed
-actual graph acceptance; the new separate case-collection path currently admits
+TypeScript syntax produce explicit unknown influence. Renewed graph acceptance
+passed for the older pairs; the new separate case-collection path currently admits
 only the tested 4.1.11/8.2.2 pair. Hayaku fetches no parser or runner dependencies.
 
 ## Configure an existing installation
@@ -99,6 +99,6 @@ go test -race -count=1 ./...
 go vet ./...
 ```
 
-Repeat with a fresh directory for each other pair. Use canonical absolute paths; macOS `/tmp` resolves to `/private/tmp`. Without explicit runtime variables, installed native application fixtures skip visibly; protocol/copy/snapshot tests still run. Required CI supplies the variables. Fixtures challenge aliases, setup/resources, multiple projects, duplicate names, pass/fail/skip/hooks, new/deleted tests, hidden dependencies, dynamic observations, version/pool rejection, input drift and cancellation.
+Repeat with a fresh directory for each other pair. The fourth fixture requires `--legacy-peer-deps` alongside the shown `npm ci` flags, matching its recorded lock generation; the local CI definition includes that flag only for this fixture. Use canonical absolute paths; macOS `/tmp` resolves to `/private/tmp`. Without explicit runtime variables, installed native application fixtures skip visibly; protocol/copy/snapshot tests still run. Required CI supplies the variables. Fixtures challenge aliases, setup/resources, multiple projects, duplicate names, pass/fail/skip/hooks, new/deleted tests, hidden dependencies, dynamic observations, version/pool rejection, input drift and cancellation.
 
 Primary references: [Vitest advanced API](https://vitest.dev/api/advanced/vitest.html), [CLI](https://vitest.dev/guide/cli.html) and [test modules](https://vitest.dev/api/advanced/test-module.html). Version claims above are deliberately narrower than upstream ranges.

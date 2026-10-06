@@ -65,3 +65,20 @@ Remove only directories, containers and volumes created by this provisioning
 task after their evidence is captured. Retain pinned fixture manifests and
 redacted version/digest/results evidence in the project; retain no credentials,
 raw environment values or source contents in reports.
+
+## Recorded development progress
+
+The [2026-10-06 provisioning checkpoint](evidence/runner-provisioning-2026-10-06.json)
+retains official archive/package identities, verified digests, private fixture
+lock identities and baseline results. It is a dated setup record, not a portable
+installed tool closure or qualification credential. Temporary paths are locations
+used for those observations; future invocations must verify their actual bytes.
+
+At this checkpoint, macOS original full-command healthy and seeded runtime-fault
+baselines passed for Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter,
+Gradle/TestNG, RSpec, Minitest, Bun, Deno and Dart/package:test. Rust/Nextest
+baselines also passed on actual macOS and Linux, and all four exact Vitest/Vite
+pairs passed macOS baselines. The Deno record distinguishes an earlier type-check
+failure from the corrected runtime assertion failure. Other selected SDKs and
+frameworks remain at the explicit setup or baseline stage recorded in the file.
+No candidate in this checkpoint gains permission to omit tests.

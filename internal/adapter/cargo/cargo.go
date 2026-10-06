@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -28,76 +27,81 @@ type metadata struct {
 	Members         []string `json:"workspace_members"`
 	DefaultMembers  []string `json:"workspace_default_members"`
 	Resolve         *struct {
-		Root  *string `json:"root"`
-		Nodes []struct {
-			ID           string   `json:"id"`
-			Dependencies []string `json:"dependencies"`
-		} `json:"nodes"`
+		Root  *string       `json:"root"`
+		Nodes []resolveNode `json:"nodes"`
 	} `json:"resolve"`
+}
+type resolveNode struct {
+	ID           string   `json:"id"`
+	Features     []string `json:"features"`
+	Dependencies []string `json:"dependencies"`
+	Deps         []struct {
+		Name    string `json:"name"`
+		Package string `json:"pkg"`
+		Kinds   []struct {
+			Kind     *string `json:"kind"`
+			Platform *string `json:"target"`
+		} `json:"dep_kinds"`
+	} `json:"deps"`
+}
+type target struct {
+	Name             string   `json:"name"`
+	Kind             []string `json:"kind"`
+	CrateTypes       []string `json:"crate_types"`
+	Source           string   `json:"src_path"`
+	Test             bool     `json:"test"`
+	Doctest          bool     `json:"doctest"`
+	RequiredFeatures []string `json:"required-features"`
 }
 type pkg struct {
 	ID, Name, Version string
 	ManifestPath      string `json:"manifest_path"`
 	Source            *string
-	Targets           []struct {
-		Kind       []string
-		CrateTypes []string `json:"crate_types"`
-	}
+	Targets           []target
 }
 type arguments struct {
 	preserved, metadata, packages, excludes []string
 	workspace                               bool
 }
 
-// Discover uses the installed Cargo without downloading dependencies or
-// toolchains, running build scripts, or modifying the lockfile.
-func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c model.Context) (model.Evidence, error) {
+// discoverMetadata does not compile or run binaries. Its exact environment is
+// established once by the common closure collector.
+func discoverMetadata(ctx context.Context, snapshotRoot string, w model.Workspace, c model.Context, env []string, invocation string) (model.Evidence, metadata, error) {
+	var m metadata
 	e := model.Evidence{Adapter: "cargo", Version: "cargo-native-v1", Workspace: w.ID, Inputs: map[string][]string{}, Gaps: []model.Gap{{Code: "runtime-unqualified", Workspace: w.ID, Detail: "Cargo metadata does not establish complete runtime, generated-input or external-service influence"}}}
 	if path, ok := c.Env["PATH"]; ok && path != os.Getenv("PATH") {
-		return e, errors.New("different PATH overrides are unsupported; use an absolute native runner path")
+		return e, m, errors.New("different PATH overrides are unsupported; use an absolute native runner path")
 	}
 	args, err := parse(w)
 	if err != nil {
-		return e, err
+		return e, m, err
 	}
 	root, err := filepath.EvalSymlinks(snapshotRoot)
 	if err != nil {
-		return e, err
+		return e, m, err
 	}
 	root, err = filepath.Abs(root)
 	if err != nil {
-		return e, err
+		return e, m, err
 	}
 	dir := filepath.Join(root, filepath.FromSlash(w.Root), filepath.FromSlash(w.Command.Dir))
 	if !within(root, dir) {
-		return e, errors.New("Cargo workspace escapes snapshot")
+		return e, m, errors.New("Cargo workspace escapes snapshot")
 	}
-	env := map[string]string{}
-	for k, v := range c.Env {
-		env[k] = v
-	}
-	env["CARGO_NET_OFFLINE"] = "true"
-	env["RUSTUP_AUTO_INSTALL"] = "0"
 	timeout, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	version, err := process.Run(timeout, model.Command{Executable: w.Command.Executable, Args: []string{"--version"}}, dir, env)
-	if err != nil {
-		return e, errors.New("installed Cargo tool unavailable")
-	}
-	e.Version += ":" + strings.TrimSpace(string(version.Stdout))
 	nativeArgs := append([]string{"metadata", "--offline", "--locked", "--format-version", "1"}, args.metadata...)
-	out, err := process.Run(timeout, model.Command{Executable: w.Command.Executable, Args: nativeArgs}, dir, env)
+	out, err := process.RunEnvironment(timeout, model.Command{Executable: invocation, Args: nativeArgs}, dir, env)
 	if err != nil {
-		return e, errors.New("offline locked Cargo metadata discovery failed")
+		return e, m, errors.New("offline locked Cargo metadata discovery failed")
 	}
-	var m metadata
 	if json.Unmarshal(out.Stdout, &m) != nil || m.Version != 1 || m.Resolve == nil || len(m.Packages) == 0 {
-		return e, errors.New("incomplete Cargo metadata")
+		return e, m, errors.New("incomplete Cargo metadata")
 	}
 	nodes, ids, local := map[string]bool{}, map[string]string{}, map[string]pkg{}
 	for _, p := range m.Packages {
 		if p.ID == "" || p.Name == "" || p.Version == "" {
-			return e, errors.New("invalid Cargo package identity")
+			return e, m, errors.New("invalid Cargo package identity")
 		}
 		hash := sha256.Sum256([]byte(p.ID))
 		id := w.ID + ":external:" + hex.EncodeToString(hash[:])
@@ -111,7 +115,7 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 			}
 		}
 		if _, ok := ids[p.ID]; ok {
-			return e, errors.New("duplicate Cargo package identity")
+			return e, m, errors.New("duplicate Cargo package identity")
 		}
 		ids[p.ID] = id
 		nodes[id] = true
@@ -119,7 +123,7 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 	members := map[string]bool{}
 	for _, p := range m.Members {
 		if ids[p] == "" {
-			return e, errors.New("unknown Cargo workspace member")
+			return e, m, errors.New("unknown Cargo workspace member")
 		}
 		members[p] = true
 	}
@@ -146,7 +150,7 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 			}
 		}
 		if !found {
-			return e, errors.New("Cargo package selector cannot be reconciled with metadata")
+			return e, m, errors.New("Cargo package selector cannot be reconciled with metadata")
 		}
 	}
 	for _, name := range args.excludes {
@@ -158,37 +162,35 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 			}
 		}
 		if !found {
-			return e, errors.New("unknown Cargo excluded package")
+			return e, m, errors.New("unknown Cargo excluded package")
 		}
 	}
 	for id := range selected {
 		p, ok := local[id]
 		if !ok || !members[id] {
-			return e, errors.New("Cargo selected package is outside snapshot")
+			return e, m, errors.New("Cargo selected package is outside snapshot")
 		}
 		e.Units = append(e.Units, model.Unit{ID: ids[id], Workspace: w.ID, Selector: p.Name, Kind: "cargo-package"})
 	}
 	if len(e.Units) == 0 {
-		return e, errors.New("Cargo discovery has no runnable package scope")
+		return e, m, errors.New("Cargo discovery has no runnable package scope")
 	}
 	for _, n := range m.Resolve.Nodes {
 		to, ok := ids[n.ID]
 		if !ok {
-			return e, errors.New("unknown Cargo resolver node")
+			return e, m, errors.New("unknown Cargo resolver node")
 		}
 		for _, dep := range n.Dependencies {
 			from, ok := ids[dep]
 			if !ok {
-				return e, errors.New("unknown Cargo dependency")
+				return e, m, errors.New("unknown Cargo dependency")
 			}
 			if from != to {
 				e.Edges = append(e.Edges, model.Edge{From: from, To: to, Reason: "Cargo configured dependency"})
 			}
 		}
 	}
-	count := 0
-	for opaque, p := range local {
-		owner := ids[opaque]
+	for _, p := range local {
 		for _, target := range p.Targets {
 			for _, kind := range append(append([]string(nil), target.Kind...), target.CrateTypes...) {
 				if kind == "custom-build" || kind == "proc-macro" {
@@ -197,68 +199,6 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 				}
 			}
 		}
-		err := filepath.WalkDir(filepath.Dir(p.ManifestPath), func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			if timeout.Err() != nil {
-				return timeout.Err()
-			}
-			if d.IsDir() {
-				if path == m.TargetDirectory || d.Name() == ".git" {
-					return filepath.SkipDir
-				}
-				return nil
-			}
-			if !d.Type().IsRegular() {
-				return errors.New("unsupported Cargo snapshot input type")
-			}
-			count++
-			if count > 50000 {
-				return errors.New("Cargo input limit exceeded")
-			}
-			rel, _ := filepath.Rel(root, path)
-			e.Inputs[filepath.ToSlash(rel)] = append(e.Inputs[filepath.ToSlash(rel)], owner)
-			return nil
-		})
-		if err != nil {
-			return e, err
-		}
-	}
-	// Definitions and toolchain/config inputs influence every selected package.
-	visited := 0
-	err = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		visited++
-		if visited > 100000 {
-			return errors.New("Cargo definition inventory limit exceeded")
-		}
-		if err != nil {
-			return err
-		}
-		if timeout.Err() != nil {
-			return timeout.Err()
-		}
-		if d.IsDir() {
-			if path == m.TargetDirectory || d.Name() == ".git" {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		name := d.Name()
-		if name != "Cargo.toml" && name != "Cargo.lock" && name != "rust-toolchain" && name != "rust-toolchain.toml" && !(filepath.Base(filepath.Dir(path)) == ".cargo" && (name == "config" || name == "config.toml")) {
-			return nil
-		}
-		if !d.Type().IsRegular() {
-			return errors.New("unsupported Cargo definition input type")
-		}
-		rel, _ := filepath.Rel(root, path)
-		for _, u := range e.Units {
-			e.Inputs[filepath.ToSlash(rel)] = append(e.Inputs[filepath.ToSlash(rel)], u.ID)
-		}
-		return nil
-	})
-	if err != nil {
-		return e, err
 	}
 	for n := range nodes {
 		e.Nodes = append(e.Nodes, n)
@@ -283,7 +223,7 @@ func Discover(ctx context.Context, snapshotRoot string, w model.Workspace, c mod
 		e.Inputs[path] = unique
 	}
 	sort.Slice(e.Gaps, func(i, j int) bool { return e.Gaps[i].Code < e.Gaps[j].Code })
-	return e, nil
+	return e, m, nil
 }
 func within(root, path string) bool {
 	rel, err := filepath.Rel(root, path)
