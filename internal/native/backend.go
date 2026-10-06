@@ -247,17 +247,24 @@ func (b Backend) execute(ctx context.Context, a Artifact) (process.Output, error
 // by a JSON declaration, previous coverage or user result report.
 func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit bool, decode func(process.Output, Artifact) (model.Outcomes, error)) (Result, error) {
 	r := Result{Name: a.Name, Context: "linux-" + b.Architecture, Qualified: a.Proof != "", Cache: "disabled"}
-	if !r.Qualified || len(a.Cases) == 0 || b.Identity == "" {
+	if !r.Qualified || b.Identity == "" || decode == nil || runner.ValidateInventory(a.inventory()) != nil {
+		r.Qualified = false
 		return r, errors.New("native artifact is not qualified")
 	}
 	program, err := fileDigest(a.Program)
 	if err != nil {
 		return r, err
 	}
-	r.Key = identity(struct {
-		Contract, Backend, Program, Proof, Name string
-		Cases, Args, Env                        []string
-	}{contractVersion, b.Identity, program, a.Proof, a.Name, a.Cases, a.Args, a.Env})
+	r.Key, err = runner.BindingDigest(model.ExecutionBinding{
+		Schema: model.ExecutionSchema, Group: a.Name, ProgramDigest: program,
+		InputsDigest: identity(struct{ Args, Env []string }{a.Args, a.Env}),
+		ProofDigest:  a.Proof, PolicyDigest: digest([]byte(contractVersion)),
+		ContextDigest: b.Identity, Inventory: a.inventory(),
+	})
+	if err != nil {
+		r.Qualified = false
+		return r, err
+	}
 	cache, cacheErr := passcache.Open(cacheDir, "hayaku-native-pure-pass-v1")
 	if cacheErr != nil {
 		r.Cache = "unavailable"
@@ -300,6 +307,9 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 	r.Executed = true
 	output, runErr := b.execute(ctx, a)
 	r.Outcomes, err = decode(output, a)
+	if err == nil {
+		err = runner.ValidateExact(r.Outcomes, a.inventory(), output.Completed, output.ExitCode)
+	}
 	r.Complete = err == nil && output.Completed
 	r.Passed = r.Complete && output.ExitCode == 0 && !runner.Failed(r.Outcomes)
 	after, e := fileDigest(a.Program)
@@ -343,29 +353,15 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 	return r, runErr
 }
 func passing(o model.Outcomes, a Artifact) bool {
-	if runner.Validate(o, []model.Unit{{ID: a.Name, Workspace: "native"}}, true, 0) != nil || runner.Failed(o) || len(o.Units) != 1 || o.Units[0].Action != "pass" || len(o.Tests) != len(a.Cases) {
-		return false
-	}
-	want := map[string]bool{}
+	return runner.AllPassed(o, a.inventory())
+}
+
+func (a Artifact) inventory() model.ExecutionInventory {
+	inventory := model.ExecutionInventory{Schema: model.ExecutionSchema, Units: []model.Unit{{ID: a.Name, Workspace: "native"}}}
 	for _, name := range a.Cases {
-		if name == "" || want[name] {
-			return false
-		}
-		want[name] = true
+		inventory.Cases = append(inventory.Cases, model.Case{Unit: a.Name, ID: name})
 	}
-	seen := map[string]bool{}
-	for _, test := range o.Tests {
-		if test.Unit != a.Name || !want[test.Test] || test.Action != "pass" || seen[test.Test] {
-			return false
-		}
-		seen[test.Test] = true
-	}
-	for _, name := range a.Cases {
-		if !seen[name] {
-			return false
-		}
-	}
-	return true
+	return inventory
 }
 
 // ResolveDocker preserves argv[0] for multicall CLIs. inspect separately binds

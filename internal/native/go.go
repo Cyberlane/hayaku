@@ -416,7 +416,7 @@ func decodeGo(output process.Output, a Artifact) (model.Outcomes, error) {
 	sort.Slice(o.Tests, func(i, j int) bool { return o.Tests[i].Test < o.Tests[j].Test })
 	o.Units = []model.Outcome{{Unit: a.Name, Action: unit}}
 	o.Failed = o.Failed || unit == "fail"
-	err := runner.Validate(o, []model.Unit{{ID: a.Name, Workspace: "native"}}, output.Completed, output.ExitCode)
+	err := runner.ValidateExact(o, a.inventory(), output.Completed, output.ExitCode)
 	return o, err
 }
 
