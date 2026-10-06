@@ -94,6 +94,15 @@ No candidate in this checkpoint gains permission to omit tests.
 The PHP baselines cover the bundled PHPUnit PHAR. Composer autoload, lockfile and
 bootstrap variants require separate fixture evidence before profile admission.
 
+A separate parser SDK observation added on 2026-10-07 records TypeScript 6.0.2,
+its official npm metadata, publisher SHA512/SHA1 archive identities and all 140
+privately extracted file digests. The explicit legacy compiler API profile is
+used with pinned Node 22.18.0 for source certification; newer compiler APIs are
+separate unsupported contexts. All ten required source-candidate cases passed
+macOS normal/race checks and Linux checks, with no skips and verified cleanup.
+This observation leaves the original 20 macOS and 20 Linux framework baseline
+counts unchanged and grants no framework/runtime or receipt authority.
+
 Linux Flutter is a derived ARM development candidate assembled from the pinned
 official framework and engine components. The official SDK archive supplies the
 unchanged Flutter tool lock and platform-neutral Gradle wrapper prerequisites;

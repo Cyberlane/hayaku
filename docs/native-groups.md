@@ -211,13 +211,28 @@ Independent actual Linux arm64 tests cover C and explicitly configured jitless
 Node, runtime/resource drift, executable mappings, thread/descriptor behavior,
 loader environment rejection, output/aggregate bounds, cancellation and cleanup.
 Static program, managed child and restricted pure-Go regressions also passed.
-Whole repository normal/race/vet composition checks passed. The Node fixture binds an
+The integrated v6 transport previously passed whole repository normal/race/vet
+composition checks. The Node fixture binds an
 explicit OpenSSL configuration resource; ordinary default startup is separately
 observed to access an unbound configuration and is rejected. Manual-loader
 startup changes Node's executable-path observations. JIT, arbitrary interpreter
 modes, ordinary runtime equivalence and native test-provider qualification remain
 unqualified. These APIs return raw operational results with no decoder, cache,
 proof or receipt authority.
+
+Additional installed Linux arm64 normal/race controls check consumed chmod and
+extended-attribute effects, self process-memory access, SCM_RIGHTS descriptor
+passing, forbidden clone flags and restrictions across pthreads. Fixture guests
+have known names, bounded cleanup and verified empty inventories. A separate
+case cancels after actual guest startup and requires an incomplete result and
+verified removal. Whole repository normal/race/vet integration checks for this
+added corpus passed on the same frozen source bytes.
+
+Four APIs were unavailable in the outside control context: `file_setattr`,
+`pkey_mprotect`, `pidfd_getfd` and `io_uring_setup`. Their inside denials establish
+this boundary's behavior as a whole; these observations cannot attribute those
+restrictions specifically to Hayaku's filter. The zero-valued file-attribute
+request tests API availability, rather than a changed attribute flag.
 
 ## Verification
 

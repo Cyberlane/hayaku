@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 )
@@ -114,7 +115,7 @@ func walk(ctx context.Context, root string, h hash.Hash, b *budget, destination 
 				return err
 			}
 			if destination != "" {
-				if err := copyFile(ctx, path, target, info.Mode().Perm(), info.Size()); err != nil {
+				if err := copyFile(ctx, path, target, info); err != nil {
 					return err
 				}
 			}
@@ -141,29 +142,44 @@ func walk(ctx context.Context, root string, h hash.Hash, b *budget, destination 
 }
 
 func digestFile(ctx context.Context, path string, before os.FileInfo, h hash.Hash, b *budget) error {
-	if before.Size() < 0 || before.Size() > MaxBytes-b.bytes {
-		return errors.New("runtime byte limit exceeded")
-	}
-	b.bytes += before.Size()
-	f, err := os.Open(path)
-	if err != nil {
-		return errors.New("cannot open runtime input")
-	}
-	defer f.Close()
-	opened, err := f.Stat()
-	if err != nil || !os.SameFile(before, opened) || !opened.Mode().IsRegular() {
-		return errors.New("runtime input changed while opening")
-	}
-	fmt.Fprintf(h, "file:%o:%d\n", before.Mode(), before.Size())
-	n, err := io.Copy(h, &contextReader{ctx: ctx, reader: io.LimitReader(f, before.Size()+1)})
-	if err != nil {
+	if err := ctx.Err(); err != nil {
 		return err
 	}
-	after, err := f.Stat()
-	if err != nil || n != before.Size() || !same(before, after) {
-		return errors.New("runtime input changed while hashing")
+	if before == nil || !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > MaxBytes-b.bytes {
+		return errors.New("runtime byte limit exceeded or input is nonregular")
 	}
-	return nil
+	b.bytes += before.Size()
+	fmt.Fprintf(h, "file:%o:%d\n", before.Mode(), before.Size())
+	return readFile(ctx, path, before, h)
+}
+
+// readFile observes a bounded regular file through both its open descriptor and
+// its name. This detects observable drift; it does not provide an atomic view.
+func readFile(ctx context.Context, path string, before os.FileInfo, destination io.Writer) (result error) {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if before == nil || !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > MaxBytes {
+		return errors.New("runtime input exceeds byte limit or is nonregular")
+	}
+	// A FIFO substituted after preflight must not block waiting for a writer.
+	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return errors.Join(ctx.Err(), errors.New("cannot open runtime input"))
+	}
+	defer func() { result = errors.Join(result, f.Close(), ctx.Err()) }()
+	opened, err := f.Stat()
+	named, pathErr := os.Stat(path)
+	if err != nil || pathErr != nil || !same(before, opened) || !same(before, named) {
+		return errors.New("runtime input changed while opening")
+	}
+	n, readErr := io.CopyBuffer(destination, &contextReader{ctx: ctx, reader: io.LimitReader(f, before.Size()+1)}, make([]byte, 32<<10))
+	after, statErr := f.Stat()
+	named, pathErr = os.Stat(path)
+	if statErr != nil || pathErr != nil || n != before.Size() || !same(before, after) || !same(before, named) {
+		return errors.Join(readErr, ctx.Err(), errors.New("runtime input changed during read"))
+	}
+	return errors.Join(readErr, ctx.Err())
 }
 
 func same(a, b os.FileInfo) bool {
@@ -182,28 +198,19 @@ func (r *contextReader) Read(p []byte) (int, error) {
 	return r.reader.Read(p)
 }
 
-func copyFile(ctx context.Context, source, target string, mode os.FileMode, size int64) error {
-	in, err := os.Open(source)
-	if err != nil {
+func copyFile(ctx context.Context, source, target string, before os.FileInfo) (result error) {
+	if err := ctx.Err(); err != nil {
 		return err
 	}
-	defer in.Close()
 	out, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		return err
 	}
-	n, copyErr := io.Copy(out, &contextReader{ctx: ctx, reader: io.LimitReader(in, size+1)})
-	closeErr := out.Close()
-	if copyErr != nil {
-		return copyErr
+	defer func() { result = errors.Join(result, out.Close(), ctx.Err()) }()
+	if err := readFile(ctx, source, before, out); err != nil {
+		return err
 	}
-	if closeErr != nil {
-		return closeErr
-	}
-	if n != size {
-		return errors.New("runtime file changed during copy")
-	}
-	return os.Chmod(target, mode)
+	return out.Chmod(before.Mode().Perm())
 }
 
 // CopyModules verifies both sides of a controlled copy before atomically making

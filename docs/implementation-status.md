@@ -32,6 +32,15 @@ The source and tests define current behavior. “Native” below means installed
   literal imports through the configured resolver, and broadens unresolved,
   computed, dormant or escaped loader influence explicitly. Parser availability
   and original TypeScript support are not assumed for older accepted pairs.
+- An internal Node/TypeScript source candidate checks every declared module and
+  lexical binding in a restricted synchronous numeric/Boolean subset, rejects
+  dormant unsupported effects and bounds the direct-call graph. Pinned
+  TypeScript 6.0.2 original/emitted structural comparison rejects emitter
+  contradictions; source, parser/runtime tool bytes and private copies are
+  rechecked. Mandatory installed macOS normal/race and Linux tests passed;
+  combined repository normal/race/vet checks passed. Selected tool trust remains explicitly
+  unqualified. This candidate is not a complete Vitest inventory, runtime proof
+  or issuer, and cannot authorize cache reuse or omission.
 - Native input envelopes operationally capture and enforce declared resources,
   absence, exact environment and bounded scratch. They cannot mint or reuse
   receipts: complete provider equivalence remains unqualified. Source and copied
@@ -58,6 +67,15 @@ The source and tests define current behavior. “Native” below means installed
   library trees and per-binary loader context are bound and rechecked. Build
   scripts, proc macros, custom harnesses, doctests and ambient/native effects
   remain explicit gaps; these descriptive APIs grant no omission authority.
+- Internal CMake/Ninja closure APIs share a runner-neutral private build session,
+  producer records, guarded source/tool/build identities and bounded native
+  collection. Fresh CMake File API and Ninja dependency observations bind
+  targets, settings and consumed headers; GoogleTest, Catch2 and CTest inventories
+  retain configured lifecycle scopes. Actual macOS/Linux controls passed,
+  including generated/header/compiler-alias drift and original fault outcomes.
+  Full repository normal/race/vet integration checks passed. Unresolved SDK, initializer,
+  linker, macro and runtime effects remain explicit gaps; these APIs grant no
+  runtime qualification or receipt authority.
 - Authenticated cache key/receipt reads now use confined nonblocking opens,
   admitted-size bounds and pre/post inode/full metadata checks. Actual macOS
   race and Linux stale-FIFO and post-read drift tests passed. Combined normal,
@@ -73,6 +91,13 @@ The source and tests define current behavior. “Native” below means installed
   Independent macOS/Linux tests cover allocation bounds, FIFO replacement and
   Git SHA-1/SHA-256 validation. These observations do not provide an atomic
   filesystem history; directory-name enumeration allocation is outside this fix.
+- Node runtime dependency hashing and copying now share nonblocking regular-file
+  opens, admitted-size streaming and descriptor/name metadata guards. Ten actual
+  macOS/Linux controls passed, including stale FIFO substitution, growth,
+  same-byte inode replacement, typed cancellation, a public fingerprint golden
+  and cleanup after actual staged module bytes. Combined repository normal/race/vet
+  checks passed. These per-file observations do not provide an atomic tree history or
+  qualify any Node runtime for skipping.
 - Unix commands now cancel their process groups, including descendants holding
   pipes after their parent exits. Windows and children that leave the group need
   separate enforcement; process cleanup is not a runtime isolation proof.
@@ -153,10 +178,12 @@ cards do not authorize native omission or change the capabilities listed here.
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
 | SwiftPM XCTest | Installed Darwin Swift 6.0–6.4 target graph, source/resource/tool and observed private build-product closure, conservative proposals, independent cases and serial outcomes; shadow comparisons | XCTest only; full suite required, no parallel/plugin/macro/binary support |
 | Xcode XCTest | Observed private build/test-product and tool closure, independent full enumeration and installed Xcode 26.3/27.0 xcresulttool case/summary reconciliation | Full single-plan/device/configuration scope; no filtering, repetition or Swift Testing |
+| Internal CMake API: GoogleTest, Catch2, CTest | Internal observed build/header/configuration closure, bounded native inventory and private producer binding with actual macOS/Linux controls | Full original configured scopes; SDK/linker/runtime gaps remain, no omission authority |
 | JVM, .NET, Ruby, PHP, Dart, C/C++, Bun, Deno, Bazel | Explicit original full-scope command entries and applicable strict report imports | No claim of native framework discovery, filtering or runtime qualification for these entries |
 | Generic command | Preserved original structured command and exit status; optional verified installed Node dependency tree | Full scope only; custom Cloudflare pools stay generic |
 
-`hayaku catalog` lists these distinctions. Report formats may require a runner-specific reporter/export step; an entry does not imply that every runner emits that dialect directly. [Runner support](runner-support.md) records exact fixture versions separately from accepted protocol ranges.
+`hayaku catalog` lists registered integrations; the internal closure APIs above
+are not registered CLI adapters. Report formats may require a runner-specific reporter/export step; an entry does not imply that every runner emits that dialect directly. [Runner support](runner-support.md) records exact fixture versions separately from accepted protocol ranges.
 
 The new independent Vitest collection path has actual installed-runner evidence
 for 4.1.11/8.2.2 only; other pairs are rejected by this new collection decoder.

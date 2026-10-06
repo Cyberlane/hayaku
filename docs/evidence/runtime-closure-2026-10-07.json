@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "recorded_date": "2026-10-07",
+  "base_commit": "38699afacf81f26f455706fae87dd34449d25968",
+  "status": "local-implementation-and-composition-verified",
+  "scope": "local-macos-linux-implementation-evidence-only",
+  "authority": "No additional framework/runtime/provider qualification or receipt authority; not external acceptance or publication.",
+  "source_sha256": {
+    "internal/noderuntime/runtime.go": "3494f61c9308a26ec2ebabd502e0225e274a7058fd0c52d60c94f952be4fc71f",
+    "internal/noderuntime/runtime_boundary_test.go": "520de3f97734432389eb1ae84789e9bda12912ad68c720dd71d178577d29e3c6",
+    "internal/native/dynamic_acceptance_test.go": "a8e3089af47520dfb97cb18c74dcf215ebf87eebb733f2c2065dbbdc8949e9bd",
+    "internal/native/node_certifier.go": "714664197352243643e9982b04fa5c888c349fed1a75e936009df0fb9e265a1d",
+    "internal/native/node_certifier_test.go": "71848db41cdcf3e0d1d4a400a7cb113dfa92cac6ac7989413f8aa1fdf1ea5641",
+    "internal/native/node_certifier.cjs": "e4d76ca8dd6d02e3ab7ad78d1de6549096edb48e492f9ce5db86f69cb6d6fc0a",
+    "internal/adapter/buildclosure/session.go": "9f3f095fa8d3dbb3404b57c5c2ed770d7be5b4815f2ba28dc9a9cee590ebfc08",
+    "internal/adapter/buildclosure/session_test.go": "05e5b4a70ad684eab17f626dcb350343354f97d609dbedc558d118b644fd5c41",
+    "internal/adapter/cmake/closure.go": "e8f1c76d2fa2d59f8cd760594aff5103b17ea7efa83073c36a44cf291732e3f1",
+    "internal/adapter/cmake/closure_adversarial_test.go": "ec776e30531dc80e9bdc40abf3027ee9c4a6bb9135238ae75d4ef93e00bdd3cc",
+    "internal/adapter/cmake/closure_test.go": "647589a2411d5948b507a56bf69cf1bd243369dcfdaf38d4ae7a2834a4f52d41",
+    "internal/adapter/cmake/fileapi.go": "20ec46f094ed1de91552a9eccda2e59d4ab4acf1011a8cad0308ea08f99ce900",
+    "internal/adapter/cmake/fileapi_adversarial_test.go": "9b21234c773fe58314df70664543f2b295f58eb0f921286fe2276bce7559bd19",
+    "internal/adapter/cmake/fileapi_test.go": "16a81de3d09d2d8d0f1ded90a95917d5e203d8344fe2bb8c52b08f825e094024",
+    "internal/adapter/cmake/inventory.go": "ceb70524d8c2a80c9e3da6f12939f5559a43774a8676065ee5efa028b6191a67",
+    "internal/adapter/cmake/inventory_test.go": "8dfa624b6425f83d34ddfed8251c72ab9ca944ae273826833aac6c9eaff54066"
+  },
+  "observations": {
+    "node_dependency_reads": {
+      "cards": [
+        "K49"
+      ],
+      "macos": {
+        "normal_seconds": 1.297,
+        "race_seconds": 4.125,
+        "vet_seconds": 0.178,
+        "exit_codes": [
+          0,
+          0,
+          0
+        ]
+      },
+      "linux": {
+        "required_cases": 10,
+        "skips": 0,
+        "normal_seconds": 0.335,
+        "exit_code": 0,
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "uid": 65534,
+        "network": "none",
+        "root_read_only": true,
+        "cleanup_verified": true,
+        "evidence": {
+          "sha256": "b995170f8086926001b6b87588ed6b60d2853e9ba10bf4e31de4eb7b999e5020",
+          "temporary_observation_path": "/var/folders/wx/03ct4kw51hv2tjd381lchk4c0000gn/T/hayaku-k49-final-linux-evidence-faz9j29g/evidence.json"
+        }
+      },
+      "limits": [
+        "Per-file guards do not establish atomic tree history or runtime equivalence."
+      ]
+    },
+    "dynamic_linux_boundary": {
+      "cards": [
+        "K10C"
+      ],
+      "normal_package_seconds": 7.353,
+      "race_package_seconds": 8.321,
+      "vet_seconds": 0.325,
+      "required_cases": 2,
+      "skips": 0,
+      "exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+      "started_guest_cancel_seconds": 2,
+      "fixture_deadline_seconds": 120,
+      "cleanup_verified": true,
+      "unavailable_outside_apis": [
+        "file-setattr",
+        "pkey-exec",
+        "pidfd-lending",
+        "io-uring-setup"
+      ],
+      "limits": [
+        "Unavailable outside APIs give whole-boundary denial evidence only, without attribution to the Hayaku filter.",
+        "file_setattr zero flags observe API availability, not a flag mutation.",
+        "Raw operational output cannot mint passes."
+      ],
+      "evidence": {
+        "sha256": "99731ef7d8ef0be50e88f07ae5680c36c6e98b4879ca6e58d84765bb7986c8f7",
+        "temporary_observation_path": "/var/folders/wx/03ct4kw51hv2tjd381lchk4c0000gn/T/hayaku-k10c-actual-evidence-1g51c6cc/evidence.json"
+      }
+    },
+    "node_typescript_source_candidate": {
+      "cards": [
+        "K16A"
+      ],
+      "node_version": "22.18.0",
+      "typescript_version": "6.0.2",
+      "sdk_files": 140,
+      "sdk_bytes": 24345915,
+      "tool_trust": "unqualified",
+      "macos": {
+        "required_cases": 10,
+        "skips": 0,
+        "normal_seconds": 73.675,
+        "race_seconds": 162.749,
+        "vet_seconds": 0.297,
+        "exit_codes": [
+          0,
+          0,
+          0
+        ]
+      },
+      "linux": {
+        "required_cases": 10,
+        "skips": 0,
+        "driver_seconds": 78.686,
+        "exit_code": 0,
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "cleanup_verified": true,
+        "evidence": {
+          "sha256": "13ad1a791f624c4ffd293b6a3c7668a82ae62d0e74082129ffca4923ace7a1bd",
+          "temporary_observation_path": "/var/folders/wx/03ct4kw51hv2tjd381lchk4c0000gn/T/hayaku-node-certifier-linux-gizrtqkz/evidence.json"
+        }
+      },
+      "helper_deadline_seconds": 30,
+      "package_deadline_seconds": 300,
+      "limits": [
+        "Declared restricted module sources are not complete configured Vitest discovery.",
+        "Source and emitted structural checks do not qualify the frontend/runtime trusted computing base or supply an issuer."
+      ],
+      "combined_evidence": {
+        "sha256": "0bb73d253303482e54e77eacd9d5a70ef0ae97fa0b9fa30b14e7fd0e338e9195",
+        "temporary_observation_path": "/tmp/hayaku-node-certifier-final-evidence.json"
+      }
+    },
+    "common_cmake_closure": {
+      "cards": [
+        "LA06A",
+        "LA06B",
+        "LA06C"
+      ],
+      "macos": {
+        "normal_seconds": 173.9,
+        "race_seconds": 297.541,
+        "vet_seconds": 0.476,
+        "exit_codes": [
+          0,
+          0,
+          0
+        ]
+      },
+      "linux": {
+        "normal_seconds": 124.277,
+        "required_top_level_controls": 9,
+        "skips": 0,
+        "exit_code": 0,
+        "image_id": "sha256:0ea54978ec8888bd907c0b0d552b4ac12dd5951ddc37fead577d17d7252e2f91",
+        "cleanup_verified": true,
+        "evidence": {
+          "sha256": "7a92de9598205acbcdc27451d895d76b50702e0667698f2e602eda579daa711b",
+          "temporary_observation_path": "/var/folders/wx/03ct4kw51hv2tjd381lchk4c0000gn/T/hayaku-cmake-linux-evidence-2z_ohont/evidence.json"
+        }
+      },
+      "native_fixture_deadline_seconds": 180,
+      "limits": [
+        "Observed build/header/compiler/inventory closure does not establish complete linker, SDK, macro, initialization or runtime effects.",
+        "Internal APIs are not registered CLI adapters or runtime issuers."
+      ]
+    }
+  },
+  "composition": {
+    "normal": {
+      "exit_code": 0,
+      "seconds": 783.41,
+      "log": "/tmp/hayaku-cmake-node-composed-normal.log",
+      "log_sha256": "375cc9df9691c086cef72df3834abc3ca69472a94fe877cc2e694aa2d2bcb2a3",
+      "argv": [
+        "go",
+        "test",
+        "-p=1",
+        "./..."
+      ]
+    },
+    "race": {
+      "exit_code": 0,
+      "seconds": 1149.339,
+      "log": "/tmp/hayaku-cmake-node-composed-race.log",
+      "log_sha256": "33c3042a055d86806eaae33aa3c0dfec241633375d3571f6e527141cf5632fea",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-p=1",
+        "./..."
+      ]
+    },
+    "vet": {
+      "exit_code": 0,
+      "seconds": 1.624,
+      "log": "/tmp/hayaku-cmake-node-composed-vet.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "argv": [
+        "go",
+        "vet",
+        "-p=1",
+        "./..."
+      ]
+    }
+  },
+  "canonical_review": {
+    "status": "source-dispositions-accepted-final-doc-index-reviewed-separately-before-commit",
+    "source_files": 16,
+    "analyzed_supported_files": 274,
+    "focused_identities": 45,
+    "reused_identities": 43,
+    "new_intentional_identities": 2,
+    "location_pairs": 117,
+    "zero_fragment_files": 44,
+    "below_token_floor_files": 39,
+    "no_comparable_boundary_files": 5,
+    "warnings": 0,
+    "parse_diagnostics": 0,
+    "truncated": false,
+    "evidence": {
+      "sha256": "7fd26b2f6036c06afc6a6fb38f13c504b6d93e77f520500fe13075233299cfa5",
+      "temporary_observation_path": "/tmp/hayaku-cmake-node-canonical-review-20261007-corrected.json"
+    },
+    "final_report_path": "/tmp/hayaku-cmake-node-final-docs-canonical-mori.json"
+  },
+  "composition_profile": {
+    "platform": "macos-arm64",
+    "package_parallelism": 1,
+    "required_installed_controls": [
+      "CMake/Ninja/GoogleTest/Catch2/CTest",
+      "Nextest",
+      "Python unittest/pytest"
+    ],
+    "linux_boundary_opt_in": "Separate installed Linux observations on the same frozen source bytes; not attributed to this macOS whole-project run.",
+    "node_certifier_sdk_opt_in": "Separate mandatory macOS/Linux source-candidate observations on the same frozen source bytes; not attributed to the whole-project run.",
+    "source_sha256_verified": "Before and after every completed composition phase."
+  }
+}

@@ -1,6 +1,6 @@
 # Affected-test execution kanban
 
-Updated: 2026-10-06. This is the working backlog for end-to-end affected-test
+Updated: 2026-10-07. This is the working backlog for end-to-end affected-test
 execution across supported languages and runners. It is a plan, not qualification
 evidence or authorization to publish, deploy, or omit existing CI gates.
 
@@ -70,7 +70,11 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K10C | QA | K10B, K02 | Linux generalization acceptance | Independently challenge the shared backend with actual supported non-Go runtimes, bypasses and complete cleanup; static-only acceptance cannot qualify Node or other dynamic contexts. |
+| K10D | RUNTIME | K10B, K10C, K09, F03 | Captured native addon execution roles | Admit only explicitly captured native addon bytes and their loader/library closure in a separate executable runtime role, preserving resource noexec restrictions, bounded inputs and denial policy; actual supported addons require source/tool/alias/live-drift/cancellation controls and cannot grant user FFI or provider authority. |
+| K14 | GO | K13, K06, K10 | Broader Go qualification | Support documented Go constructs, external test packages, setup and fixture inputs with enforced effect contracts; unsupported interfaces/reflection/cgo/concurrency broaden rather than guess. |
+| K22 | PYTHON | K21, K06, K10 | Python runtime and pytest/unittest qualification | Actual interpreter, native extension, subprocess and resource effects meet the supported boundary; both runners pass common and native-specific acceptance cases. |
+| K24 | RUST | K23, K06, K10 | Rust runtime and Cargo/nextest qualification | Supported actual binaries have enforced input boundaries and reconciled outcomes; filtering and runtime effects preserve full-command semantics or fall back. |
+| K27 | BROWSER | K04, K06, K09, K10, K02 | Browser/application/service boundary | Bind browser bytes, application build, storage, requests, service fixtures and cleanup/reset semantics; uncontrolled services or device state prevent reuse. |
 | K26 | APPLE | K25, K06, K11, K09 | Swift/Xcode runtime qualification | Qualify documented host/simulator scopes with reset application/device state; UI/device/external-state tests cannot inherit host-unit qualification. |
 | K19 | WORKER | K15, K07, K08, K09, K02 | Cloudflare worker runtime qualification | Independently qualify worker execution, bindings, storage, requests, isolation and reset state against a defined worker context; ordinary Node/Vitest qualification is insufficient. |
 
@@ -90,6 +94,11 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
+| K49 | CORE | F03, K43, K44 | Bounded Node runtime dependency reads | Reject stale regular-to-FIFO substitution, file growth and identity/metadata drift during Node/SDK hashing and copying; honor cancellation and preserve bounded accounting/cleanup with actual macOS/Linux controls. |
+| K10C | QA | K10B, K02 | Linux generalization acceptance | Independently challenge the shared backend with actual supported non-Go runtimes, bypasses and complete cleanup; static-only acceptance cannot qualify Node or other dynamic contexts. |
+| K16A | TS | K15, K06, F03, K02 | Conservative Node/TypeScript source semantics | Certify every original and emitted declaration, dormant branch, literal import and lexical binding in an explicitly restricted synchronous pure subset; reject unknown syntax, reflection, escapes, mutable/global effects and unbounded computation. Bind installed parser/emitter bytes and settings; grant no runtime or receipt authority. |
+| K10 | RUNTIME | K07, K08, K02, K10A, K10B, K10C | Linux backend generalization | Extend the existing worker to supported non-Go artifacts with real file/process/network/metadata bypass probes, cancellation and cleanup; no runner-specific selection logic in the worker. |
+| L06 | CPP | K29, LA06A, LA06B, LA06C | C/C++ analysis and collection | Account for headers, compiler/linker settings, generated sources, linked libraries, initialization and selected build/runner inventory. |
 | K10B | RUNTIME | K10A, K09 | Dynamic loader, interpreter and JIT closure | Enforce bound installed runtime/library/executable-memory provenance and required thread/process scopes; unsupported modes visibly fall back, without disabling enforcement to make runners launch. |
 | K48 | CORE | K34, F04, K02 | Failed audit cleanup before receipt selection | Trusted configured capsule/suite/native invocations revoke their authenticated provider-domain copies on early validation/cancellation failure using bounded cleanup and captured authority; preserve per-key mismatch detection, foreign domains and forged-artifact admission guards. Missing untrusted policy cannot imply safe revocation. |
 | K30 | CORE | K05, K07, F03 | Monorepo and generated input closure | Cross-language consumers, workspace links and producers invalidate correctly; BASE/candidate generation stays independent, and provenance is enforced rather than declared. |
@@ -123,16 +132,12 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K10D | RUNTIME | K10B, K10C, K09, F03 | Captured native addon execution roles | Admit only explicitly captured native addon bytes and their loader/library closure in a separate executable runtime role, preserving resource noexec restrictions, bounded inputs and denial policy; actual supported addons require source/tool/alias/live-drift/cancellation controls and cannot grant user FFI or provider authority. |
-| K10 | RUNTIME | K07, K08, K02, K10A, K10B, K10C | Linux backend generalization | Extend the existing worker to supported non-Go artifacts with real file/process/network/metadata bypass probes, cancellation and cleanup; no runner-specific selection logic in the worker. |
-| K14 | GO | K13, K06, K10 | Broader Go qualification | Support documented Go constructs, external test packages, setup and fixture inputs with enforced effect contracts; unsupported interfaces/reflection/cgo/concurrency broaden rather than guess. |
-| K16 | TS | K15, K06, K10, K10D | Node runtime qualification for TS/Vitest | Installed Node/module/runner identities and all startup/collection/execution effects fit an enforced context; native addons, JIT/runtime behavior and unsupported loaders cannot bypass qualification. |
+| K16B | TS | K15, K06, K09, K10D | Restricted Vitest framework and startup contract | Review the exact configured bootstrap, transformer/addon, matcher, thread, collection, timer and global-state semantics; preserve the explicitly configured full command and retain observable/unknown-effect gaps until justified. A static user-source certificate alone is insufficient. |
+| K16C | TS | K16A, K16B, K31, K10, K07, K08, K49 | Private Node issuer and shared execution integration | A producer-owned seal binds source, transformed code, tools, configured invocation, inventory, runtime, transport and decoder before shared cache/audit/execute; forged public proofs and envelopes remain rejected, with independent drift/outcome/failure/reuse controls. |
+| K16 | TS | K15, K06, K10, K16A, K16B, K16C | Node runtime qualification for TS/Vitest | Installed Node/module/runner identities and all startup/collection/execution effects fit an enforced context; native addons, JIT/runtime behavior and unsupported loaders cannot bypass qualification. |
 | K17 | JS | K16, K02 | Node test affected execution | Account for runner collection, hooks, module loading, concurrency and exact terminal inventory using common qualification/reuse machinery. |
 | K18 | JS | K16, K02 | Jest affected execution | Account for configured transforms, resolution, mocks, setup, snapshots and process scopes; reject unsupported plugin behavior and snapshot update modes. |
 | K20 | WORKER | K19, K06 | Worker Vitest integration | Collect and execute supported worker-pool groups with complete outcomes and qualified reuse; binding/state changes invalidate consumers and unsupported worker modes fall back. |
-| K22 | PYTHON | K21, K06, K10 | Python runtime and pytest/unittest qualification | Actual interpreter, native extension, subprocess and resource effects meet the supported boundary; both runners pass common and native-specific acceptance cases. |
-| K24 | RUST | K23, K06, K10 | Rust runtime and Cargo/nextest qualification | Supported actual binaries have enforced input boundaries and reconciled outcomes; filtering and runtime effects preserve full-command semantics or fall back. |
-| K27 | BROWSER | K04, K06, K09, K10, K02 | Browser/application/service boundary | Bind browser bytes, application build, storage, requests, service fixtures and cleanup/reset semantics; uncontrolled services or device state prevent reuse. |
 | K28 | BROWSER | K27 | Playwright affected execution | Actual browser-based workloads reconcile discovery and outcomes and reuse only qualified isolated groups; browser-free reporter tests are insufficient. |
 | K32 | CORE | K05, K06, K31, K14, K16 | Selective execution coordinator | For initial Go and TS/Vitest contexts, execute changed groups, validate reused groups, and run complete original scopes on qualification gaps; no unrelated existing native gate is silently replaced. |
 | K33 | CORE | K32, K02 | Aggregate outcome reconciliation | Every required case/group has an executed terminal outcome or authenticated pass; startup/build/hook errors, unexpected identities, truncation, cancellation and drift cannot produce green. |
@@ -146,7 +151,8 @@ remain authoritative if this board drifts.
 
 ## Remaining language implementation lanes
 
-These are named work cards, all `BLOCKED` and unclaimed. K29 specifies exact
+These remaining named family work cards are `BLOCKED`. L06 is in `DONE` after
+its three analysis subcards; K29 specifies exact
 framework scopes before dispatch. Every L-card covers context-specific inventory,
 transitive build/code/configuration/resource dependencies, collection/setup and
 unknown-effect fallback. Every R-card implements reviewed runtime qualification,
@@ -166,7 +172,6 @@ Split a card before claiming it if its contracted scope needs multiple writers.
 | R04 | PHP | L04, K06, K09, K10, K02, RA04A | PHP runtime and runner qualification | Qualify interpreter/extensions and selected runner isolation; uncontrolled service and bootstrap effects retain full execution. |
 | L05 | DART | K29, LA05A, LA05B | Dart analysis and collection | Account for packages, generated code, assets, initialization and chosen Dart/Flutter runner scopes; device/widget contexts are explicit separate scopes. |
 | R05 | DART | L05, K06, K09, K10, K02, RA05A, RA05B | Dart runtime and runner qualification | Qualify the specified runtime and resource/extension effects; device/Flutter contexts cannot inherit plain Dart host qualification. |
-| L06 | CPP | K29, LA06A, LA06B, LA06C | C/C++ analysis and collection | Account for headers, compiler/linker settings, generated sources, linked libraries, initialization and selected build/runner inventory. |
 | R06 | CPP | L06, K06, K09, K10, K02, RA06A, RA06B, RA06C | C/C++ runtime and runner qualification | Review native/FFI/loading effects with an enforced supported contract; unsafe unaccounted behavior broadens, not a user-declared proof. |
 | L07 | BUN | K29, LA07A | Bun analysis and collection | Account for configured TS/JS transforms, resolution, packages, setup, assets and native test discovery; Node qualification is not inherited. |
 | R07 | BUN | L07, K06, K09, K10, K02, RA07A | Bun runtime and runner qualification | Qualify Bun-specific runtime/extension effects and terminal outcomes against actual supported binaries; unsupported modes run in full. |
@@ -178,16 +183,16 @@ Split a card before claiming it if its contracted scope needs multiple writers.
 ## Framework implementation subcards
 
 K29 fixes these named scopes in [language context contracts](language-contexts.md).
-Analysis subcards have the explicit states below after accepted K29; runtime
-subcards remain `BLOCKED` on their listed dependencies. LA06A/B/C are claimed
-by the coordinator for shared CMake build closure and native inventory bridges. Each requires its own
+Analysis and runtime subcards have the explicit states below after accepted K29.
+LA06A/B/C completed shared CMake build closure and native inventory bridges;
+their runtime subcards are ready for separate qualification. Each requires its own
 concrete fixture admission record before executable qualification. Exact pins are
 unresolved for unprovisioned contexts, not wildcard-approved. Family L/R cards
 aggregate these subcards and cannot be closed by one sibling framework.
 
 | Analysis ID | State | Dependencies | Runtime ID | State | Dependencies | Named framework scope |
 | --- | --- | --- | --- | --- | --- | --- |
-| LA01A | READY | K29 | RA01A | BLOCKED | LA01A, K06, K09, K10, K02 | Maven, JUnit Jupiter |
+| LA01A | DOING | K29 | RA01A | BLOCKED | LA01A, K06, K09, K10, K02 | Maven, JUnit Jupiter |
 | LA01B | READY | K29 | RA01B | BLOCKED | LA01B, K06, K09, K10, K02 | Maven, TestNG |
 | LA01C | READY | K29 | RA01C | BLOCKED | LA01C, K06, K09, K10, K02 | Gradle, JUnit Jupiter |
 | LA01D | READY | K29 | RA01D | BLOCKED | LA01D, K06, K09, K10, K02 | Gradle, TestNG |
@@ -201,9 +206,9 @@ aggregate these subcards and cannot be closed by one sibling framework.
 | LA04A | READY | K29 | RA04A | BLOCKED | LA04A, K06, K09, K10, K02 | Composer, PHPUnit |
 | LA05A | READY | K29 | RA05A | BLOCKED | LA05A, K06, K09, K10, K02 | Dart, package:test host VM |
 | LA05B | READY | K29 | RA05B | BLOCKED | LA05B, K06, K09, K10, K02 | Flutter, flutter_test widget host |
-| LA06A | DOING | K29 | RA06A | BLOCKED | LA06A, K06, K09, K10, K02 | CMake/Ninja, GoogleTest |
-| LA06B | DOING | K29 | RA06B | BLOCKED | LA06B, K06, K09, K10, K02 | CMake/Ninja, Catch2 |
-| LA06C | DOING | K29 | RA06C | BLOCKED | LA06C, K06, K09, K10, K02 | CMake, CTest executable scopes |
+| LA06A | DONE | K29 | RA06A | READY | LA06A, K06, K09, K10, K02 | CMake/Ninja, GoogleTest |
+| LA06B | DONE | K29 | RA06B | READY | LA06B, K06, K09, K10, K02 | CMake/Ninja, Catch2 |
+| LA06C | DONE | K29 | RA06C | READY | LA06C, K06, K09, K10, K02 | CMake, CTest executable scopes |
 | LA07A | READY | K29 | RA07A | BLOCKED | LA07A, K06, K09, K10, K02 | Bun, bun:test |
 | LA08A | READY | K29 | RA08A | BLOCKED | LA08A, K06, K09, K10, K02 | Deno, Deno.test |
 | LA09A | READY | K29 | RA09A | BLOCKED | LA09A, K06, K09, K10, K02, R06 | Bazel, C/C++ test rules |
@@ -270,14 +275,14 @@ Windows evidence is required before either can be completed or claimed supported
 
 ## Claims and evidence
 
-Live fleet activity verified 2026-10-06 after the explicit restart request:
+Live fleet activity verified 2026-10-07 during the authorized completion run:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | ACTIVE | K10B reviewed five-file integration frozen; serial whole repository normal642.361s/race1027.488s/vet1.199s passed; canonical259/259+5/5 accepted; final docs-only refresh/local commit. Owns LA06A/B/C common CMake consumer in isolated worktree: actual macOS GoogleTest, Catch2 and CTest normal controls passed; further adversaries, actual Linux and final gates pending. Exclusive heavy execution slot; owns this board and shared capability documentation. |
-| `/root/runtime_implementation` | ACTIVE | K10B source and actual operational controls accepted; independent CMake file-api QA accepted. Read-only K10C acceptance gap/design work and preparing offline pinned Linux CMake execution script; no SDK/runtime execution during root composition. |
-| `/root/completion_review` | ACTIVE | Independent K10B source/tests and actual gates accepted; reviewing final common/CMake source Mori and documentation. Read-only; no implementation ownership or heavy execution. |
-| `/root/completion_testing` | ACTIVE | P01 40/40 named macOS/Linux original baselines independently accepted; extra Composer variant prepared but execution held. Owns only new CMake closure_adversarial_test.go in isolated worktree for source-only installed drift/healthy controls; no heavy execution during root composition. |
+| `/root` | ACTIVE | Whole-repository normal783.410s/race1149.339s/vet1.624s passed for the sixteen frozen integrated source/test files. Final documentation/canonical review and local commit; next runtime-role implementation follows accepted dependencies. |
+| `/root/runtime_implementation` | ACTIVE | LA01A source-only Maven/JUnit bridge in an isolated worktree; the reviewed shared Session API is supplied unchanged and read-only. K10D design recorded, now ready and unclaimed; K16B remains dependency-blocked. No SDK builds or tests during the coordinator's full gates. |
+| `/root/completion_review` | ACTIVE | Independent read-only composed source, literal-diagnostic and capability-documentation review; focused Mori review reuses already accepted identities. |
+| `/root/completion_testing` | ACTIVE | Independent read-only complete-board dependency/state audit and next-ready-card assessment. Node Linux evidence accepted; P01 Composer/OpenSSL extra variant remains held until full gates drain. |
 
 Previous `/root/factory_*` agents are historical owners, not active assignments.
 K07 and K08 passed their corrected local card gates after independent macOS/Linux
@@ -293,6 +298,9 @@ ID | STATE | AGENT/TASK ID | EXACT FILE SCOPE OR WORKTREE | COMMIT/EVIDENCE | NE
 LA06A, LA06B, LA06C | DOING | /root | NEW isolated /tmp/hayaku-cmake-closure-worktree from4b440ab; NEW internal/adapter/buildclosure/session.go/session_test.go shared capture/invocation/stage verification; NEW internal/adapter/cmake/closure.go/fileapi.go/inventory.go and associated tests only; root shared docs/registrations later exact claim | K29 DONE; all three original Mac/Linux C++ healthy/fault baselines independently accepted under P01; minimal common session/actual file-api and native inventory design reviewed | Reuse F03/process/snapshot/model/runner; independent source/private build identities and bounded offline configured invocations; unresolved headers/linker/sysroot/generator/constructor/runtime effects remain explicit full-run gaps; no new authority or planner/cache framework branches; actual installed Mac/Linux/adversarial tests and full checks/Mori before completion
 LA06A, LA06B, LA06C | DOING | /root/runtime_implementation independent QA | NEW internal/adapter/cmake/fileapi_adversarial_test.go only in root-owned isolated /tmp/hayaku-cmake-closure-worktree; no production/helper edits | K29 DONE; root common/CMake candidate source and bounded protocol helper available; heavy SDK tests held for P01 | Independent light actual-helper protocol/lifecycle identity, inventory binding, mutation and admission checks; no installed framework qualification claim
 LA06A, LA06B, LA06C | DOING | /root/completion_testing independent installed QA | NEW internal/adapter/cmake/closure_adversarial_test.go only in root-owned isolated /tmp/hayaku-cmake-closure-worktree; existing common/CMake helpers read-only | K29 DONE; reviewed current shared session and CMake API; root reserves all heavy execution during K10B composition | Source-only prepare actual installed header/generated-input/config/compiler-alias drift and healthy controls, bounded original deadlines; framework/compiler gaps remain explicit; report exact new file for independent review, do not execute SDK builds yet
+K16A | DOING | /root/runtime_implementation | NEW isolated /tmp/hayaku-node-certifier-worktree from38699af; NEW internal/native/node_certifier.go/node_certifier_test.go/node_certifier.cjs only; common helper edits require root reassignment | K15/K06/F03/K02 DONE; reviewer restricted-source and emitted-JS certificate design accepted; current Node/TypeScript/Vitest tool roots must be explicitly observed/bound | Source-only implement closed pure grammar and bounded computation with complete lexical/module/source/tool identity, reject every unknown dormant effect; no native issuer/cache/runner promotion, no installs/SDK builds/heavy tests during tester CMake window; independent tests and actual parser gates later
+K10C | DOING | /root | NEW isolated /tmp/hayaku-k10c-worktree from38699af; NEW internal/native/dynamic_acceptance_test.go only; production/backend/existing QA unchanged | K10B/K02 DONE; reviewer targeted syscall/thread/descriptor acceptance design accepted; existing independent v6 eight-test and static/Go regressions retained | Source-only author actual matched outside/inside controls for pkey executable transitions, memory/process/descriptor/io_uring and newer metadata denials, plus dynamic thread/child file controls; outside unavailable modes explicitly recorded without qualification; Linux actual source/gate review after CMake exclusive heavy window
+K49 | DOING | /root | main38699af internal/noderuntime/runtime.go and NEW runtime_boundary_test.go only; existing runtime_test.go read-only | F03/K43/K44 DONE; concrete stale-regular-to-FIFO open gap identified in digestFile/copyFile; no API expansion | Minimal confined nonblocking open/admitted byte/FD+named metadata/context guards, shared hash/copy path; actual healthy/FIFO/growth/cancel/identity macOS/Linux tests, source review/Mori and composed full normal/race/vet before completion
 K48 | DONE | /root | From3f5065d; root NEW internal/passcache/audit.go/audit_test.go shared bounded captured-root/key audit handle and Observe actual first cache-open adoption; internal/capsule/runtime.go/capsule.go options and NEW capsule/audit.go; internal/suite/suite.go; internal/native/go.go and NEW native/audit.go; backend.go ONLY ExecuteWithOptions cache-open block (original434-442) AuditHandle Observe forwarding, disjoint from worker190-408 transport claim; internal/app/cache_authority.go/native.go/tools.go cleanup dispatch; tester NEW internal/{capsule,suite,native,app}/audit_failure_test.go in isolated refreshed worktree; root shared docs | K34/F04/K02 DONE; independent failure-only cleanup design accepted | Retained existing/createdroot and originalkey Observe guards plus typedcancellationorder repair source accepted; Mac actualDarwin14.36s normal/23.837s race before one-linecancel correction, targetedMacnative normal1.431/race3.295+Linux4package finalPASS/noSKIP afterdelta; independentactualWASIcoldwarm/foreign/domain/freshcreatedcache retarget/outputfailure controls passed; final25-file K30/K48 splitMori139/139+18/18 and256/256+7/7 accepted with45IDs (36 reused,9 new reviewed); wholecomposition normal477.176s/race892.553s/vet0.777s passed; canonical256/256 focus25/25 with40 reused IDs accepted; source identities unchanged across final documentation refresh
 K08 | DONE | /root/runtime_implementation | NEW internal/native/observables.go; observables_test.go; internal/native/backend.go; independent tester NEW observable_boundary_test.go | Corrected K07 accepted; actual metadata/clock/entropy and dormant-effect probes independently passed; canonical staged Mori209/209+14/14focus reviewed; full normal/race/vet passed | Fixed reject-only policy/effect veto accepted; empty effects remain no proof, other external contracts K09
 K29 | DONE | /root | docs/language-contexts.md; docs/affected-tests-kanban.md | Independent specification review accepted; twenty named profiles and forty analysis/runtime subcards; 124 unique card DAG valid; installed candidate facts verified | Actual per-framework admission/qualification and acceptance remain separate; unresolved versions never wildcard-approved
@@ -348,3 +356,25 @@ contents. Keep external acceptance and published availability separate.
 Before every dispatch, recompute readiness from the dependency tables, check
 claims/file overlap, and include the card's acceptance criterion and safety
 contract in the agent brief. One finished lane cannot authorize another's skips.
+
+LA06A, LA06B, LA06C | DOING | /root integration | Main exact ten source/test files from /tmp/hayaku-cmake-closure-worktree plus docs/implementation-status.md only; source pins933b59ec7daecc43f96b7adf66a2e558b9e78381d812e5c3a87512e677eb10ce | Full macOS normal173.900s/race297.541s/vet0.476s and actual Linux normal124.277s/no skips/empty cleanup independently accepted; source12 and corrected tests20 focused Mori identities accepted | Integrate unchanged reviewed bytes; final whole-main normal/race/vet and canonical review pending. Observable build closure grants no runtime/receipt authority.
+
+K49 | DOING | /root shared isolated integration | /tmp/hayaku-node-certifier-worktree/internal/noderuntime/runtime.go only, exact reviewed main reader bytes | Ten actual macOS/Linux regression cases and source review accepted; whole main completion pending | Supply the same existing bounded-reader contract to source-only K16A operational parser tests; no issuer/card-completion authority.
+
+K10C | DOING | /root main integration | NEW internal/native/dynamic_acceptance_test.go exacta8e3089af47520dfb97cb18c74dcf215ebf87eebb733f2c2065dbbdc8949e9bd; docs/native-groups.md and docs/implementation-status.md only | Source reviewers and actual Linux normal7.353s/race8.321s/vet0.325s accepted; syscall availability limits retained; guest cancellation and empty inventories verified | Final focused Mori, exact source integration and combined whole repository/canonical review before card completion. No issuer/qualification changes.
+
+K16A | DOING | /root main integration | NEW internal/native/node_certifier.go, node_certifier_test.go and node_certifier.cjs only, exact reviewed71466419/71848db4/e4d76ca8 identities; docs/implementation-status.md only | Formal source/Mori and mandatory macOS normal73.675s/race162.749s/vet0.297s accepted; independently reviewed bounded Linux driver currently running | Integrate unchanged candidate bytes and retain ToolTrust unqualified; actual Linux and combined whole repository/canonical acceptance before completion. No native framework inventory/issuer/cache authority.
+
+K49, K10C, K16A, LA06A, LA06B, LA06C | REVIEW | /root coordinator | Exact sixteen integrated source/test files plus three capability/board docs; code snapshot frozen | Source/test/Mori review and each required installed macOS/Linux gate accepted, including Node ten-case Linux78.686s; SDK6.0.2 publisher archive and 140-file bridges verified; unqualified scopes unchanged | Combined whole repository normal/race/vet, immutable canonical review and final docs/status reconciliation remain before DONE/local commit.
+
+P01 | DOING | /root provenance integration | docs/runner-provisioning.md and docs/evidence/runner-provisioning-2026-10-06.json only | Approved isolated TypeScript6.0.2 dependency; official metadata/archive publisher SHA512/SHA1 and private 140-file map independently verified; source-candidate macOS/Linux gates accepted | Append dated parser-SDK setup and source-check evidence separately from the unchanged original40 baseline matrix; no framework/runtime qualification or new host installation. Historical private checkpoint remains immutable.
+
+LA01A | DOING | /root/runtime_implementation | NEW isolated /tmp/hayaku-maven-closure-worktree from38699af; NEW internal/adapter/maven/** only. Exact reviewed internal/adapter/buildclosure/session.go/session_test.go copied as read-only supporting inputs; no common/backend/registration edits | K29 DONE; actual pinned Maven/JUnit original macOS/Linux healthy/fault baselines accepted. Current composed normal passed; shared API/source is frozen and independently reviewed | Source-only implement native configured Maven/JUnit collection and conservative build/input closure using existing Session and common JUnit outcomes. Preserve full commands and all startup/reflection/plugin/generator/runtime gaps; no issuer/cache authority. Actual SDK/build/tests held until coordinator full gates drain; acceptance depends on final common integration.
+
+K49, K10C, K16A, LA06A, LA06B, LA06C | REVIEW | /root evidence integration | NEW docs/evidence/runtime-closure-2026-10-07.json only | Actual installed platform gates and sixteen source pins independently accepted; canonical45-ID review accepted; whole normal783.410s passed, race/vet pending | Retain digest/result/context-only milestone evidence with explicit unqualified/runtime gaps; append terminal composition only after actual results, no raw environment/source/output.
+
+P01 | DOING | /root/completion_testing | Private approved setup root: exact locked @rolldown/binding-linux-arm64-gnu1.2.12 archive, official metadata and verified private extraction only; existing macOS SDK/lock unchanged | Existing approved Vitest4.1.11/Vite8.2.2 fixture lock fixes exact official npm URL and publisher SHA512; K10D remains BLOCKED, no runtime or provider acceptance | Download/pin/verify bounded archive and safe private SDK bytes for later Linux addon controls; no execution/build/test during coordinator full gates, no global installation or support claim.
+
+P01 | DOING | /root/completion_testing | NEW private Maven helper metadata and later independent repository generation under approved setup root; exact maven-help-plugin3.5.2 and maven-dependency-plugin3.11.0 only with required official closure | LA01A requires effective POM and ordered classpath; current baseline repository must remain unchanged. Official Maven Central artifact/POM/checksum identities required before use | Prepare bounded official metadata/checksum/closure plan only during full gates. Later private resolution/provisioning and actual offline helper controls need a quiet slot; adapter invocations never fetch or mutate original installed inputs.
+
+K49, K10C, K16A, LA06A, LA06B, LA06C, K10, L06 | DONE | /root coordinator | Exact sixteen source/test files and six scoped evidence/capability docs | Whole-main normal783.410s/race1149.339s/vet1.624s all exit0 with original fixture deadlines and source hashes checked before/after every phase; independent platform/Mori/evidence review accepted | Final immutable docs/index review and local commit. K10/Linux operational generalization and L06/CMake analysis aggregates complete; no Node/CPP runtime provider or new receipt authority.
