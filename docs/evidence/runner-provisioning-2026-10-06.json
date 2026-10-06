@@ -9576,5 +9576,283 @@
     },
     "evidence_sha256": "0bb73d253303482e54e77eacd9d5a70ef0ae97fa0b9fa30b14e7fd0e338e9195",
     "qualification": "source-candidate-only-no-runtime-framework-issuer-or-receipt-authority"
+  },
+  "additional_composer_variant_observations": {
+    "date": "2026-10-07",
+    "qualification": "unqualified",
+    "scope": "Independent original zero-package Composer PSR4/bootstrap/lock variants; no third-party Composer dependency closure or omission authority",
+    "named_original_framework_contexts_unchanged": 40,
+    "additional_variant_contexts": 2,
+    "supplement": {
+      "temporary_path": "/tmp/hayaku-language-acceptance-bdhM36/checkpoints/p01-composer-variant-supplement-20261006T162434Z.json",
+      "sha256": "a588a8ccdb3a1130ee889c83f528c8e2df14e1a6f87631ccd140a32d0521fb89"
+    },
+    "php": "8.4.24",
+    "composer": "2.10.3",
+    "phpunit": "12.5.38",
+    "openssl": {
+      "macOS": "3.5.9",
+      "Linux": "3.0.20"
+    },
+    "construction": {
+      "stages": 12,
+      "all_exit_zero": true,
+      "all_joined": true
+    },
+    "results": [
+      {
+        "platform": "macOS-arm64",
+        "healthy": {
+          "exit": 0,
+          "passed": 2,
+          "failed": 0
+        },
+        "seeded_fault": {
+          "exit": 1,
+          "passed": 1,
+          "failed": 1,
+          "failed_case": "SuiteTest.testAlpha"
+        },
+        "skipped": 0,
+        "errors": 0
+      },
+      {
+        "platform": "Linux-arm64",
+        "healthy": {
+          "exit": 0,
+          "passed": 2,
+          "failed": 0
+        },
+        "seeded_fault": {
+          "exit": 1,
+          "passed": 1,
+          "failed": 1,
+          "failed_case": "SuiteTest.testAlpha"
+        },
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "parser_and_export_bound_controls": 11,
+    "artifacts": [
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/php_openssl_mac_build_bounded_v2.py",
+        "bytes": 13667,
+        "sha256": "0947849a63e16aa2b77061359dda7eca040a294483c199f20a06a92f59c29674"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/phpunit_composer_bounded_baseline.py",
+        "bytes": 16863,
+        "sha256": "451e60df653b9f44e0058012b44a165310fe751578c2c76e91760aa4b709ae0f"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/composer_baseline_guard.py",
+        "bytes": 2346,
+        "sha256": "afceb0f6491d929883deeda8b39b6c7f3c186969ebb9a9a08cbee645e7edeef8"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/php-openssl-mac-candidate.json",
+        "bytes": 1029,
+        "sha256": "634b087b478d8476fcb803ebf34e6912ead97394ab6caa3b3d60b5f9f21a8391"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/archives/openssl-3.5.9-download-verified-20261006T153915Z.json",
+        "bytes": 1544,
+        "sha256": "fa50f5a44cc0d5a5c69e4bdbcd8af3d98f8808063b0868fdd005d6bf20e81d54"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/php-openssl-mac-_k72f3wd/construction.json",
+        "bytes": 22651,
+        "sha256": "8d1c5a9548c1060788c9c6261cf0fb042188517120640fea956c59de0280a98e"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/php-openssl-build-controller-wjs14f_6/evidence.json",
+        "bytes": 614,
+        "sha256": "263cf57e29bad4cc5221f22a9ca37da51219479c1762ca90d8dbc94b88026da6"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/composer-parser-controls-bdqxj3g2/evidence.json",
+        "bytes": 1204,
+        "sha256": "aba17f48d24788607b504d4497937f9eae1cf4f9e4eb16c280fa30ecc70cf0eb"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/composer-autoload-bounded-lye9yzhf/evidence.json",
+        "bytes": 13711,
+        "sha256": "57bf397f3eb08819cf83dd1e94e8790f5aa6a2ac3b76684e767354d67e8cfc01"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/composer-baseline-controller-oo1rwy7o/evidence.json",
+        "bytes": 614,
+        "sha256": "7ac090c80adb875fcfd61e36d0323c455db31a389043b19add8bc6ace2508c1e"
+      }
+    ],
+    "historical_setup_failure": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/phpunit-composer-mac-initial-setup-failure.json",
+      "sha256": "0e8514390c6e983e677969a119159a0fa9a41969bfa34af0e06bd08fb2e146a9"
+    },
+    "limits": "Original configure120/build600/install120/probe30/jobs2/SDKstreams16MiB and framework60/streams8MiB unchanged",
+    "acceptance": "Independent source, artifact, native XML, exact exit, lock identity and joined cleanup review passed; final task-created Linux guest inventory empty."
+  },
+  "additional_maven_helper_observations": {
+    "scope": "Pinned private Maven metadata helper repository and original offline effective-POM/classpath outputs only",
+    "qualification": "unqualified",
+    "named_original_contexts_unchanged": 40,
+    "helper_goals": [
+      "org.apache.maven.plugins:maven-help-plugin:3.5.2:effective-pom",
+      "org.apache.maven.plugins:maven-dependency-plugin:3.11.0:build-classpath"
+    ],
+    "final_repository": {
+      "path": "/tmp/hayaku-language-acceptance-bdhM36/maven-helper-repository-20261006T164441Z-c3fb5bfd/repository",
+      "manifest_sha256": "89b1dd15791eded6af62f3a0915065c32b2666219d95ee4227f151f746e82e6f",
+      "coordinates": 206,
+      "artifact_count": 311,
+      "artifact_bytes": 30669640,
+      "publisher_sidecar_bytes": 12682,
+      "total_regular_bytes": 30682322,
+      "official_base": "https://repo.maven.apache.org/maven2/",
+      "publisher_algorithm": "sha1 with retained official sidecars; local SHA256 additionally bound",
+      "old52_repository_unchanged": true
+    },
+    "results": [
+      {
+        "platform": "mac-arm64",
+        "status": "offline-native-helper-outputs-passed-unqualified",
+        "native_classpath_entries": 8,
+        "lifecycle": {
+          "compiler": "3.14.1",
+          "surefire": "3.5.4"
+        }
+      },
+      {
+        "platform": "linux-arm64",
+        "status": "offline-native-helper-outputs-passed-unqualified",
+        "native_classpath_entries": 8,
+        "lifecycle": {
+          "compiler": "3.14.1",
+          "surefire": "3.5.4"
+        }
+      }
+    ],
+    "same_native_order_both_platforms": true,
+    "native_steps_all_joined_exit0": true,
+    "container_cleanup": true,
+    "whole_sdk_repository_pre_post_equal": true,
+    "retained_failures": "Two original offline resolution failures; published plugin.xml flat closure required five additional exact native-mediated runtime JAR coordinates; neither prior generation/manifest altered",
+    "sdk_footprint": {
+      "maven": {
+        "files_and_directories": 109,
+        "regular_bytes": 10869833,
+        "digest": "eaa63176b1a1f435505018eccad88cee42c57a9bf77f40cb9dbb49f3add1d3af"
+      },
+      "mac_jdk": {
+        "files_and_directories": 542,
+        "regular_bytes": 350783484,
+        "digest": "2ee9f095f3b51961dfe633d46c925626905a182f2fb4889fb05efff1b8d005ce"
+      },
+      "linux_jdk": {
+        "files_and_directories": 540,
+        "regular_bytes": 361750975,
+        "digest": "740832de3b33708e6d881b94ad4984dba96156aee8232f9798e893b86ed48ccb"
+      },
+      "new_repository": {
+        "files_and_directories": 1014,
+        "regular_bytes": 30682322,
+        "digest": "1681dc3bd974a83427b08e892c9084910a8cd983963607fd13808909ac13a045"
+      }
+    },
+    "artifacts": [
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven-helper-metadata-20261006T155422Z-bb3dc587/helper-metadata-plan.json",
+        "bytes": 18917,
+        "sha256": "0a62863079d5fea6ce8682d9603d9aac14cafd5194cc6efeb166a6eda06ed333"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven_helper_repository_provision.py",
+        "bytes": 9235,
+        "sha256": "37e02ba2465eb82e14175921abbeeb1f5d14f6ef441a27bfc015e5d6453284dd"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven_helper_repository_extend.py",
+        "bytes": 3980,
+        "sha256": "67e2b2d28e556ee8db826545f4a1e74dc0bfba5c26d819a1705d18890a8aeaf4"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven_helper_repository_extend_generation3.py",
+        "bytes": 3927,
+        "sha256": "8a7384196e4306eef62cd9d80fb843cae77ea39ddb2fa67bdabdd0456363a554"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven_helper_offline_baseline.py",
+        "bytes": 13311,
+        "sha256": "e253ed3d64a392eb7426fbac0faf2f8ac7c42fe6d32da9fed0f197da748680f6"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven_helper_offline_baseline_generation2.py",
+        "bytes": 13311,
+        "sha256": "57b73d829d765d3cd65445871bdf746cf6595af9a711f9ccf5edbed67dbad82b"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven_helper_offline_baseline_generation3.py",
+        "bytes": 13311,
+        "sha256": "cffb8870e3379c13226d62bafad13875f91e3b0da05ac09722c2aee93c50bc39"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven_helper_offline_guard_generation3.py",
+        "bytes": 2362,
+        "sha256": "5a1fe6f4d61cfd684d7f5fa5c069a4e99f455c310dba93580de8b746f3d478f0"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven-helper-repository-20261006T162908Z-b826c552/repository-manifest.json",
+        "bytes": 297700,
+        "sha256": "0240b663e2eb1405fd3f7a617679cdb8a018a85b16be13ea025101f7071988fd"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven-helper-repository-20261006T164220Z-64f20110/repository-manifest.json",
+        "bytes": 307576,
+        "sha256": "dc8869656795e74e7ba6c1684d7eb95e5c78450b8fbd0621fb48946f2f2279e6"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/maven-helper-repository-20261006T164441Z-c3fb5bfd/repository-manifest.json",
+        "bytes": 311009,
+        "sha256": "89b1dd15791eded6af62f3a0915065c32b2666219d95ee4227f151f746e82e6f"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/maven-helper-offline-d1mi3ft1/evidence.json",
+        "bytes": 6629,
+        "sha256": "1d3a44edbad97d7a5e997b65551e7bba3dbcb131ac66d8cabb1b1d797a5fa623"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/maven-helper-offline-vd18nekm/evidence.json",
+        "bytes": 6654,
+        "sha256": "27e2208ef8a1bfb5881f1d8619898399c60ec7abee9af01234cdf5c6748c28c5"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/maven-helper-offline-n739w9ax/evidence.json",
+        "bytes": 17829,
+        "sha256": "c9f9f4531b6ec624ebfd73835e4900580d66be465fc6d02758713dea3cd73cc2"
+      },
+      {
+        "path": "/tmp/hayaku-language-acceptance-bdhM36/caches/maven-helper-offline-controller-6waxxipo/evidence.json",
+        "bytes": 616,
+        "sha256": "abf68d48f3a398fa57dd921b93425161f14f238d7fa26b224c80efb90bcd0173"
+      }
+    ],
+    "gaps": [
+      "Native metadata output is not source inventory or complete runtime influence",
+      "Opaque JDK module streaming role and remaining host/JVM/native zstd behavior are unqualified",
+      "No provider/receipt/CI omission qualification",
+      "Only provisioning downloader accessed official network; helper CLI used -o, Linux also enforced network-none"
+    ],
+    "limits": {
+      "native_goal_seconds": 120,
+      "linux_total_seconds": 180,
+      "streams_bytes": 8388608,
+      "owned_artifact_bytes": 4194304
+    },
+    "date": "2026-10-07",
+    "supplement": {
+      "temporary_path": "/tmp/hayaku-language-acceptance-bdhM36/checkpoints/p01-maven-helper-supplement-20261006T164823Z.json",
+      "sha256": "0c412adc53501f81c90ff2ad4f21af535aa5c59147c67de689b92f9542eef72b"
+    }
   }
 }

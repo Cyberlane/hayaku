@@ -91,8 +91,26 @@ the corrected passing baselines. Other selected SDKs and
 frameworks remain at the explicit setup or baseline stage recorded in the file.
 No candidate in this checkpoint gains permission to omit tests.
 
-The PHP baselines cover the bundled PHPUnit PHAR. Composer autoload, lockfile and
-bootstrap variants require separate fixture evidence before profile admission.
+The original PHP baselines cover the bundled PHPUnit PHAR. Separate macOS/Linux
+Composer 2.10.3 PSR4, zero-package lock and bootstrap variants passed healthy and
+seeded-failure controls on 2026-10-07 with PHP 8.4.24 and PHPUnit 12.5.38. The
+private macOS PHP/OpenSSL 3.5.9 construction and bounded driver controls also
+passed; Linux used its separately recorded OpenSSL 3.0.20. These two additional
+variants retain exact native exits and case outcomes, stable lock/tool identities
+and joined cleanup. They leave the original 40 named framework contexts unchanged,
+cover no third-party Composer packages and grant no runtime qualification. The
+checkpoint records their supplementary evidence separately.
+
+Separate Maven metadata helper controls passed offline on macOS and Linux on
+2026-10-07, using pinned maven-help-plugin 3.5.2 and maven-dependency-plugin 3.11.0.
+The final private repository contains 206 coordinates and 311 artifacts verified
+against official Maven Central SHA1 sidecars and additionally bound by local
+SHA256 digests. Both platforms produced the same ordered eight-entry native
+classpath. Two earlier offline resolution failures and all three immutable
+repository generations remain recorded. The original repository and SDK bytes
+were unchanged; processes joined and task-created guests were removed. These
+checks establish metadata helper setup, leave the original 40 named framework
+contexts unchanged and grant no source, runtime, provider or omission authority.
 
 A separate parser SDK observation added on 2026-10-07 records TypeScript 6.0.2,
 its official npm metadata, publisher SHA512/SHA1 archive identities and all 140
