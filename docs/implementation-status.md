@@ -45,6 +45,9 @@ The source and tests define current behavior. “Native” below means installed
   independent pytest/unittest cases. Bounded captured source bytes supply import,
   fixture and dormant-effect evidence; unsupported runtime effects retain the
   original full scope. Source/tool/context drift rejects the evidence.
+- Shared input-envelope capture rejects regular-file replacement by a FIFO
+  through nonblocking opens. Independent macOS/Linux tests verify rejection
+  without a writer and preserve captured byte accounting.
 - Snapshot file hashing streams through a fixed buffer with bounded growth
   detection, regular-file identity checks and final file/directory drift checks.
   Independent macOS/Linux tests cover allocation bounds, FIFO replacement and

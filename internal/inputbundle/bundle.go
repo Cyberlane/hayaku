@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"unicode/utf8"
 )
 
@@ -463,13 +464,13 @@ func (c *collector) readFile(name string, before os.FileInfo) ([]byte, error) {
 	if before.Size() < 0 || before.Size() > limits.FileBytes || before.Size() > limits.Bytes-c.b.manifest.Bytes {
 		return nil, errors.New("input envelope byte limit exceeded")
 	}
-	f, err := os.Open(name)
+	f, err := os.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
 		return nil, errors.New("cannot open declared input")
 	}
 	defer f.Close()
 	opened, err := f.Stat()
-	if err != nil || !opened.Mode().IsRegular() || !os.SameFile(before, opened) || before.Mode() != opened.Mode() || before.Size() != opened.Size() {
+	if err != nil || !opened.Mode().IsRegular() || !os.SameFile(before, opened) || before.Mode() != opened.Mode() || before.Size() != opened.Size() || !before.ModTime().Equal(opened.ModTime()) {
 		return nil, errors.New("input changed while opening")
 	}
 	data, err := io.ReadAll(contextReader{ctx: c.ctx, reader: io.LimitReader(f, before.Size()+1)})
