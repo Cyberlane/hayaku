@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "kind": "independent-full-command-baseline",
+  "runner": "vitest",
+  "inventory": [
+    "tests/direct.test.ts::direct",
+    "tests/shared.test.ts::shared",
+    "tests/resource.test.ts::asset"
+  ],
+  "faults": [
+    {
+      "id": "direct-and-transitive",
+      "operation": "replace",
+      "path": "src/value.ts",
+      "before": "return 7",
+      "after": "return 8",
+      "failures": [
+        "tests/direct.test.ts::direct",
+        "tests/shared.test.ts::shared"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-setup",
+      "operation": "replace",
+      "path": "tests/setup.ts",
+      "before": "const seed = 7",
+      "after": "const seed = 8",
+      "failures": [
+        "tests/direct.test.ts::direct",
+        "tests/shared.test.ts::shared",
+        "tests/resource.test.ts::asset"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-resource",
+      "operation": "replace",
+      "path": "src/asset.txt",
+      "before": "ready",
+      "after": "changed",
+      "failures": [
+        "tests/resource.test.ts::asset"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "deleted-resource",
+      "operation": "delete",
+      "path": "src/asset.txt",
+      "failures": [],
+      "stage": "startup",
+      "diagnostic_contains": "asset.txt",
+      "forbidden_terminal": [
+        "tests/resource.test.ts::asset"
+      ]
+    },
+    {
+      "id": "startup-fault",
+      "operation": "replace",
+      "path": "tests/setup.ts",
+      "before": "const seed = 7",
+      "after": "throw new Error(\"startup fault\"); const seed = 7",
+      "failures": [],
+      "stage": "startup",
+      "diagnostic_contains": "startup fault",
+      "forbidden_terminal": [
+        "tests/direct.test.ts::direct",
+        "tests/shared.test.ts::shared",
+        "tests/resource.test.ts::asset"
+      ]
+    },
+    {
+      "id": "discovery-fault",
+      "operation": "replace",
+      "path": "vitest.config.mjs",
+      "before": "export default",
+      "after": "throw new Error(\"discovery fault\"); export default",
+      "failures": [],
+      "stage": "discovery",
+      "diagnostic_contains": "discovery fault",
+      "forbidden_terminal": [
+        "tests/direct.test.ts::direct",
+        "tests/shared.test.ts::shared",
+        "tests/resource.test.ts::asset"
+      ]
+    },
+    {
+      "id": "new-test",
+      "operation": "add",
+      "path": "tests/added.test.ts",
+      "after": "import {test} from 'vitest';\ntest('added',()=>{});\n",
+      "added_inventory": [
+        "tests/added.test.ts::added"
+      ],
+      "failures": []
+    },
+    {
+      "operation": "replace",
+      "path": "src/value.ts",
+      "before": "export function value()",
+      "after": "export function dormant() { return process.env.HAYAKU_DORMANT_INPUT; }\nexport function value()",
+      "id": "unexecuted-input-effect",
+      "failures": [],
+      "unqualified_effect": true
+    }
+  ],
+  "failure_exit": 1
+}

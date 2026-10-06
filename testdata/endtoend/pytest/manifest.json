@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "kind": "independent-full-command-baseline",
+  "runner": "pytest",
+  "inventory": [
+    "test_baseline.py::FixtureTests::test_direct",
+    "test_baseline.py::FixtureTests::test_shared",
+    "test_baseline.py::FixtureTests::test_resource"
+  ],
+  "faults": [
+    {
+      "id": "direct-and-transitive",
+      "operation": "replace",
+      "path": "value.py",
+      "before": "return 7",
+      "after": "return 8",
+      "failures": [
+        "test_baseline.py::FixtureTests::test_direct",
+        "test_baseline.py::FixtureTests::test_shared"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-setup",
+      "operation": "replace",
+      "path": "test_baseline.py",
+      "before": "SEED = 7",
+      "after": "SEED = 8",
+      "failures": [
+        "test_baseline.py::FixtureTests::test_direct",
+        "test_baseline.py::FixtureTests::test_shared",
+        "test_baseline.py::FixtureTests::test_resource"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-resource",
+      "operation": "replace",
+      "path": "data/value.txt",
+      "before": "ready",
+      "after": "changed",
+      "failures": [
+        "test_baseline.py::FixtureTests::test_resource"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "deleted-resource",
+      "operation": "delete",
+      "path": "data/value.txt",
+      "failures": [
+        "test_baseline.py::FixtureTests::test_resource"
+      ]
+    },
+    {
+      "id": "discovery-fault",
+      "operation": "replace",
+      "path": "test_baseline.py",
+      "before": "import unittest",
+      "after": "raise RuntimeError(\"discovery fault\")\nimport unittest",
+      "failures": [],
+      "stage": "discovery",
+      "diagnostic_contains": "discovery fault",
+      "forbidden_terminal": [
+        "test_baseline.py::FixtureTests::test_direct",
+        "test_baseline.py::FixtureTests::test_shared",
+        "test_baseline.py::FixtureTests::test_resource"
+      ]
+    },
+    {
+      "id": "new-test",
+      "operation": "add",
+      "path": "test_added.py",
+      "after": "import unittest\nclass Added(unittest.TestCase):\n    def test_added(self):\n        pass\n",
+      "added_inventory": [
+        "test_added.py::Added::test_added"
+      ],
+      "failures": []
+    },
+    {
+      "id": "pytest-shared-fixture",
+      "operation": "replace",
+      "path": "conftest.py",
+      "before": "assert 7 == 7",
+      "after": "assert 8 == 7",
+      "failures": [
+        "test_baseline.py::FixtureTests::test_direct",
+        "test_baseline.py::FixtureTests::test_shared",
+        "test_baseline.py::FixtureTests::test_resource"
+      ],
+      "stage": ""
+    },
+    {
+      "operation": "replace",
+      "path": "value.py",
+      "before": "def value():",
+      "after": "def dormant():\n    return open(\"outside-input.txt\").read()\ndef value():",
+      "id": "unexecuted-input-effect",
+      "failures": [],
+      "unqualified_effect": true
+    }
+  ],
+  "failure_exit": 1
+}

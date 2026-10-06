@@ -148,7 +148,10 @@ func Build(base, candidate []model.Evidence, changes []model.Change, config mode
 			proposed[id] = model.Reason{Unit: id, Code: "new-unit"}
 		}
 	}
-	seeds := make(map[string]bool)
+	seeds, err := semanticChanges(old, current)
+	if err != nil {
+		return plan, err
+	}
 	seedInputs := make(map[string]string)
 	effects := append(append([]model.Effect(nil), old.effects...), current.effects...)
 	for _, effect := range effects {

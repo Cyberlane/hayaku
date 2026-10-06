@@ -10,6 +10,20 @@ const protocolWrite = process.stdout.write.bind(process.stdout);
 // Configuration, transforms and workers may log; logs are never protocol data.
 process.stdout.write = (...args) => process.stderr.write(...args);
 let vitest;
+// These pinned APIs settle close failures and report them through the logger.
+// Observe that API signal directly; user stderr is never an error oracle.
+const closeChecked = async () => {
+  const instance = vitest;
+  let failed = false;
+  const report = instance.logger.error;
+  instance.logger.error = function (...args) {
+    failed = true;
+    return report.apply(this, args);
+  };
+  try { await instance.close(); }
+  finally { instance.logger.error = report; vitest = undefined; }
+  if (failed) throw new Error('Vitest close failed');
+};
 // Vite 7's ESM config bundler leaves this generated directory after removing
 // its temporary module. Restore only an originally absent, still-empty 0755
 // directory in the declared private copy; never change an external runtime.
@@ -40,7 +54,7 @@ try {
   const pkg = JSON.parse(fs.readFileSync(path.join(input.modules, 'vitest/package.json'), 'utf8'));
   const require = createRequire(path.join(input.modules, 'vitest/package.json'));
   const vite = JSON.parse(fs.readFileSync(require.resolve('vite/package.json'), 'utf8'));
-  const supported = (pkg.version === '3.2.7' && vite.version === '6.4.3') || (pkg.version === '4.1.11' && (vite.version === '7.3.1' || vite.version === '8.1.5'));
+  const supported = (pkg.version === '3.2.7' && vite.version === '6.4.3') || (pkg.version === '4.1.11' && (vite.version === '7.3.1' || vite.version === '8.1.5' || vite.version === '8.2.2'));
   if (!supported) throw new Error('unsupported Vitest/Vite API versions');
   const legacy = pkg.version === '3.2.7';
   const api = await import(pathToFileURL(path.join(input.modules, 'vitest/dist/node.js')).href);
@@ -118,9 +132,38 @@ try {
       try { await visit(spec.moduleId); } catch { incomplete = true; }
       scopes.push({ file: relative(spec.moduleId), projectName: spec.project.name, dependencies: [...files].sort(), incomplete });
     }
-    await vitest.close(); vitest = undefined;
+    await closeChecked();
     await cleanBundlerDirectory();
     protocolWrite(JSON.stringify({ schema: 1, version: pkg.version, viteVersion: vite.version, scopes, global: [...global].sort() }) + '\n');
+  } else if (input.mode === 'collect') {
+    // Collection executes imports, setup and global setup, never test bodies.
+    // Its complete case list is still unqualified native influence evidence.
+    if (legacy) await vitest.init();
+    else await vitest.standalone();
+    const result = await vitest.collectTests(specs);
+    if (result.unhandledErrors.length) throw new Error('collection errors');
+    const files = [], cases = [], collected = new Set();
+    for (const module of result.testModules) {
+      const file = relative(module.moduleId), project = module.project.name;
+      const id = `${input.workspace}:${project}:${file}`;
+      if (!seen.has(id) || collected.has(id) || !['queued', 'pending', 'passed', 'skipped'].includes(module.state())) throw new Error('invalid collection module');
+      collected.add(id);
+      files.push({ file, project });
+      const counts = new Map();
+      for (const test of module.children.allTests()) {
+        if (!test.fullName) throw new Error('empty collection case');
+        const occurrence = counts.get(test.fullName) || 0;
+        counts.set(test.fullName, occurrence + 1);
+        cases.push({ file, project, test: JSON.stringify([test.fullName, occurrence]) });
+        if (cases.length > 100000) throw new Error('case inventory limit');
+      }
+    }
+    if (collected.size !== seen.size || !cases.length) throw new Error('incomplete collection');
+    // Teardown can fail after cases exist. Emit evidence only after successful
+    // close and require a successful process status independently in Go.
+    await closeChecked();
+    await cleanBundlerDirectory();
+    protocolWrite(JSON.stringify({ schema: 1, version: pkg.version, viteVersion: vite.version, files, cases }) + '\n');
   } else if (input.mode === 'run' || input.mode === 'observe') {
     let selected = specs;
     if (input.selected !== null) {
@@ -144,7 +187,7 @@ try {
       }
     }
     const errors = result.unhandledErrors.length;
-    await vitest.close(); vitest = undefined;
+    await closeChecked();
     await cleanBundlerDirectory();
     protocolWrite(JSON.stringify({ schema: 1, complete: true, errors, files, tests }) + '\n');
     if (errors || files.some(item => item.action === 'failed') || tests.some(item => item.action === 'failed')) process.exitCode = 1;

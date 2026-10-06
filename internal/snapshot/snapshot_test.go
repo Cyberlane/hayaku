@@ -239,8 +239,8 @@ func TestGitEnvironmentCannotRedirectSnapshots(t *testing.T) {
 }
 
 func TestBoundedOutputAndMalformedInventories(t *testing.T) {
-	buffer := &boundedBuffer{limit: 2}
-	if _, err := buffer.Write([]byte("abc")); err == nil || !buffer.full || buffer.buf.Len() != 0 {
+	root := repository(t)
+	if _, err := git(context.Background(), root, 2, "rev-parse", "--show-object-format"); err == nil {
 		t.Fatal("oversized output accepted")
 	}
 	for _, input := range [][]byte{[]byte("M\x00path"), []byte("R100\x00old\x00"), []byte("M\x00../escape\x00"), []byte("Q\x00path\x00"), []byte("M\x00a\\b\x00"), []byte("M\x00.git/config\x00"), {'M', 0, 255, 0}} {

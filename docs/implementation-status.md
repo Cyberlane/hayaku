@@ -6,18 +6,40 @@ The source and tests define current behavior. “Native” below means installed
 
 - Shared analysis/runner composition, entrypoint/environment binding and normalized
   outcome validation are integrated into native execution and shadow comparison.
+- Shared exact unit/case inventories now guard native passing receipts. Common
+  grouping preserves original workspace scopes and only merges lifecycle/shared
+  state couplings; its identities do not establish independence or qualification.
+- Old/new invalidation also tracks changed unit metadata, dependency edges,
+  input ownership and effect policies without requiring raw file changes. Reads
+  retain influence when a changed ancestor alters path resolution.
 - Normalized file/directory/probe effects supplement the common old/new graph;
   Go AST resource observations broaden proposals without qualifying native omission.
 - `hayaku suite` can independently execute/reuse configured WASI groups, with
   complete per-group context binding and live invocation revalidation.
 - Shared core/decoder scenarios and real Go/Node/Vitest/unittest/pytest fault fixtures
   exercise the integration boundaries. See [shared execution](shared-execution.md).
+- A runner-neutral adversarial acceptance harness and independent Go, Vitest,
+  worker, unittest, pytest, Cargo and SwiftPM full-command fixtures cover passing
+  baselines and seeded failures. These fixtures do not qualify native omission.
+- Internal Go closure APIs bind compiler-resolved imports/test variants, typed
+  case identities, build/embed inputs and private source copies. Runtime,
+  generated startup, dynamic cases and unsupported effects remain explicit gaps.
+- Internal Vitest collection gathers cases separately from execution, retaining
+  duplicate-name occurrences, parameterized cases, skips and todo cases. Import,
+  setup, global setup, teardown and source-drift failures reject inventories.
+- Internal Python collection binds installed interpreter/runner identities and
+  independent pytest/unittest cases. Bounded captured source bytes supply import,
+  fixture and dormant-effect evidence; unsupported runtime effects retain the
+  original full scope. Source/tool/context drift rejects the evidence.
+- Unix commands now cancel their process groups, including descendants holding
+  pipes after their parent exits. Windows and children that leave the group need
+  separate enforcement; process cleanup is not a runtime isolation proof.
 - `hayaku native` adds actual Linux Go package execution/reuse for a restricted,
   statically checked pure subset, with Docker/Landlock/seccomp enforcement,
   shared authenticated receipts and full original-host fallback. See
   [native groups](native-groups.md).
-- General native affected-only qualification, dependency closures across imported
-  packages, additional language certifiers and representative consumer CI savings
+- General native affected-only qualification across imported packages,
+  additional language certifiers and representative consumer CI savings
   remain unfinished. Original native plan gates remain full.
 
 These source capabilities are not a published release or production acceptance.
@@ -42,7 +64,7 @@ cards do not authorize native omission or change the capabilities listed here.
 | Integration | Implemented evidence | Assurance |
 | --- | --- | --- |
 | Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted pure-package Linux reuse | Ordinary native plans remain full; imports/cgo/external inputs are outside native group qualification |
-| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1 and 4.1.11/8.1.5 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected |
+| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected. The fourth pair has local adapter evidence; its aggregate application acceptance and a locked CI fixture remain outstanding |
 | Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
@@ -52,6 +74,13 @@ cards do not authorize native omission or change the capabilities listed here.
 | Generic command | Preserved original structured command and exit status; optional verified installed Node dependency tree | Full scope only; custom Cloudflare pools stay generic |
 
 `hayaku catalog` lists these distinctions. Report formats may require a runner-specific reporter/export step; an entry does not imply that every runner emits that dialect directly. [Runner support](runner-support.md) records exact fixture versions separately from accepted protocol ranges.
+
+The new independent Vitest collection path has actual installed-runner evidence
+for 4.1.11/8.2.2. Its broader application run failed one resource scenario during
+concurrent checks; that scenario passed unchanged in isolation. The aggregate
+remains failed. New collection behavior on the older pairs remains unverified;
+a linked dependency tree outside the captured workspace is rejected rather than
+treated as complete evidence.
 
 ## Existing foundation
 

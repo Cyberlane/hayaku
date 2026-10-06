@@ -44,6 +44,11 @@ func Affected(effect model.Effect, changed string) bool {
 	if effect.Path == changed {
 		return true
 	}
+	// A parent becoming absent, a file or a link changes resolution and errors
+	// even when the requested leaf has no independently reported change.
+	if strings.HasPrefix(effect.Path, changed+"/") {
+		return true
+	}
 	if effect.Kind == "directory" || effect.Kind == "exists" || effect.Kind == "metadata" {
 		return effect.Path == "." || strings.HasPrefix(changed, effect.Path+"/") || strings.HasPrefix(effect.Path, changed+"/")
 	}

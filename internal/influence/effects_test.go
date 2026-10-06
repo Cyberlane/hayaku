@@ -13,6 +13,9 @@ func TestResourceMembershipAndMissingPaths(t *testing.T) {
 	}{
 		{"read", "fixtures/value.json", "fixtures/value.json", true},
 		{"read", "fixtures/value.json", "fixtures/other.json", false},
+		{"read", "optional/nested/value.json", "optional", true},
+		{"read", "optional/nested/value.json", "optional/nested", true},
+		{"read", "optional/nested/value.json", "optional-old", false},
 		{"directory", "fixtures", "fixtures/new.json", true},
 		{"directory", "fixtures", "fixtures/sub/new.json", true},
 		{"directory", "fixtures", "fixtures-old/value.json", false},

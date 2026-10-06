@@ -489,6 +489,13 @@ func parse(w model.Workspace) (parsed, error) {
 }
 
 func invoke(ctx context.Context, root, dir string, w model.Workspace, c model.Context, p parsed, mode string, units []model.Unit) (inventory, process.Output, error) {
+	return invokeEnvironment(ctx, root, dir, w, c, p, mode, units, process.Environment(c.Env))
+}
+
+// invokeEnvironment pins a previously captured environment for every subprocess
+// in the native protocol. Runner metadata overrides are appended to a private
+// copy; os/exec uses the final value for duplicate keys.
+func invokeEnvironment(ctx context.Context, root, dir string, w model.Workspace, c model.Context, p parsed, mode string, units []model.Unit, environment []string) (inventory, process.Output, error) {
 	var collected inventory
 	var out process.Output
 	bounded, cancel := context.WithTimeout(ctx, 2*time.Minute)
@@ -499,14 +506,11 @@ func invoke(ctx context.Context, root, dir string, w model.Workspace, c model.Co
 	}
 	defer os.RemoveAll(tmp)
 	output := filepath.Join(tmp, "metadata.json")
-	env := map[string]string{}
-	for k, v := range c.Env {
-		env[k] = v
-	}
+	env := append([]string{}, environment...)
 	var cmd model.Command
 	switch w.Adapter {
 	case "node-test":
-		version, err := process.Run(bounded, model.Command{Executable: w.Command.Executable, Args: []string{"--version"}}, dir, env)
+		version, err := process.RunEnvironment(bounded, model.Command{Executable: w.Command.Executable, Args: []string{"--version"}}, dir, env)
 		if err != nil {
 			return collected, out, errors.New("installed Node unavailable")
 		}
@@ -543,7 +547,7 @@ func invoke(ctx context.Context, root, dir string, w model.Workspace, c model.Co
 			return collected, out, err
 		}
 		if mode == "discover" {
-			env["PYTHONDONTWRITEBYTECODE"] = "1"
+			env = append(env, "PYTHONDONTWRITEBYTECODE=1")
 		}
 		cmd = model.Command{Executable: w.Command.Executable, Args: []string{script, string(request)}}
 	case "jest", "playwright":
@@ -578,7 +582,7 @@ func invoke(ctx context.Context, root, dir string, w model.Workspace, c model.Co
 				args = append(args, p.selectors...)
 			}
 			cmd = model.Command{Executable: w.NodeRuntime.Node, Args: args}
-			out, err = process.Run(bounded, cmd, dir, env)
+			out, err = process.RunEnvironment(bounded, cmd, dir, env)
 			if mode == "discover" {
 				if err != nil {
 					return collected, out, errors.New("native Jest collection failed; output withheld")
@@ -601,10 +605,7 @@ func invoke(ctx context.Context, root, dir string, w model.Workspace, c model.Co
 		if err := os.WriteFile(reporter, []byte(playwrightReporter), 0600); err != nil {
 			return collected, out, err
 		}
-		env["HAYAKU_NATIVE_OUTPUT"] = output
-		env["HAYAKU_NATIVE_MODE"] = mode
-		env["HAYAKU_NATIVE_VERSION"] = manifest.Version
-		env["HAYAKU_NATIVE_CWD"] = dir
+		env = append(env, "HAYAKU_NATIVE_OUTPUT="+output, "HAYAKU_NATIVE_MODE="+mode, "HAYAKU_NATIVE_VERSION="+manifest.Version, "HAYAKU_NATIVE_CWD="+dir)
 		args := append([]string{filepath.Join(modules, "playwright", "cli.js"), "test"}, p.flags...)
 		args = append(args, "--reporter", reporter)
 		if mode == "discover" {
@@ -615,7 +616,7 @@ func invoke(ctx context.Context, root, dir string, w model.Workspace, c model.Co
 		}
 		cmd = model.Command{Executable: w.NodeRuntime.Node, Args: args}
 	}
-	out, err = process.Run(bounded, cmd, dir, env)
+	out, err = process.RunEnvironment(bounded, cmd, dir, env)
 	if bounded.Err() != nil {
 		return collected, out, bounded.Err()
 	}

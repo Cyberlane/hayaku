@@ -10,13 +10,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/Cyberlane/hayaku/internal/model"
+	"github.com/Cyberlane/hayaku/internal/process"
 )
 
 const maxOutput = 64 << 20
@@ -536,41 +536,17 @@ func environment(values map[string]string) []string {
 	return env
 }
 
-type cappedBuffer struct {
-	data     bytes.Buffer
-	limit    int
-	exceeded bool
-}
-
-func (b *cappedBuffer) Write(p []byte) (int, error) {
-	if b.data.Len()+len(p) > b.limit {
-		b.exceeded = true
-		return 0, errors.New("process output limit exceeded")
-	}
-	return b.data.Write(p)
-}
 func invoke(ctx context.Context, dir string, env []string, executable string, args []string, limit int) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, executable, args...)
-	cmd.Dir = dir
-	cmd.Env = env
-	cmd.WaitDelay = time.Second
-	output := &cappedBuffer{limit: limit}
-	stderr := &cappedBuffer{limit: 1 << 20}
-	cmd.Stdout = output
-	cmd.Stderr = stderr
-	err := cmd.Run()
+	output, err := process.RunEnvironmentLimits(ctx, model.Command{Executable: executable, Args: args}, dir, env, limit, 1<<20)
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
-	}
-	if output.exceeded || stderr.exceeded {
-		return nil, errors.New("process output limit exceeded")
 	}
 	if err != nil {
 		return nil, errors.New("native Go process failed (diagnostic output withheld)")
 	}
-	return output.data.Bytes(), nil
+	return output.Stdout, nil
 }
 
 // Execution requests machine-readable native results while preserving the

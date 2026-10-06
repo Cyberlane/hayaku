@@ -1,0 +1,7 @@
+[package]
+name="hayaku-acceptance-fixture"
+version="0.0.0"
+edition="2021"
+build="build.rs"
+[features]
+qualified-feature=[]

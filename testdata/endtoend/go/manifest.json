@@ -1,0 +1,91 @@
+{
+  "schema": 1,
+  "kind": "independent-full-command-baseline",
+  "runner": "go",
+  "inventory": [
+    "fixture.test/core/TestDirect",
+    "fixture.test/client/TestShared",
+    "fixture.test/client/TestFixture",
+    "fixture.test/setup/TestStartup"
+  ],
+  "faults": [
+    {
+      "id": "direct-and-transitive",
+      "operation": "replace",
+      "path": "core/value.go",
+      "before": "return 7",
+      "after": "return 8",
+      "failures": [
+        "fixture.test/core/TestDirect",
+        "fixture.test/client/TestShared"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-resource",
+      "operation": "replace",
+      "path": "client/data/value.txt",
+      "before": "ready",
+      "after": "changed",
+      "failures": [
+        "fixture.test/client/TestFixture"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "deleted-resource",
+      "operation": "delete",
+      "path": "client/data/value.txt",
+      "failures": [
+        "fixture.test/client/TestFixture"
+      ]
+    },
+    {
+      "id": "startup-fault",
+      "operation": "replace",
+      "path": "setup/setup.go",
+      "before": "return true",
+      "after": "panic(\"startup fault\")",
+      "failures": [],
+      "stage": "startup",
+      "diagnostic_contains": "startup fault",
+      "forbidden_terminal": [
+        "fixture.test/setup/TestStartup"
+      ]
+    },
+    {
+      "id": "build-fault",
+      "operation": "replace",
+      "path": "core/value.go",
+      "before": "return 7",
+      "after": "return missing",
+      "failures": [],
+      "stage": "build",
+      "diagnostic_contains": "undefined: missing",
+      "forbidden_terminal": [
+        "fixture.test/core/TestDirect",
+        "fixture.test/client/TestShared",
+        "fixture.test/client/TestFixture"
+      ]
+    },
+    {
+      "id": "new-test",
+      "operation": "add",
+      "path": "core/added_test.go",
+      "after": "package core\nimport \"testing\"\nfunc TestAdded(t *testing.T) {}\n",
+      "added_inventory": [
+        "fixture.test/core/TestAdded"
+      ],
+      "failures": []
+    },
+    {
+      "operation": "add",
+      "path": "core/dormant.go",
+      "after": "package core\nimport \"os\"\nfunc Dormant() ([]byte,error) { return os.ReadFile(\"outside-input.txt\") }\n",
+      "id": "unexecuted-input-effect",
+      "failures": [],
+      "unqualified_effect": true
+    }
+  ],
+  "failure_exit": 1
+}

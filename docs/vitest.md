@@ -9,10 +9,11 @@ Hayaku uses installed Vitest/Vite APIs for configured JS/TS import influence, fi
 | 3.2.7 | 6.4.3 | `testdata/vitest-runtime-v3` |
 | 4.1.11 | 7.3.1 | `testdata/vitest-runtime` |
 | 4.1.11 | 8.1.5 | `testdata/vitest-runtime-v4-vite8` |
+| 4.1.11 | 8.2.2 | Locally provisioned installation; locked CI fixture outstanding |
 
 These exact pairs are accepted; missing, mismatched, prerelease or other versions are rejected. The bridge resolves Vite from the installed Vitest package, binds both versions into its protocol, and verifies the returned pair in Go. v3 uses its `init`/vite-node SSR APIs; v4 uses standalone SSR environments. Current upstream documentation can describe a different version: the pinned installed API and fixture tests are the compatibility evidence.
 
-Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for all three pairs. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
+Node 22.18.0 is the pinned native fixture context. CI defines checks on Linux amd64 and macOS arm64 for the first three pairs. The fourth pair has passing local adapter checks; its aggregate application acceptance is still pending. This establishes tested protocol/discovery/run/shadow behavior, not complete runtime influence or acceptance of every consumer context. Windows Node execution remains unqualified.
 
 ## Configure an existing installation
 
@@ -55,6 +56,13 @@ Native transforms preserve configured roots, aliases and TypeScript resolution. 
 Node bytes and the installed module tree are privately hashed, including file modes and internal link targets, then copied into separate disposable sources. The native runtime-copy boundary supports internal npm links; escaping workspace/pnpm-store links, special files and broken links fail. Its limits are 250k entries /2 GiB. The separate [input envelope](inputs.md) supports explicitly declared linked roots for capture and normalized capsule inputs; it does not silently expand this native boundary or overlay candidate inputs into BASE.
 
 Shadow compares exact native project/file specifications against the independent full scope. Stable identities include project, file, full name and duplicate-name occurrence. Missing/unexpected/nonterminal/malformed outcomes invalidate execution. Failures, skips and hooks retain native outcomes; unhandled global errors invalidate comparison. Emitted CLI filters can broaden matches, which does not grant native CI omission.
+
+The internal independent case collector separately records parameterized cases,
+duplicate-name occurrences, skips and todo cases. Import/setup/global-setup/
+teardown errors and source/runtime/context drift reject its inventory. Actual
+collector checks currently cover only the fourth pair; older-pair collector
+acceptance remains outstanding. Collection executes trusted startup code and
+does not establish runtime influence or isolation.
 
 Runs disable Vitest result caching and use private Vite caches. A newly created empty bundler scratch directory may be restored before revalidation; unexpected/preexisting entries remain mutation evidence. Source/runtime are checked before and after commands. This is not a sandbox or transient-write detector.
 

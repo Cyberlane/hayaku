@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"unicode/utf8"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 )
@@ -17,7 +18,7 @@ func ValidateInventory(inventory model.ExecutionInventory) error {
 	}
 	units := make(map[string]int, len(inventory.Units))
 	for _, unit := range inventory.Units {
-		if !identity(unit.ID) || !identity(unit.Workspace) {
+		if !identity(unit.ID) || !identity(unit.Workspace) || !utf8.ValidString(unit.Selector) || !utf8.ValidString(unit.Kind) {
 			return errors.New("invalid execution unit identity")
 		}
 		if _, exists := units[unit.ID]; exists {

@@ -62,7 +62,7 @@ func TestConfiguredGraphOwnersRetainGlobalAndResources(t *testing.T) {
 }
 
 func TestExactNativeAPIVersionMatrix(t *testing.T) {
-	for _, pair := range [][2]string{{"3.2.7", "6.4.3"}, {"4.1.11", "7.3.1"}, {"4.1.11", "8.1.5"}} {
+	for _, pair := range [][2]string{{"3.2.7", "6.4.3"}, {"4.1.11", "7.3.1"}, {"4.1.11", "8.1.5"}, {"4.1.11", "8.2.2"}} {
 		t.Run(pair[0]+"-"+pair[1], func(t *testing.T) {
 			data := graphData()
 			data.Version, data.ViteVersion = pair[0], pair[1]

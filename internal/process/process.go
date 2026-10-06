@@ -70,18 +70,35 @@ func Run(ctx context.Context, cmd model.Command, dir string, env map[string]stri
 
 // RunEnvironment uses an explicitly established native environment without ambient merging.
 func RunEnvironment(ctx context.Context, cmd model.Command, dir string, env []string) (Output, error) {
+	return RunEnvironmentLimits(ctx, cmd, dir, env, MaxOutput, MaxOutput)
+}
+
+// RunEnvironmentLimits preserves caller-specific protocol bounds while sharing
+// cancellation and completion handling. Larger source/discovery responses remain
+// explicitly bounded; configuration cannot request unbounded process output.
+func RunEnvironmentLimits(ctx context.Context, cmd model.Command, dir string, env []string, stdoutLimit, stderrLimit int) (Output, error) {
+	if stdoutLimit <= 0 || stderrLimit <= 0 || stdoutLimit > 64<<20 || stderrLimit > 64<<20 {
+		return Output{}, errors.New("invalid process output limits")
+	}
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	stdout := &limited{max: MaxOutput, cancel: cancel}
-	stderr := &limited{max: MaxOutput, cancel: cancel}
+	stdout := &limited{max: stdoutLimit, cancel: cancel}
+	stderr := &limited{max: stderrLimit, cancel: cancel}
 	proc := exec.CommandContext(ctx, cmd.Executable, cmd.Args...)
 	proc.Dir = dir
 	proc.Env = env
 	proc.Stdout = stdout
 	proc.Stderr = stderr
 	proc.WaitDelay = 2 * time.Second
+	configureCancellation(proc)
 	start := time.Now()
 	err := proc.Run()
+	// os/exec stops its context watcher when the direct process exits, even if
+	// descendants still own protocol pipes. Clean the group on incomplete pipe
+	// completion and late overflow/cancellation as well as while the runner lives.
+	if proc.Process != nil && proc.Cancel != nil && (err != nil || stdout.overflow || stderr.overflow || ctx.Err() != nil) {
+		_ = proc.Cancel()
+	}
 	out := Output{Stdout: stdout.buffer.Bytes(), Stderr: stderr.buffer.Bytes(), ExitCode: -1, Duration: time.Since(start)}
 	if proc.ProcessState != nil {
 		out.ExitCode = proc.ProcessState.ExitCode()

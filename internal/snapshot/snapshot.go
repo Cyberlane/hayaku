@@ -9,18 +9,15 @@ import (
 	"errors"
 	"fmt"
 	"hash"
-	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
-	"time"
 	"unicode/utf8"
 
 	"github.com/Cyberlane/hayaku/internal/model"
+	"github.com/Cyberlane/hayaku/internal/process"
 )
 
 const (
@@ -372,48 +369,24 @@ func materialize(ctx context.Context, root, id, dir string) error {
 	return nil
 }
 
-type boundedBuffer struct {
-	mu    sync.Mutex
-	buf   bytes.Buffer
-	limit int
-	full  bool
-}
-
-func (b *boundedBuffer) Write(data []byte) (int, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	if len(data) > b.limit-b.buf.Len() {
-		b.full = true
-		return 0, errors.New("Git output exceeds limit")
-	}
-	return b.buf.Write(data)
-}
-
 func git(ctx context.Context, root string, limit int, args ...string) ([]byte, error) {
-	cmd := exec.CommandContext(ctx, "git", append([]string{"--no-pager", "-c", "core.fsmonitor=false", "-C", root}, args...)...)
-	cmd.WaitDelay = 2 * time.Second
+	command := model.Command{Executable: "git", Args: append([]string{"--no-pager", "-c", "core.fsmonitor=false", "-C", root}, args...)}
 	// Inherited GIT_DIR/WORK_TREE/index/object replacement variables must not
 	// silently redirect the repository or substitute committed object bytes.
+	var env []string
 	for _, variable := range os.Environ() {
 		key, _, _ := strings.Cut(variable, "=")
 		if !strings.HasPrefix(key, "GIT_") {
-			cmd.Env = append(cmd.Env, variable)
+			env = append(env, variable)
 		}
 	}
-	cmd.Env = append(cmd.Env, "GIT_TERMINAL_PROMPT=0", "GIT_NO_REPLACE_OBJECTS=1", "GIT_OPTIONAL_LOCKS=0")
-	stdout := &boundedBuffer{limit: limit}
-	stderr := &boundedBuffer{limit: 64 << 10}
-	cmd.Stdout, cmd.Stderr = stdout, stderr
-	if err := cmd.Run(); err != nil {
+	env = append(env, "GIT_TERMINAL_PROMPT=0", "GIT_NO_REPLACE_OBJECTS=1", "GIT_OPTIONAL_LOCKS=0")
+	output, err := process.RunEnvironmentLimits(ctx, command, "", env, limit, 64<<10)
+	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
-		if stdout.full || stderr.full {
-			return nil, errors.New("Git output exceeds limit")
-		}
 		return nil, fmt.Errorf("Git %s failed: %w", args[0], err)
 	}
-	return stdout.buf.Bytes(), nil
+	return output.Stdout, nil
 }
-
-var _ io.Writer = (*boundedBuffer)(nil)

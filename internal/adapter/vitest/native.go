@@ -216,7 +216,7 @@ func discoverBound(ctx context.Context, root string, w model.Workspace, c model.
 	return e, nil
 }
 func supportedAPIVersions(vitest, vite string) bool {
-	return (vitest == "3.2.7" && vite == "6.4.3") || (vitest == "4.1.11" && (vite == "7.3.1" || vite == "8.1.5"))
+	return (vitest == "3.2.7" && vite == "6.4.3") || (vitest == "4.1.11" && (vite == "7.3.1" || vite == "8.1.5" || vite == "8.2.2"))
 }
 func validRelative(p string) bool {
 	return p != "" && !filepath.IsAbs(p) && filepath.ToSlash(filepath.Clean(p)) == p && p != ".." && !strings.HasPrefix(p, "../") && !strings.Contains(p, "\\")

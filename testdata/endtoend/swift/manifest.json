@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "kind": "independent-full-command-baseline",
+  "runner": "swift",
+  "inventory": [
+    "FixtureTests.testDirect",
+    "FixtureTests.testShared",
+    "FixtureTests.testResource"
+  ],
+  "faults": [
+    {
+      "id": "direct-and-transitive",
+      "operation": "replace",
+      "path": "Sources/Core/Value.swift",
+      "before": "{ 7 }",
+      "after": "{ 8 }",
+      "failures": [
+        "FixtureTests.testDirect",
+        "FixtureTests.testShared"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-setup",
+      "operation": "replace",
+      "path": "Tests/FixtureTests/FixtureTests.swift",
+      "before": "XCTAssertEqual(7,7)",
+      "after": "XCTAssertEqual(8,7)",
+      "failures": [
+        "FixtureTests.testDirect",
+        "FixtureTests.testShared",
+        "FixtureTests.testResource"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-resource",
+      "operation": "replace",
+      "path": "Sources/Core/data/value.txt",
+      "before": "ready",
+      "after": "changed",
+      "failures": [
+        "FixtureTests.testResource"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "deleted-resource",
+      "operation": "delete",
+      "path": "Sources/Core/data/value.txt",
+      "failures": [],
+      "stage": "build",
+      "diagnostic_contains": "value.txt",
+      "forbidden_terminal": [
+        "FixtureTests.testDirect",
+        "FixtureTests.testShared",
+        "FixtureTests.testResource"
+      ]
+    },
+    {
+      "id": "build-fault",
+      "operation": "replace",
+      "path": "Sources/Core/Value.swift",
+      "before": "{ 7 }",
+      "after": "{ missing }",
+      "failures": [],
+      "stage": "build",
+      "diagnostic_contains": "cannot find 'missing' in scope",
+      "forbidden_terminal": [
+        "FixtureTests.testDirect",
+        "FixtureTests.testShared",
+        "FixtureTests.testResource"
+      ]
+    },
+    {
+      "id": "new-test",
+      "operation": "replace",
+      "path": "Tests/FixtureTests/FixtureTests.swift",
+      "before": "final class FixtureTests: XCTestCase {",
+      "after": "final class FixtureTests: XCTestCase {\n    func testAdded() {}",
+      "failures": [],
+      "stage": "",
+      "added_inventory": [
+        "FixtureTests.testAdded"
+      ]
+    },
+    {
+      "operation": "replace",
+      "path": "Sources/Core/Value.swift",
+      "before": "public func value()",
+      "after": "public func dormant() -> String? { ProcessInfo.processInfo.environment[\"HAYAKU_DORMANT_INPUT\"] }\npublic func value()",
+      "id": "unexecuted-input-effect",
+      "failures": [],
+      "unqualified_effect": true
+    }
+  ],
+  "failure_exit": 1
+}

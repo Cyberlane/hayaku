@@ -1,0 +1,5 @@
+# Offline dependency-free fixture
+version = 4
+[[package]]
+name = "hayaku-acceptance-fixture"
+version = "0.0.0"

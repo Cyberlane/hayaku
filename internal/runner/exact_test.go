@@ -1,11 +1,49 @@
 package runner
 
 import (
+	"bytes"
+	"encoding/json"
 	"strings"
 	"testing"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 )
+
+func TestExecutionBindingRejectsLossyJSONIdentities(t *testing.T) {
+	left, _ := exactFixture()
+	right, _ := exactFixture()
+	left.Units[0].Selector, right.Units[0].Selector = string([]byte{0xff}), string([]byte{0xfe})
+	a, _ := json.Marshal(left)
+	b, _ := json.Marshal(right)
+	if !bytes.Equal(a, b) {
+		t.Fatal("fixture did not demonstrate lossy JSON normalization")
+	}
+	for _, field := range []string{"unit", "workspace", "case", "selector", "kind", "group"} {
+		t.Run(field, func(t *testing.T) {
+			inventory, _ := exactFixture()
+			value := strings.Repeat("a", 64)
+			binding := model.ExecutionBinding{Schema: model.ExecutionSchema, Group: "group", ProgramDigest: value, InputsDigest: value, ProofDigest: value, PolicyDigest: value, ContextDigest: value, Inventory: inventory}
+			bad := string([]byte{0xff})
+			switch field {
+			case "unit":
+				binding.Inventory.Units[0].ID, binding.Inventory.Cases[0].Unit = bad, bad
+			case "workspace":
+				binding.Inventory.Units[0].Workspace = bad
+			case "case":
+				binding.Inventory.Cases[0].ID = bad
+			case "selector":
+				binding.Inventory.Units[0].Selector = bad
+			case "kind":
+				binding.Inventory.Units[0].Kind = bad
+			case "group":
+				binding.Group = bad
+			}
+			if _, err := BindingDigest(binding); err == nil {
+				t.Fatal("lossy JSON string gained a reusable identity")
+			}
+		})
+	}
+}
 
 func exactFixture() (model.ExecutionInventory, model.Outcomes) {
 	inventory := model.ExecutionInventory{

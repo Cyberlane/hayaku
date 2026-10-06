@@ -4,6 +4,7 @@ package runner
 import (
 	"errors"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 )
@@ -16,7 +17,7 @@ func Validate(result model.Outcomes, expected []model.Unit, completed bool, exit
 	}
 	want, seen := map[string]bool{}, map[string]bool{}
 	for _, unit := range expected {
-		if !identity(unit.ID) || unit.Workspace == "" || want[unit.ID] {
+		if !identity(unit.ID) || !identity(unit.Workspace) || want[unit.ID] {
 			return errors.New("invalid expected runner inventory")
 		}
 		want[unit.ID] = true
@@ -62,7 +63,7 @@ func Failed(result model.Outcomes) bool {
 }
 
 func identity(value string) bool {
-	return value != "" && len(value) <= 8192 && !strings.ContainsAny(value, "\x00\r\n")
+	return value != "" && len(value) <= 8192 && utf8.ValidString(value) && !strings.ContainsAny(value, "\x00\r\n")
 }
 func terminal(value string) bool {
 	return value == "pass" || value == "fail" || value == "skip" || value == "bench"

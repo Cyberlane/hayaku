@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "kind": "independent-full-command-baseline",
+  "runner": "worker",
+  "inventory": [
+    "tests/worker.test.ts::binding",
+    "tests/worker.test.ts::storage",
+    "tests/worker.test.ts::request",
+    "tests/worker.test.ts::reset"
+  ],
+  "faults": [
+    {
+      "id": "binding-change",
+      "operation": "replace",
+      "path": "wrangler.jsonc",
+      "before": "\"GREETING\":\"ready\"",
+      "after": "\"GREETING\":\"changed\"",
+      "failures": [
+        "tests/worker.test.ts::binding",
+        "tests/worker.test.ts::request"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "request-change",
+      "operation": "replace",
+      "path": "src/worker.ts",
+      "before": "pathname",
+      "after": "hostname",
+      "failures": [
+        "tests/worker.test.ts::request"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-storage-reset",
+      "operation": "replace",
+      "path": "tests/worker.test.ts",
+      "before": "await env.STATE.delete('value')",
+      "after": "await env.STATE.put('value','stale')",
+      "failures": [
+        "tests/worker.test.ts::reset"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "startup-fault",
+      "operation": "replace",
+      "path": "vitest.config.mjs",
+      "before": "export default",
+      "after": "throw new Error(\"startup fault\"); export default",
+      "failures": [],
+      "stage": "startup",
+      "diagnostic_contains": "startup fault",
+      "forbidden_terminal": [
+        "tests/worker.test.ts::binding",
+        "tests/worker.test.ts::storage",
+        "tests/worker.test.ts::request",
+        "tests/worker.test.ts::reset"
+      ]
+    },
+    {
+      "id": "deleted-worker",
+      "operation": "delete",
+      "path": "src/worker.ts",
+      "failures": [],
+      "stage": "build",
+      "diagnostic_contains": "src/worker.ts",
+      "forbidden_terminal": [
+        "tests/worker.test.ts::binding",
+        "tests/worker.test.ts::storage",
+        "tests/worker.test.ts::request",
+        "tests/worker.test.ts::reset"
+      ]
+    },
+    {
+      "id": "new-test",
+      "operation": "add",
+      "path": "tests/added.test.ts",
+      "after": "import {test} from 'vitest';\ntest('added',()=>{});\n",
+      "added_inventory": [
+        "tests/added.test.ts::added"
+      ],
+      "failures": []
+    },
+    {
+      "operation": "replace",
+      "path": "src/worker.ts",
+      "before": "export default",
+      "after": "export function dormant(env:any) { return env.STATE.get(\"outside-input\"); }\nexport default",
+      "id": "unexecuted-input-effect",
+      "failures": [],
+      "unqualified_effect": true
+    }
+  ],
+  "failure_exit": 1
+}

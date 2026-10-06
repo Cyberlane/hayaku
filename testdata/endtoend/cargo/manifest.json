@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "kind": "independent-full-command-baseline",
+  "runner": "cargo",
+  "inventory": [
+    "tests::direct",
+    "tests::shared",
+    "tests::resource",
+    "tests::generated_feature"
+  ],
+  "faults": [
+    {
+      "id": "direct-and-transitive",
+      "operation": "replace",
+      "path": "src/value.rs",
+      "before": "{ 7 }",
+      "after": "{ 8 }",
+      "failures": [
+        "tests::direct",
+        "tests::shared"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "generated-build-input",
+      "operation": "replace",
+      "path": "generated-input.txt",
+      "before": "7",
+      "after": "8",
+      "failures": [
+        "tests::generated_feature"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "shared-resource",
+      "operation": "replace",
+      "path": "data/value.txt",
+      "before": "ready",
+      "after": "changed",
+      "failures": [
+        "tests::resource"
+      ],
+      "stage": ""
+    },
+    {
+      "id": "deleted-resource",
+      "operation": "delete",
+      "path": "data/value.txt",
+      "failures": [
+        "tests::resource"
+      ]
+    },
+    {
+      "id": "build-fault",
+      "operation": "replace",
+      "path": "build.rs",
+      "before": "fn main() {",
+      "after": "fn main() { panic!(\"build fault\");",
+      "failures": [],
+      "stage": "build",
+      "diagnostic_contains": "build fault",
+      "forbidden_terminal": [
+        "tests::direct",
+        "tests::shared",
+        "tests::resource",
+        "tests::generated_feature"
+      ]
+    },
+    {
+      "id": "new-test",
+      "operation": "replace",
+      "path": "src/lib.rs",
+      "before": "#[cfg(test)] mod tests {",
+      "after": "#[cfg(test)] mod tests {\n    #[test] fn added() {}",
+      "failures": [],
+      "stage": "",
+      "added_inventory": [
+        "tests::added"
+      ]
+    },
+    {
+      "operation": "replace",
+      "path": "src/value.rs",
+      "before": "pub fn value()",
+      "after": "pub fn dormant() -> std::io::Result<String> { std::fs::read_to_string(\"outside-input.txt\") }\npub fn value()",
+      "id": "unexecuted-input-effect",
+      "failures": [],
+      "unqualified_effect": true
+    }
+  ],
+  "failure_exit": 101
+}
