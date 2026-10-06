@@ -76,9 +76,12 @@ used for those observations; future invocations must verify their actual bytes.
 
 At this checkpoint, macOS original full-command healthy and seeded runtime-fault
 baselines passed for Maven/JUnit Jupiter, Maven/TestNG, Gradle/JUnit Jupiter,
-Gradle/TestNG, RSpec, Minitest, Bun, Deno and Dart/package:test. Rust/Nextest
-baselines also passed on actual macOS and Linux, and all four exact Vitest/Vite
+Gradle/TestNG, RSpec, Minitest, Bun, Deno, Dart/package:test, GoogleTest, Catch2
+and CTest (12 of 20 named profiles). Linux Deno and Dart/package:test baselines
+also passed (2 of 20). Rust/Nextest baselines passed on actual macOS and Linux, and all four exact Vitest/Vite
 pairs passed macOS baselines. The Deno record distinguishes an earlier type-check
-failure from the corrected runtime assertion failure. Other selected SDKs and
+failure from the corrected runtime assertion failure. The initial Catch2 exit
+oracle and Linux Dart cache-write setup failures are retained separately from
+the corrected passing baselines. Other selected SDKs and
 frameworks remain at the explicit setup or baseline stage recorded in the file.
 No candidate in this checkpoint gains permission to omit tests.
