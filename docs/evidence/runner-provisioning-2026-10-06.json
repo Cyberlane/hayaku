@@ -9854,5 +9854,101 @@
       "temporary_path": "/tmp/hayaku-language-acceptance-bdhM36/checkpoints/p01-maven-helper-supplement-20261006T164823Z.json",
       "sha256": "0c412adc53501f81c90ff2ad4f21af535aa5c59147c67de689b92f9542eef72b"
     }
+  },
+  "additional_linux_go_observations": {
+    "date": "2026-10-07",
+    "scope": "Supplemental Go1.27.1 Linux ARM64 development SDK and independent original healthy/fault controls",
+    "qualification": "unqualified; no native provider, inventory, receipt or CI authority",
+    "original_contexts_unchanged": 40,
+    "publisher_archive": {
+      "url": "https://go.dev/dl/go1.27.1.linux-arm64.tar.gz",
+      "bytes": 67009954,
+      "sha256": "3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec"
+    },
+    "sdk_footprint": {
+      "bytes": 238470661,
+      "entries": 17352,
+      "go_executable_bytes": 15793848,
+      "go_executable_sha256": "1675694ef690db0f18fbe7046a886170904bede1d9db6ec96ae27945c1705c64"
+    },
+    "sdk_map": {
+      "bytes": 9044084,
+      "sha256": "8e37a86fd79fadd97c19ea4d930d67692470713790ed8593ef824aa0207bad73"
+    },
+    "actual_controls": [
+      {
+        "role": "healthy",
+        "runs": [
+          "TestAlpha",
+          "TestBeta"
+        ],
+        "terminals": [
+          [
+            "PASS",
+            "TestAlpha"
+          ],
+          [
+            "PASS",
+            "TestBeta"
+          ]
+        ],
+        "native_exit": 0
+      },
+      {
+        "role": "fault",
+        "runs": [
+          "TestAlpha",
+          "TestBeta"
+        ],
+        "terminals": [
+          [
+            "FAIL",
+            "TestAlpha"
+          ],
+          [
+            "PASS",
+            "TestBeta"
+          ]
+        ],
+        "native_exit": 1
+      }
+    ],
+    "supplement": {
+      "temporary_path": "/tmp/hayaku-language-acceptance-bdhM36/checkpoints/p02-sdk-supplement-20261007.json",
+      "bytes": 3918,
+      "sha256": "319e313741a474fd4bd95049533e702e4cad0af3ce6cdc4d3e8fef8f8ac10de5"
+    },
+    "retained_artifacts": {
+      "actual_evidence": {
+        "bytes": 2663115,
+        "sha256": "6ef891121547cb0e817731272418c83d267a006f6e2cc98ecca3f84684165055"
+      },
+      "outer": {
+        "bytes": 636,
+        "sha256": "55a6526218c6d7952ef7f2dba5960587c924278f38682c84d532bf605fe947ad"
+      },
+      "source_freeze": {
+        "bytes": 10205,
+        "sha256": "2c6a6eec34cca9689f2eaf830da09b91ceb1de37e1d38e34dee777114b0f69f4"
+      },
+      "independent_review": {
+        "bytes": 1194,
+        "sha256": "b7ca234d5e996d8b293090073564a2dca699957e8fe488b0a197778b6ffa46d9"
+      },
+      "historical_incomplete": {
+        "bytes": 2638678,
+        "sha256": "ec056c49ff5d65169b380965227f6a8ca8f8be89c0b38471db3f19336f2782b1"
+      }
+    },
+    "source_timestamp_disclosure": "Original 8ab/e4 bytes restored after brief candidate correction; timestamps changed and were not restored. Historical incomplete record preserved.",
+    "limits": {
+      "archive_bytes": 67009954,
+      "expanded_bytes": 536870912,
+      "entries": 50000,
+      "file_bytes": 67108864,
+      "identity_seconds": 30,
+      "control_seconds": 120
+    },
+    "guards": "Publisher archive and complete SDK map/tree bytes plus source, fixture and tool identities checked before/after; exact three owned guest inventories empty; all parent processes joined; no automatic toolchain fetch or global installation"
   }
 }

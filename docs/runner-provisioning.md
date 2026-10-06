@@ -129,3 +129,15 @@ All 111 distinct tool/widget package archives were publisher-verified before
 private extraction and checked again after the offline healthy/fault controls.
 The missing shipped lock, cache sidecar serialization, universal wrapper setup
 and private preflight comparison failures are retained as setup failures.
+
+A supplemental Linux ARM64 Go 1.27.1 development SDK was recorded on
+2026-10-07. The official 67,009,954-byte archive passed its published SHA256
+check before private extraction; the 17,352-entry SDK and complete file map
+were checked again after fresh offline healthy and seeded-failure controls.
+The two native cases passed with exit0, then the seeded Alpha failure retained
+exit1 while Beta passed. An initial native-output parser error remains an
+incomplete setup observation; corrected controls and independent cleanup
+review are recorded separately. This supplements the older installed Go
+1.23.12 guest without changing it, the original40 framework contexts or global
+host tools. Linux collector acceptance is a separate code check; SDK setup
+grants no inventory, runtime, receipt or CI omission authority.
