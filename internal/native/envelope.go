@@ -15,7 +15,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/inputbundle"
 )
 
-const envelopeVersion = "native-normalized-inputs-v2"
+const envelopeVersion = "native-normalized-inputs-v3"
 const MaxScratchBytes int64 = 64 << 20
 
 // EnvelopeRequest describes a closed, normalized resource filesystem. It does
@@ -30,6 +30,7 @@ type EnvelopeRequest struct {
 	Absent       []string
 	Env          []string
 	ScratchBytes int64
+	Child        *ChildRequest
 }
 
 // Envelope retains captured bytes and values privately. Original modes, link
@@ -43,6 +44,7 @@ type Envelope struct {
 	env          []string
 	scratchBytes int64
 	digest       string
+	child        *capturedChild
 }
 
 // Source paths stay private; only their identity digest leaves the envelope.
@@ -107,7 +109,14 @@ func CaptureEnvelope(ctx context.Context, request EnvelopeRequest) (*Envelope, e
 	if err != nil {
 		return nil, err
 	}
+	e.child, err = captureChild(ctx, request.Child)
+	if err != nil {
+		return nil, err
+	}
 	manifest := e.files.Manifest()
+	if e.child != nil && manifest.Bytes > inputbundle.MaxBytes-int64(len(e.child.data)) {
+		return nil, errors.New("native envelope and managed child exceed byte bounds")
+	}
 	entries := map[string]inputbundle.Entry{}
 	for _, entry := range manifest.Entries {
 		entries[entry.Path] = entry
@@ -183,7 +192,8 @@ func (e *Envelope) currentDigest() string {
 		Sources         []envelopeSource
 		Absent, Env     []string
 		ScratchBytes    int64
-	}{envelopeVersion, e.files.Manifest().Digest, e.sources, e.absent, e.env, e.scratchBytes})
+		Child           string
+	}{envelopeVersion, e.files.Manifest().Digest, e.sources, e.absent, e.env, e.scratchBytes, e.child.currentDigest()})
 }
 
 // Digest is identity data, never a provider proof or execution receipt.
@@ -200,6 +210,11 @@ func (e *Envelope) VerifySources(ctx context.Context) error {
 	}
 	if err := e.files.VerifySources(ctx); err != nil {
 		return err
+	}
+	if e.child != nil {
+		if err := e.child.verifySources(ctx); err != nil {
+			return err
+		}
 	}
 	for _, name := range e.absent {
 		source, relative, found := e.absenceSource(name)

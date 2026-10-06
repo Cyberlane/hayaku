@@ -498,3 +498,24 @@ func TestNativeEnvelopeCancellation(t *testing.T) {
 		t.Fatal("empty envelope accepted")
 	}
 }
+
+func TestNativeEnvelopeManagedChildBinding(t *testing.T) {
+	request, _ := envelopeFixture(t)
+	request.Child = childFixture(t)
+	e := captureFixtureEnvelope(t, request)
+	childRequest := request.Child
+	if e.child == nil {
+		t.Fatal("managed child omitted")
+	}
+	request.Child = nil
+	without := captureFixtureEnvelope(t, request)
+	if e.Digest() == without.Digest() {
+		t.Fatal("child omitted from envelope identity")
+	}
+	if err := os.WriteFile(childRequest.Program, []byte("changed"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.VerifySources(context.Background()); err == nil {
+		t.Fatal("child source drift omitted from envelope revalidation")
+	}
+}

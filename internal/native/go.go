@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -11,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -20,6 +22,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/process"
 	"github.com/Cyberlane/hayaku/internal/runner"
 	goresults "github.com/Cyberlane/hayaku/internal/runner/golang"
+	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
 //go:embed worker/main.go
@@ -46,6 +49,9 @@ func runGo(ctx context.Context, goTool, dir string, env []string, args ...string
 	return process.RunEnvironment(ctx, model.Command{Executable: goTool, Args: args}, dir, env)
 }
 func prepareWorker(ctx context.Context, goTool, dir, arch string) (string, error) {
+	return prepareWorkerEnvironment(ctx, goTool, dir, arch, buildEnvironment(arch))
+}
+func prepareWorkerEnvironment(ctx context.Context, goTool, dir, arch string, env []string) (string, error) {
 	data, err := workerSource.ReadFile("worker/main.go")
 	if err != nil {
 		return "", err
@@ -55,8 +61,173 @@ func prepareWorker(ctx context.Context, goTool, dir, arch string) (string, error
 		return "", err
 	}
 	binary := filepath.Join(dir, "worker")
-	_, err = runGo(ctx, goTool, dir, buildEnvironment(arch), "build", "-trimpath", "-buildvcs=false", "-o", binary, source)
+	_, err = runGo(ctx, goTool, dir, env, "build", "-trimpath", "-buildvcs=false", "-o", binary, source)
 	return binary, err
+}
+
+// goBuildContext binds the complete installed compiler tree, including tools,
+// standard-library sources and runtime, rather than trusting a version label.
+// The shared bounded snapshot reader rejects unsupported toolchain trees.
+// Values stay private; only digests enter receipts.
+type goBuildContext struct {
+	tool, root, tree, executable, identity, metadata string
+	env                                              []string
+}
+
+func captureGoBuild(ctx context.Context, tool, arch string) (goBuildContext, error) {
+	build := goBuildContext{tool: tool, env: slices.Clone(buildEnvironment(arch))}
+	output, err := runGo(ctx, tool, "", build.env, "env", "-json", "GOROOT", "GOVERSION", "GOTOOLDIR")
+	if err != nil {
+		return build, err
+	}
+	var metadata map[string]string
+	if json.Unmarshal(output.Stdout, &metadata) != nil || metadata["GOROOT"] == "" || metadata["GOVERSION"] == "" || metadata["GOTOOLDIR"] == "" {
+		return build, errors.New("native Go build context unavailable")
+	}
+	build.metadata = identity(metadata)
+	build.root, err = filepath.EvalSymlinks(metadata["GOROOT"])
+	if err != nil {
+		return build, err
+	}
+	// No ambient GOROOT, compiler replacement or external tool directory is
+	// silently trusted. The complete effective build environment is bound.
+	tools, err := filepath.EvalSymlinks(metadata["GOTOOLDIR"])
+	if err != nil {
+		return build, err
+	}
+	rel, err := filepath.Rel(build.root, tools)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
+		return build, errors.New("native Go tools escape compiler tree")
+	}
+	build.executable, err = fileDigestContext(ctx, tool)
+	if err != nil {
+		return build, err
+	}
+	build.tree, err = snapshot.Digest(ctx, build.root)
+	if err != nil {
+		return build, err
+	}
+	build.identity = identity(struct {
+		Version    string
+		Metadata   map[string]string
+		Tool, Tree string
+		Env        []string
+	}{proofVersion, metadata, build.executable, build.tree, build.env})
+	return build, build.verify(ctx)
+}
+func (build goBuildContext) verify(ctx context.Context) error {
+	executable, err := fileDigestContext(ctx, build.tool)
+	if err != nil || executable != build.executable {
+		return errors.New("native Go compiler changed")
+	}
+	if build.metadata != "" {
+		output, err := runGo(ctx, build.tool, "", build.env, "env", "-json", "GOROOT", "GOVERSION", "GOTOOLDIR")
+		var metadata map[string]string
+		if err != nil || json.Unmarshal(output.Stdout, &metadata) != nil || identity(metadata) != build.metadata {
+			return errors.New("native Go compiler context changed")
+		}
+		root, err := filepath.EvalSymlinks(metadata["GOROOT"])
+		if err != nil || root != build.root {
+			return errors.New("native Go compiler root changed")
+		}
+		tools, err := filepath.EvalSymlinks(metadata["GOTOOLDIR"])
+		if err != nil {
+			return errors.New("native Go tool directory changed")
+		}
+		rel, err := filepath.Rel(root, tools)
+		if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
+			return errors.New("native Go tools escape compiler tree")
+		}
+	}
+	tree, err := snapshot.Digest(ctx, build.root)
+	if err != nil || tree != build.tree {
+		return errors.New("native Go toolchain changed")
+	}
+	return ctx.Err()
+}
+func goSourceProof(files map[string][]byte) string {
+	return identity(struct {
+		Version string
+		Files   map[string][]byte
+	}{proofVersion, files})
+}
+func goManifestProof(root string) (string, error) {
+	values := map[string]string{}
+	for _, name := range []string{"go.mod", "go.sum"} {
+		path := filepath.Join(root, name)
+		_, err := os.Lstat(path)
+		if os.IsNotExist(err) {
+			values[name] = "absent"
+			continue
+		}
+		if err != nil {
+			return "", err
+		}
+		data, err := readBounded(path, 16<<20)
+		if err != nil {
+			return "", err
+		}
+		values[name] = digest(data)
+	}
+	return identity(values), nil
+}
+
+// issueGoArtifact is the sole production issuer for this reviewed pure-Go
+// contract. It checks all branches and exact independent case inventory, binds
+// copied/original package and module inputs, and owns the decoder. The unrelated
+// workspace tree is checked by Go's aggregate lifecycle, not every group key.
+func issueGoArtifact(ctx context.Context, backend Backend, a Artifact, build goBuildContext, root, source, groupDir string) (Artifact, error) {
+	if !slices.Equal(a.Args, []string{"-test.v", "-test.count=1", "-test.parallel=1", "-test.timeout=60s"}) || !slices.Equal(a.Env, []string{"GOMAXPROCS=1", "GODEBUG=randautoseed=0", "TZ=UTC"}) {
+		return Artifact{}, errors.New("native Go launch differs from reviewed contract")
+	}
+	files, err := packageSources(groupDir)
+	if err != nil {
+		return Artifact{}, err
+	}
+	cases, err := qualifyGo(files)
+	if err != nil || !slices.Equal(cases, a.Cases) || goSourceProof(files) != a.Proof || a.Envelope != nil || len(a.Effects) != 0 {
+		return Artifact{}, errors.New("native Go producer evidence mismatch")
+	}
+	manifest, err := goManifestProof(source)
+	if err != nil {
+		return Artifact{}, err
+	}
+	proof := a.Proof
+	originalGroup := filepath.Join(root, filepath.FromSlash(strings.TrimPrefix(a.Name, "./")))
+	verify := func(ctx context.Context) error {
+		if err := build.verify(ctx); err != nil {
+			return err
+		}
+		for _, dir := range []string{groupDir, originalGroup} {
+			current, err := packageSources(dir)
+			if err != nil || goSourceProof(current) != proof {
+				return errors.New("native Go package changed")
+			}
+		}
+		for _, dir := range []string{root, source} {
+			current, err := goManifestProof(dir)
+			if err != nil || current != manifest {
+				return errors.New("native Go module context changed")
+			}
+		}
+		return ctx.Err()
+	}
+	if err := verify(ctx); err != nil {
+		return Artifact{}, err
+	}
+	a.Cases, a.Args, a.Env = slices.Clone(a.Cases), slices.Clone(a.Args), slices.Clone(a.Env)
+	a.Effects = slices.Clone(a.Effects)
+	program, err := fileDigestContext(ctx, a.Program)
+	if err != nil {
+		return Artifact{}, err
+	}
+	producer := identity([]string{proofVersion, build.identity, manifest})
+	binding, err := artifactBinding(backend, a, program, producer)
+	if err != nil {
+		return Artifact{}, err
+	}
+	a.authority = &artifactAuthority{binding: binding, location: authorityLocation(backend, a), producer: producer, verify: verify, decode: decodeGo}
+	return a, nil
 }
 
 // capture binds a copied immutable build tree. Source contents and environment
@@ -232,6 +403,7 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 	backendReady := false
 	var backendErr error
 	var returnedErr error
+	var build goBuildContext
 	for index, p := range c.Packages {
 		group := Result{Name: p, Context: "original-host", Cache: "disabled"}
 		files, readErr := packageSources(filepath.Join(source, filepath.FromSlash(strings.TrimPrefix(p, "./"))))
@@ -247,9 +419,12 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 		} else {
 			if !backendReady && backendErr == nil {
 				var docker, worker string
-				docker, backendErr = ResolveDocker()
+				build, backendErr = captureGoBuild(ctx, goTool, c.Architecture)
 				if backendErr == nil {
-					worker, backendErr = prepareWorker(ctx, goTool, temporary, c.Architecture)
+					docker, backendErr = ResolveDocker()
+				}
+				if backendErr == nil {
+					worker, backendErr = prepareWorkerEnvironment(ctx, goTool, temporary, c.Architecture, build.env)
 				}
 				if backendErr == nil {
 					backend = Backend{Docker: docker, Image: c.Image, Worker: worker, Architecture: c.Architecture}
@@ -264,18 +439,17 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 				}
 			} else {
 				binary := filepath.Join(temporary, fmt.Sprintf("group-%d", index))
-				_, buildErr := runGo(ctx, goTool, source, buildEnvironment(c.Architecture), "test", "-c", "-trimpath", "-buildvcs=false", "-o", binary, p)
+				_, buildErr := runGo(ctx, goTool, source, build.env, "test", "-c", "-trimpath", "-buildvcs=false", "-o", binary, p)
 				if buildErr != nil {
 					group.Reason = "native test build failed"
 					group.Complete = false
 					returnedErr = buildErr
 				} else {
-					proof := identity(struct {
-						Version string
-						Files   map[string][]byte
-					}{proofVersion, files})
-					artifact := Artifact{Name: p, Program: binary, Proof: proof, Cases: cases, Args: []string{"-test.v", "-test.count=1", "-test.parallel=1", "-test.timeout=60s"}, Env: []string{"GOMAXPROCS=1", "GODEBUG=randautoseed=0", "TZ=UTC"}}
-					group, err = Execute(ctx, backend, artifact, cacheDir, audit, decodeGo)
+					artifact := Artifact{Name: p, Program: binary, Proof: goSourceProof(files), Cases: cases, Args: []string{"-test.v", "-test.count=1", "-test.parallel=1", "-test.timeout=60s"}, Env: []string{"GOMAXPROCS=1", "GODEBUG=randautoseed=0", "TZ=UTC"}}
+					artifact, err = issueGoArtifact(ctx, backend, artifact, build, root, source, filepath.Join(source, filepath.FromSlash(strings.TrimPrefix(p, "./"))))
+					if err == nil {
+						group, err = Execute(ctx, backend, artifact, cacheDir, audit, decodeGo)
+					}
 					if !group.Complete && ctx.Err() == nil {
 						group, err = fullGo(ctx, goTool, root, p, "native execution evidence incomplete; executing complete original group")
 					}
@@ -295,6 +469,13 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 		report.Complete = false
 		report.Passed = false
 		returnedErr = errors.New("native source changed during execution")
+	}
+	if build.identity != "" {
+		if e := build.verify(ctx); e != nil {
+			report.Complete = false
+			report.Passed = false
+			returnedErr = e
+		}
 	}
 	if ctx.Err() != nil {
 		report.Complete = false

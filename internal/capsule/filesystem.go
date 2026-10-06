@@ -10,6 +10,7 @@ import (
 	"path"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -145,21 +146,9 @@ func LoadFiles(ctx context.Context, directory string, names []string) ([]File, e
 		if err != nil || !before.Mode().IsRegular() {
 			return nil, fmt.Errorf("capsule input is not an accessible regular file")
 		}
-		file, err := root.Open(name)
+		data, err := loadRegularFile(ctx, root, name, before, remaining)
 		if err != nil {
-			return nil, fmt.Errorf("capsule input cannot be opened")
-		}
-		opened, statErr := file.Stat()
-		if statErr != nil || !os.SameFile(before, opened) || !opened.Mode().IsRegular() {
-			file.Close()
-			return nil, fmt.Errorf("capsule input changed during capture")
-		}
-		data, readErr := io.ReadAll(io.LimitReader(file, remaining+1))
-		after, statErr := file.Stat()
-		closeErr := file.Close()
-		current, pathErr := root.Lstat(name)
-		if readErr != nil || closeErr != nil || statErr != nil || pathErr != nil || int64(len(data)) > remaining || !current.Mode().IsRegular() || !os.SameFile(opened, current) || opened.Size() != after.Size() || !opened.ModTime().Equal(after.ModTime()) || int64(len(data)) != after.Size() {
-			return nil, fmt.Errorf("capsule input capture is incomplete or changed")
+			return nil, err
 		}
 		if err := regularComponents(root, name); err != nil {
 			return nil, err
@@ -168,6 +157,60 @@ func LoadFiles(ctx context.Context, directory string, names []string) ([]File, e
 		files = append(files, File{Path: name, Data: data})
 	}
 	return files, ctx.Err()
+}
+
+// loadRegularFile preserves root confinement and the exact admitted regular
+// file identity. Its separated preflight is also exercised against real FIFO
+// substitution without giving a test hook authority over production reads.
+func loadRegularFile(ctx context.Context, root *os.Root, name string, before fs.FileInfo, remaining int64) ([]byte, error) {
+	var captured bytes.Buffer
+	if err := copyRegularFile(ctx, root, name, before, remaining, &captured); err != nil {
+		return nil, err
+	}
+	return captured.Bytes(), nil
+}
+func copyRegularFile(ctx context.Context, root *os.Root, name string, before fs.FileInfo, remaining int64, destination io.Writer) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if before == nil || !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > remaining {
+		return fmt.Errorf("capsule input exceeds byte bound or is nonregular")
+	}
+	file, err := root.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return fmt.Errorf("capsule input cannot be opened")
+	}
+	opened, statErr := file.Stat()
+	if statErr != nil || !sameInputFile(before, opened) {
+		file.Close()
+		return fmt.Errorf("capsule input changed during capture")
+	}
+	read, readErr := io.CopyBuffer(destination, inputReader{ctx, io.LimitReader(file, before.Size()+1)}, make([]byte, 32<<10))
+	after, statErr := file.Stat()
+	closeErr := file.Close()
+	current, pathErr := root.Lstat(name)
+	if readErr != nil || closeErr != nil || statErr != nil || pathErr != nil || read != before.Size() || !sameInputFile(before, after) || !sameInputFile(before, current) {
+		return fmt.Errorf("capsule input capture is incomplete or changed")
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+func sameInputFile(before, after fs.FileInfo) bool {
+	return after != nil && after.Mode().IsRegular() && os.SameFile(before, after) && before.Mode() == after.Mode() && before.Size() == after.Size() && before.ModTime().Equal(after.ModTime())
+}
+
+type inputReader struct {
+	ctx    context.Context
+	reader io.Reader
+}
+
+func (r inputReader) Read(data []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.reader.Read(data)
 }
 
 func regularComponents(root *os.Root, name string) error {

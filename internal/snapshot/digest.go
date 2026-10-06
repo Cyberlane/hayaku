@@ -22,6 +22,23 @@ func Digest(ctx context.Context, dir string) (string, error) {
 	return DigestWithModules(ctx, dir, nil)
 }
 
+// FileDigest returns a raw SHA-256 identity for one bounded regular file using
+// the same nonblocking, cancellable and drift-checked reader as tree digests.
+func FileDigest(ctx context.Context, name string, limit int64) (string, error) {
+	if limit <= 0 || limit > maxTree {
+		return "", errors.New("invalid file digest limit")
+	}
+	before, err := os.Lstat(name)
+	if err != nil {
+		return "", err
+	}
+	h := sha256.New()
+	if _, err := digestFileWithLimit(ctx, name, before, h, limit, limit); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
 // DigestWithModules binds source outside separately content-bound module trees.
 // Only explicit node_modules directories can be excluded. Their bytes, internal
 // links and modes must additionally be checked by the Node runtime provider.
@@ -119,10 +136,13 @@ func verifyDigestEntries(ctx context.Context, admitted map[string]fs.FileInfo) e
 // drift invalidates the whole digest, even when replacement bytes are identical.
 // This is a bounded observation, not an atomic or historical filesystem view.
 func digestFile(ctx context.Context, name string, before fs.FileInfo, destination io.Writer, remaining int64) (int64, error) {
+	return digestFileWithLimit(ctx, name, before, destination, remaining, maxBlob)
+}
+func digestFileWithLimit(ctx context.Context, name string, before fs.FileInfo, destination io.Writer, remaining, limit int64) (int64, error) {
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
-	if before == nil || !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > maxBlob || before.Size() > remaining {
+	if before == nil || !before.Mode().IsRegular() || before.Size() < 0 || before.Size() > limit || before.Size() > remaining {
 		return 0, errors.New("snapshot input exceeds byte limit or is nonregular")
 	}
 	// A FIFO substituted after preflight must not block opening indefinitely.

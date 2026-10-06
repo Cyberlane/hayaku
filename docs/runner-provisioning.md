@@ -1,10 +1,11 @@
 # Isolated acceptance runner provisioning
 
 Prepared 2026-10-06 for the macOS/Linux implementation fleet. The user confirmed
-there are no existing environments for the missing language contexts. This is
-the proposed scope for one development-only provisioning authorization; it is
-not an instruction for Hayaku to install runners during discovery or execution.
-No tool downloads or installations have been performed under this proposal.
+there are no existing environments for the missing language contexts. The user
+explicitly approved this development-only provisioning scope on 2026-10-06.
+It does not instruct Hayaku to install runners during discovery or
+execution. Candidate identities and actual setup results are recorded separately
+from runtime qualification and acceptance.
 
 ## Scope and locations
 

@@ -41,6 +41,14 @@ The source and tests define current behavior. “Native” below means installed
   unknown effects before native cache access. Empty effect data
   cannot establish completeness; actual containment probes do not prove native
   equivalence. Independent native probes and full normal/race/vet checks passed.
+- Native artifact authority is private to the reviewed in-process Go producer.
+  Public proof strings and inventories cannot issue it. Its binding includes
+  captured source, compiler tree, artifact, inventory and backend context;
+  caller-supplied result decoders cannot replace the producer's decoder.
+- A controlled Linux child broker admits one fixed static helper launch with
+  bound arguments/environment, copied resources, empty stdin and bounded output
+  and cleanup. Actual protocol and capability probes passed. This operational
+  envelope cannot issue receipts; arbitrary FFI and services remain unsupported.
 - Internal Python collection binds installed interpreter/runner identities and
   independent pytest/unittest cases. Bounded captured source bytes supply import,
   fixture and dormant-effect evidence; unsupported runtime effects retain the
@@ -48,6 +56,9 @@ The source and tests define current behavior. “Native” below means installed
 - Shared input-envelope capture rejects regular-file replacement by a FIFO
   through nonblocking opens. Independent macOS/Linux tests verify rejection
   without a writer and preserve captured byte accounting.
+- WASI input capture also uses confined nonblocking opens, admitted-size read
+  bounds and cancellation checks. Independent macOS/Linux tests challenge FIFO
+  substitution and detectable preflight and post-read file/metadata drift.
 - Snapshot file hashing streams through a fixed buffer with bounded growth
   detection, regular-file identity checks and final file/directory drift checks.
   Independent macOS/Linux tests cover allocation bounds, FIFO replacement and

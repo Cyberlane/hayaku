@@ -71,7 +71,7 @@ func TestObservableBoundaryVetoPreservesCacheBeforeAudit(t *testing.T) {
 	for name, effect := range faults {
 		for _, audit := range []bool{false, true} {
 			t.Run(name+map[bool]string{false: "/normal", true: "/audit"}[audit], func(t *testing.T) {
-				artifact := Artifact{Name: "unit", Program: "/unavailable", Proof: strings.Repeat("b", 64), Cases: []string{"TestValue"}, Effects: []model.Effect{effect}}
+				artifact := Artifact{Name: "unit", Program: "/unavailable", Proof: strings.Repeat("b", 64), Cases: []string{"TestValue"}, Effects: []model.Effect{effect}, authority: &artifactAuthority{}}
 				result, err := Execute(context.Background(), Backend{Identity: strings.Repeat("c", 64)}, artifact, cacheDir, audit, func(process.Output, Artifact) (model.Outcomes, error) {
 					t.Fatal("observable veto reached native decoder")
 					return model.Outcomes{}, nil

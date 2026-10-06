@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 	"unicode/utf8"
 
@@ -23,9 +24,10 @@ import (
 	"github.com/Cyberlane/hayaku/internal/passcache"
 	"github.com/Cyberlane/hayaku/internal/process"
 	"github.com/Cyberlane/hayaku/internal/runner"
+	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-const boundaryVersion = "hayaku-linux-boundary-v2"
+const boundaryVersion = "hayaku-linux-boundary-v3"
 const contractVersion = "native-pure-groups-v1"
 
 // Docker uses only already provisioned, immutable images. The daemon and its
@@ -39,7 +41,8 @@ type Artifact struct {
 	Envelope             *Envelope `json:"-"`
 	// Effects is descriptive input data. Only a complete reviewed provider can
 	// establish its meaning; an empty summary never supplies a missing proof.
-	Effects []model.Effect
+	Effects   []model.Effect
+	authority *artifactAuthority
 }
 type Result struct {
 	Name      string         `json:"name"`
@@ -68,31 +71,28 @@ func readBounded(name string, limit int64) ([]byte, error) {
 	if err != nil || !before.Mode().IsRegular() || before.Size() > limit {
 		return nil, errors.New("native input must be a bounded regular file")
 	}
-	file, err := os.Open(name)
+	file, err := os.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
 		return nil, errors.New("native input unavailable")
 	}
 	defer file.Close()
 	opened, err := file.Stat()
-	if err != nil || !os.SameFile(before, opened) {
+	if err != nil || !opened.Mode().IsRegular() || !os.SameFile(before, opened) || before.Mode() != opened.Mode() || before.Size() != opened.Size() || !before.ModTime().Equal(opened.ModTime()) {
 		return nil, errors.New("native input changed")
 	}
-	data, err := io.ReadAll(io.LimitReader(file, limit+1))
+	data, err := io.ReadAll(io.LimitReader(file, before.Size()+1))
 	if err != nil || int64(len(data)) > limit {
 		return nil, errors.New("native input exceeds limit")
 	}
 	after, err := os.Lstat(name)
-	if err != nil || !after.Mode().IsRegular() || !os.SameFile(opened, after) || after.Size() != int64(len(data)) || before.Size() != after.Size() || !before.ModTime().Equal(after.ModTime()) {
+	if err != nil || !after.Mode().IsRegular() || after.Mode() != before.Mode() || !os.SameFile(opened, after) || after.Size() != int64(len(data)) || before.Size() != after.Size() || !before.ModTime().Equal(after.ModTime()) {
 		return nil, errors.New("native input changed")
 	}
 	return data, nil
 }
-func fileDigest(name string) (string, error) {
-	data, err := readBounded(name, 256<<20)
-	if err != nil {
-		return "", err
-	}
-	return digest(data), nil
+func fileDigest(name string) (string, error) { return fileDigestContext(context.Background(), name) }
+func fileDigestContext(ctx context.Context, name string) (string, error) {
+	return snapshot.FileDigest(ctx, name, 256<<20)
 }
 func command(ctx context.Context, executable string, args ...string) (process.Output, error) {
 	return process.Run(ctx, model.Command{Executable: executable, Args: args}, "", nil)
@@ -123,11 +123,11 @@ func (b Backend) inspect(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", errors.New("Docker CLI unavailable")
 	}
-	docker, err := fileDigest(dockerPath)
+	docker, err := fileDigestContext(ctx, dockerPath)
 	if err != nil {
 		return "", err
 	}
-	worker, err := fileDigest(b.Worker)
+	worker, err := fileDigestContext(ctx, b.Worker)
 	if err != nil {
 		return "", err
 	}
@@ -135,7 +135,7 @@ func (b Backend) inspect(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return identity([]string{contractVersion, observablePolicyDigest(), boundaryVersion, b.Image, b.Architecture, b.Docker, dockerPath, docker, worker, controller, string(version.Stdout), string(info.Stdout)}), nil
+	return identity([]string{contractVersion, observablePolicyDigest(), capabilityPolicyDigest(), boundaryVersion, b.Image, b.Architecture, b.Docker, dockerPath, docker, worker, controller, string(version.Stdout), string(info.Stdout)}), nil
 }
 func (b *Backend) Bind(ctx context.Context) error {
 	id, err := b.inspect(ctx)
@@ -219,13 +219,31 @@ func (b Backend) execute(ctx context.Context, a Artifact) (result process.Output
 	if err = os.WriteFile(filepath.Join(dir, "program"), data, 0555); err != nil {
 		return process.Output{}, err
 	}
+	var child *childContract
+	if a.Envelope != nil && a.Envelope.child != nil {
+		c := a.Envelope.child
+		if arch, err := staticChildArchitecture(data); err != nil || arch != b.Architecture {
+			return process.Output{}, errors.New("native managed-child main must be static")
+		}
+		if err := c.materialize(ctx, filepath.Join(dir, "helper"), b.Architecture); err != nil {
+			return process.Output{}, err
+		}
+		defer func() {
+			if err := c.verifyCopy(filepath.Join(dir, "helper")); err != nil {
+				result.Completed = false
+				runErr = err
+			}
+		}()
+		child = c.contract()
+	}
 	contract, _ := json.Marshal(struct {
-		Args         []string `json:"args"`
-		Env          []string `json:"env"`
-		Envelope     bool     `json:"envelope"`
-		ScratchBytes int64    `json:"scratch_bytes"`
-	}{a.Args, env, a.Envelope != nil, scratchBytes})
-	if len(contract) > 65536 {
+		Args         []string       `json:"args"`
+		Env          []string       `json:"env"`
+		Envelope     bool           `json:"envelope"`
+		ScratchBytes int64          `json:"scratch_bytes"`
+		Child        *childContract `json:"child,omitempty"`
+	}{a.Args, env, a.Envelope != nil, scratchBytes, child})
+	if len(contract) > 131072 {
 		return process.Output{}, errors.New("native arguments or environment exceed limits")
 	}
 	if err = os.WriteFile(filepath.Join(dir, "contract.json"), contract, 0444); err != nil {
@@ -300,38 +318,33 @@ func (b Backend) execute(ctx context.Context, a Artifact) (result process.Output
 // qualification is supplied only by reviewed in-process provider code, never
 // by a JSON declaration, previous coverage or user result report.
 func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit bool, decode func(process.Output, Artifact) (model.Outcomes, error)) (Result, error) {
-	r := Result{Name: a.Name, Context: "linux-" + b.Architecture, Qualified: a.Proof != "", Cache: "disabled"}
+	r := Result{Name: a.Name, Context: "linux-" + b.Architecture, Qualified: a.authority != nil, Cache: "disabled"}
 	// The operational envelope is not a reviewed language/runtime proof. Reject
 	// before cache lookup or audit mutation, including caller-supplied Proof.
 	if a.Envelope != nil {
 		r.Qualified = false
 		return r, errors.New("native input envelope has no qualified provider")
 	}
-	if !r.Qualified || b.Identity == "" || decode == nil || runner.ValidateInventory(a.inventory()) != nil {
+	if !r.Qualified || b.Identity == "" || runner.ValidateInventory(a.inventory()) != nil {
 		r.Qualified = false
 		return r, errors.New("native artifact is not qualified")
 	}
-	if err := validateObservableEffects(a.Effects); err != nil {
+	if err := validateCapabilityEffects(a.Effects); err != nil {
 		r.Qualified = false
 		return r, err
 	}
-	program, err := fileDigest(a.Program)
-	if err != nil {
-		return r, err
-	}
-	r.Key, err = runner.BindingDigest(model.ExecutionBinding{
-		Schema: model.ExecutionSchema, Group: a.Name, ProgramDigest: program,
-		InputsDigest: identity(struct {
-			Args, Env []string
-			Effects   []model.Effect
-		}{a.Args, a.Env, a.Effects}),
-		ProofDigest: a.Proof, PolicyDigest: observablePolicyDigest(),
-		ContextDigest: b.Identity, Inventory: a.inventory(),
-	})
+	key, program, err := verifyAuthority(ctx, b, a)
 	if err != nil {
 		r.Qualified = false
 		return r, err
 	}
+	if err = b.unchanged(ctx); err != nil {
+		r.Qualified = false
+		return r, err
+	}
+	r.Key = key
+	// A caller cannot substitute a decoder for the reviewed producer boundary.
+	decode = a.authority.decode
 	cache, cacheErr := passcache.Open(cacheDir, "hayaku-native-pure-pass-v1")
 	if cacheErr != nil {
 		r.Cache = "unavailable"
@@ -358,9 +371,13 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 		if err = b.unchanged(ctx); err != nil {
 			return r, err
 		}
-		after, e := fileDigest(a.Program)
+		after, e := fileDigestContext(ctx, a.Program)
 		if e != nil || after != program {
 			return r, errors.New("native program changed")
+		}
+		if _, _, e := verifyAuthority(ctx, b, a); e != nil {
+			r.Qualified = false
+			return r, e
 		}
 		r.Outcomes = prior.Outcomes
 		r.Complete = true
@@ -379,7 +396,7 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 	}
 	r.Complete = err == nil && output.Completed
 	r.Passed = r.Complete && output.ExitCode == 0 && !runner.Failed(r.Outcomes)
-	after, e := fileDigest(a.Program)
+	after, e := fileDigestContext(ctx, a.Program)
 	if e != nil || after != program {
 		r.Complete = false
 		r.Passed = false
@@ -391,6 +408,11 @@ func Execute(ctx context.Context, b Backend, a Artifact, cacheDir string, audit 
 		err = e
 	}
 	if e = ctx.Err(); e != nil {
+		r.Complete = false
+		r.Passed = false
+		err = e
+	}
+	if _, _, e := verifyAuthority(ctx, b, a); e != nil {
 		r.Complete = false
 		r.Passed = false
 		err = e
