@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -25,13 +26,14 @@ import (
 // DynamicFileLimit is separate from the unchanged 64 MiB static/resource limit.
 // Runtime capture supplies operational inputs, never runtime-equivalence proof.
 const DynamicFileLimit int64 = 256 << 20
-const dynamicPolicy = "native-dynamic-manual-loader-v2"
+const dynamicPolicy = "native-dynamic-manual-loader-v3"
 const dynamicLibraryLimit = 128
 
 type RuntimeLibrary struct{ Name, Path string }
 type RuntimeRequest struct {
 	Loader    string
 	Libraries []RuntimeLibrary
+	Addons    []RuntimeAddon
 }
 type DynamicProgramRequest struct {
 	Program string
@@ -39,17 +41,20 @@ type DynamicProgramRequest struct {
 	Runtime *Runtime
 }
 
-// Runtime owns bounded private copies of one loader and a closed named DSO set.
-// Keep it open while its programs are in use. Names are exact SONAME identities;
-// default searches, loader caches, origin expansion and preload are not closure.
+// Runtime owns bounded private copies of one loader, closed named DSOs and
+// separately declared native addons. Keep it open while its programs are in use.
+// Library names are exact SONAME identities; default searches, loader caches,
+// origin expansion and preload are not closure.
 type Runtime struct {
 	dir       string
 	root      os.FileInfo
 	loader    *dynamicFile
 	libraries map[string]*dynamicFile
+	addons    map[string]*dynamicFile
 	bytes     int64
 	seal      string
 	closed    atomic.Bool
+	cleanup   *dynamicDirectory
 }
 
 // DynamicProgram binds an initial argv and a borrowed Runtime. A future manual
@@ -63,6 +68,67 @@ type DynamicProgram struct {
 	args    []string
 	seal    string
 	closed  atomic.Bool
+	cleanup *dynamicDirectory
+}
+
+// Keep cleanup tied to the created directory, even if its pathname is retargeted.
+// Only declared private children are removed; unknown siblings are preserved.
+type dynamicDirectory struct {
+	mu       sync.Mutex
+	name     string
+	info     os.FileInfo
+	owner    *os.Root
+	children []string
+}
+
+func retainDynamicDirectory(name string, info os.FileInfo, children []string) (*dynamicDirectory, error) {
+	owner, err := os.OpenRoot(name)
+	if err != nil {
+		return nil, err
+	}
+	current, err := owner.Stat(".")
+	if err != nil || info == nil || !info.IsDir() || !os.SameFile(info, current) || info.Mode() != current.Mode() {
+		return nil, errors.Join(err, errors.New("dynamic cleanup directory ownership changed"), owner.Close())
+	}
+	return &dynamicDirectory{name: name, info: info, owner: owner, children: append([]string(nil), children...)}, nil
+}
+
+func (d *dynamicDirectory) close() error {
+	if d == nil {
+		return errors.New("dynamic cleanup ownership unavailable")
+	}
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.owner == nil {
+		return nil
+	}
+	var err error
+	for _, name := range d.children {
+		err = errors.Join(err, d.owner.RemoveAll(name))
+	}
+	current, statErr := os.Lstat(d.name)
+	if statErr != nil || d.info == nil || !os.SameFile(d.info, current) || d.info.Mode() != current.Mode() {
+		err = errors.Join(err, statErr, errors.New("dynamic cleanup pathname ownership changed"))
+	} else {
+		err = errors.Join(err, os.Remove(d.name))
+	}
+	if err == nil {
+		err = d.owner.Close()
+		d.owner = nil
+	}
+	return err
+}
+
+// Failed capture has no returned owner to retry cleanup, so release its handle.
+func (d *dynamicDirectory) abandon() error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.owner == nil {
+		return nil
+	}
+	err := d.owner.Close()
+	d.owner = nil
+	return err
 }
 
 type dynamicFile struct {
@@ -109,7 +175,7 @@ func preflightRuntime(request RuntimeRequest) error {
 		}
 		names[library.Name] = true
 	}
-	return nil
+	return preflightAddons(request, text)
 }
 
 func preflightDynamicFile(name string) (*dynamicFile, error) {
@@ -391,6 +457,7 @@ func CaptureRuntime(ctx context.Context, request RuntimeRequest) (result *Runtim
 		return nil, err
 	}
 	request.Libraries = append([]RuntimeLibrary(nil), request.Libraries...)
+	request.Addons = append([]RuntimeAddon(nil), request.Addons...)
 	if err = preflightRuntime(request); err != nil {
 		return nil, err
 	}
@@ -411,19 +478,44 @@ func CaptureRuntime(ctx context.Context, request RuntimeRequest) (result *Runtim
 		}
 		libraries[declared.Name] = f
 	}
+	addons := map[string]*dynamicFile{}
+	for _, declared := range request.Addons {
+		f, e := preflightDynamicFile(declared.Path)
+		if e != nil {
+			return nil, e
+		}
+		total += f.file.Size()
+		if total > inputbundle.MaxBytes {
+			return nil, errors.New("dynamic runtime exceeds aggregate byte bounds")
+		}
+		addons[declared.Name] = f
+	}
 	dir, err := os.MkdirTemp("", "hayaku-runtime-")
 	if err != nil {
 		return nil, err
 	}
 	created, err := os.Lstat(dir)
 	if err != nil {
-		return nil, errors.Join(err, os.RemoveAll(dir))
+		return nil, err
+	}
+	children := []string{"#loader"}
+	for name := range libraries {
+		children = append(children, name)
+	}
+	for _, name := range addonNames(addons) {
+		children = append(children, addonFileName(name))
+	}
+	sort.Strings(children)
+	cleanup, err := retainDynamicDirectory(dir, created, children)
+	if err != nil {
+		return nil, err
 	}
 	defer func() {
 		if err != nil {
-			if cleanup := os.RemoveAll(dir); cleanup != nil {
-				err = errors.Join(err, errors.New("dynamic runtime capture cleanup failed"), cleanup)
+			if cleanupErr := cleanup.close(); cleanupErr != nil {
+				err = errors.Join(err, errors.New("dynamic runtime capture cleanup failed"), cleanupErr)
 			}
+			err = errors.Join(err, cleanup.abandon())
 		}
 	}()
 	if err = loader.capture(ctx, filepath.Join(dir, "#loader")); err != nil {
@@ -446,7 +538,12 @@ func CaptureRuntime(ctx context.Context, request RuntimeRequest) (result *Runtim
 			return nil, errors.New("dynamic library role or architecture mismatch")
 		}
 	}
-	r := &Runtime{dir: dir, loader: loader, libraries: libraries, bytes: total}
+	for _, name := range addonNames(addons) {
+		if err = addons[name].capture(ctx, filepath.Join(dir, addonFileName(name))); err != nil {
+			return nil, err
+		}
+	}
+	r := &Runtime{dir: dir, loader: loader, libraries: libraries, addons: addons, bytes: total, cleanup: cleanup}
 	r.root, err = os.Lstat(dir)
 	if err == nil && (!r.root.IsDir() || r.root.Mode() != created.Mode() || !os.SameFile(created, r.root)) {
 		err = errors.New("dynamic runtime private directory replaced")
@@ -471,11 +568,14 @@ func rLoaderName(loader *dynamicFile) string {
 }
 func (r *Runtime) loaderName() string { return rLoaderName(r.loader) }
 func (r *Runtime) validateClosure() error {
-	if r == nil || r.loader == nil || !dynamicName(r.loaderName()) || r.bytes > inputbundle.MaxBytes || len(r.libraries) > dynamicLibraryLimit {
+	if r == nil || r.loader == nil || !dynamicName(r.loaderName()) || r.bytes > inputbundle.MaxBytes || len(r.libraries)+len(r.addons) > dynamicLibraryLimit {
 		return errors.New("dynamic runtime identity unavailable")
 	}
 	if _, exists := r.libraries[r.loaderName()]; exists {
 		return errors.New("dynamic loader name collision")
+	}
+	if err := r.validateAddons(); err != nil {
+		return err
 	}
 	for _, f := range r.files() {
 		for _, name := range f.image.needed {
@@ -498,10 +598,13 @@ func (r *Runtime) files() []*dynamicFile {
 	for _, name := range keys {
 		files = append(files, r.libraries[name])
 	}
+	for _, name := range addonNames(r.addons) {
+		files = append(files, r.addons[name])
+	}
 	return files
 }
 func (r *Runtime) currentDigest() string {
-	if r == nil || r.loader == nil || len(r.libraries) > dynamicLibraryLimit {
+	if r == nil || r.loader == nil || len(r.libraries)+len(r.addons) > dynamicLibraryLimit {
 		return ""
 	}
 	data := []any{dynamicPolicy, r.dir, physicalDynamicInfo(r.root), r.bytes, r.closed.Load(), r.loader.binding()}
@@ -513,10 +616,13 @@ func (r *Runtime) currentDigest() string {
 	for _, name := range keys {
 		data = append(data, []any{name, r.libraries[name].binding()})
 	}
+	for _, name := range addonNames(r.addons) {
+		data = append(data, []any{"native-addon", name, r.addons[name].binding()})
+	}
 	return identity(data)
 }
 func (r *Runtime) Verify(ctx context.Context) error {
-	if r == nil || r.closed.Load() || len(r.libraries) > dynamicLibraryLimit || r.seal == "" || r.currentDigest() != r.seal {
+	if r == nil || r.closed.Load() || len(r.libraries)+len(r.addons) > dynamicLibraryLimit || r.seal == "" || r.currentDigest() != r.seal {
 		return errors.New("dynamic runtime private identity changed")
 	}
 	if err := r.validateClosure(); err != nil {
@@ -529,8 +635,8 @@ func (r *Runtime) Close() error {
 		return nil
 	}
 	r.closed.Store(true)
-	if err := os.RemoveAll(r.dir); err != nil {
-		return errors.New("dynamic runtime cleanup failed")
+	if err := r.cleanup.close(); err != nil {
+		return errors.Join(errors.New("dynamic runtime cleanup failed"), err)
 	}
 	return nil
 }
@@ -565,13 +671,18 @@ func CaptureDynamicProgram(ctx context.Context, request DynamicProgramRequest) (
 	}
 	created, err := os.Lstat(dir)
 	if err != nil {
-		return nil, errors.Join(err, os.RemoveAll(dir))
+		return nil, err
+	}
+	cleanup, err := retainDynamicDirectory(dir, created, []string{"program"})
+	if err != nil {
+		return nil, err
 	}
 	defer func() {
 		if err != nil {
-			if cleanup := os.RemoveAll(dir); cleanup != nil {
-				err = errors.Join(err, errors.New("dynamic program capture cleanup failed"), cleanup)
+			if cleanupErr := cleanup.close(); cleanupErr != nil {
+				err = errors.Join(err, errors.New("dynamic program capture cleanup failed"), cleanupErr)
 			}
+			err = errors.Join(err, cleanup.abandon())
 		}
 	}()
 	if err = primary.capture(ctx, filepath.Join(dir, "program")); err != nil {
@@ -588,7 +699,7 @@ func CaptureDynamicProgram(ctx context.Context, request DynamicProgramRequest) (
 			}
 		}
 	}
-	p := &DynamicProgram{dir: dir, primary: primary, runtime: runtime, args: append([]string(nil), request.Args...)}
+	p := &DynamicProgram{dir: dir, primary: primary, runtime: runtime, args: append([]string(nil), request.Args...), cleanup: cleanup}
 	p.root, err = os.Lstat(dir)
 	if err == nil && (!p.root.IsDir() || p.root.Mode() != created.Mode() || !os.SameFile(created, p.root)) {
 		err = errors.New("dynamic program private directory replaced")
@@ -635,8 +746,8 @@ func (p *DynamicProgram) Close() error {
 		return nil
 	}
 	p.closed.Store(true)
-	if err := os.RemoveAll(p.dir); err != nil {
-		return errors.New("dynamic program cleanup failed")
+	if err := p.cleanup.close(); err != nil {
+		return errors.Join(errors.New("dynamic program cleanup failed"), err)
 	}
 	return nil
 }
@@ -914,6 +1025,7 @@ type dynamicTransportFile struct {
 	path      string
 	info      os.FileInfo
 	directory os.FileInfo
+	mode      os.FileMode
 }
 
 func (p *DynamicProgram) materialize(ctx context.Context, directory, architecture string) ([]dynamicTransportFile, error) {
@@ -927,15 +1039,22 @@ func (p *DynamicProgram) materialize(ctx context.Context, directory, architectur
 		return nil, err
 	}
 	files := []dynamicTransportFile{{file: p.primary, path: filepath.Join(directory, "#program")}, {file: p.runtime.loader, path: filepath.Join(directory, p.runtime.loaderName())}}
-	for _, f := range p.runtime.files()[1:] {
+	for _, f := range p.runtime.files()[1 : 1+len(p.runtime.libraries)] {
 		files = append(files, dynamicTransportFile{file: f, path: filepath.Join(directory, f.image.soname)})
+	}
+	for _, name := range addonNames(p.runtime.addons) {
+		files = append(files, dynamicTransportFile{file: p.runtime.addons[name], path: filepath.Join(directory, addonFileName(name)), mode: 0444})
 	}
 	for i := range files {
 		f := &files[i]
 		if err := streamDynamicCopy(ctx, f.file.copy, f.file.copied, f.path); err != nil {
 			return nil, err
 		}
-		if err := os.Chmod(f.path, 0555); err != nil {
+		mode := f.mode
+		if mode == 0 {
+			mode = 0555
+		}
+		if err := os.Chmod(f.path, mode); err != nil {
 			return nil, err
 		}
 		var err error

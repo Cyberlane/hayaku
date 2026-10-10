@@ -1,6 +1,6 @@
 # Affected-test execution kanban
 
-Updated: 2026-10-07. This is the working backlog for end-to-end affected-test
+Updated: 2026-10-10. This is the working backlog for end-to-end affected-test
 execution across supported languages and runners. It is a plan, not qualification
 evidence or authorization to publish, deploy, or omit existing CI gates.
 
@@ -15,6 +15,14 @@ Current implementation milestone: macOS and Linux, as explicitly requested on
 are outside the current milestone and cannot block its handoff. The Windows
 cards remain unqualified future work. K40 is the initial local Go/TS handoff; K41
 closes all promised macOS/Linux contexts after their separate acceptance gates.
+
+## Current release priority
+
+The user narrowed active delivery on 2026-10-10 to a stable Go and TypeScript
+release. [Release plan](go-typescript-release-plan.md) defines the critical path
+and acceptance. New work for other languages is deferred until that release is
+complete, then proceeds one language per release. Existing unfinished language
+worktrees are preserved; historical DOING records do not authorize their resumption.
 
 ## Board rules
 
@@ -81,8 +89,10 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K14A | GO | K13, K06, K10 | Pure external Go test namespaces | Certify the complete mixed internal/external source map by namespace with exact combined case identities and unchanged private issuer/context binding; duplicate cases and unsupported imports or dormant effects broaden. |
-| K10D | RUNTIME | K10B, K10C, K09, F03 | Captured native addon execution roles | Admit only explicitly captured native addon bytes and their loader/library closure in a separate executable runtime role, preserving resource noexec restrictions, bounded inputs and denial policy; actual supported addons require source/tool/alias/live-drift/cancellation controls and cannot grant user FFI or provider authority. |
+
+| K14B | GO | K14A, K50 | Typed closed local Go helper imports | Bind compiler-selected internal/external test variants and every admitted local dependency, type-resolved direct call and source/tool/import-map identity; unsupported or dormant effects broaden before private issuance. |
+
+| K16B | TS | K15, K06, K09, K10D | Restricted Vitest framework and startup contract | Review the exact configured bootstrap, transformer/addon, matcher, thread, collection, timer and global-state semantics; preserve the explicitly configured full command and retain observable/unknown-effect gaps until justified. A static user-source certificate alone is insufficient. |
 
 ## REVIEW
 
@@ -93,6 +103,8 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
+| K14A | GO | K13, K06, K10 | Pure external Go test namespaces | Certify the complete mixed internal/external source map by namespace with exact combined case identities and unchanged private issuer/context binding; duplicate cases and unsupported imports or dormant effects broaden. |
+| K10D | RUNTIME | K10B, K10C, K09, F03 | Captured native addon execution roles | Admit only explicitly captured native addon bytes and their loader/library closure in a separate executable runtime role, preserving resource noexec restrictions, bounded inputs and denial policy; actual supported addons require source/tool/alias/live-drift/cancellation controls and cannot grant user FFI or provider authority. |
 | K51 | CORE | F02, F03, K42 | Shared observed native stages | Reuse the common guarded build lifecycle and bounded process runner for completed native nonzero exits, sealed native report products and exact output; failures, interruption, drift or overflow remain unusable and cannot become passing evidence. |
 | K50 | CORE | F03, K43, K44 | Bounded Go collection source reads | Replace collector blocking opens after regular-file preflight with nonblocking admitted-size reads and descriptor/name metadata, byte, cancellation and alias guards; actual macOS/Linux healthy/FIFO/growth/drift controls precede using collection as qualification evidence. |
 | P02 | QA | P01, F01 | Supplemental compatible Linux Go SDK | Officially pinned isolated Linux Go compiler supports the configured Go1.26+ fixtures without automatic toolchain fetching; actual installed identity and offline original compiler/collector controls precede use. |
@@ -136,9 +148,7 @@ remain authoritative if this board drifts.
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
 | K14 | GO | K13, K06, K10, K14A, K14B, K14C | Broader Go qualification | Support documented Go constructs, external test packages, setup and fixture inputs with enforced effect contracts; unsupported interfaces/reflection/cgo/concurrency broaden rather than guess. |
-| K14B | GO | K14A, K50 | Typed closed local Go helper imports | Bind compiler-selected internal/external test variants and every admitted local dependency, type-resolved direct call and source/tool/import-map identity; unsupported or dormant effects broaden before private issuance. |
 | K14C | GO | K14B, K07, K09 | Go setup and fixture contracts | Admit only reviewed bounded setup and fixture influence with complete compiler/input/runtime identity; unsupported TestMain, dynamic initialization, reflection, cgo and concurrency retain full original scopes. |
-| K16B | TS | K15, K06, K09, K10D | Restricted Vitest framework and startup contract | Review the exact configured bootstrap, transformer/addon, matcher, thread, collection, timer and global-state semantics; preserve the explicitly configured full command and retain observable/unknown-effect gaps until justified. A static user-source certificate alone is insufficient. |
 | K16C | TS | K16A, K16B, K31, K10, K07, K08, K49 | Private Node issuer and shared execution integration | A producer-owned seal binds source, transformed code, tools, configured invocation, inventory, runtime, transport and decoder before shared cache/audit/execute; forged public proofs and envelopes remain rejected, with independent drift/outcome/failure/reuse controls. |
 | K16 | TS | K15, K06, K10, K16A, K16B, K16C | Node runtime qualification for TS/Vitest | Installed Node/module/runner identities and all startup/collection/execution effects fit an enforced context; native addons, JIT/runtime behavior and unsupported loaders cannot bypass qualification. |
 | K17 | JS | K16, K02 | Node test affected execution | Account for runner collection, hooks, module loading, concurrency and exact terminal inventory using common qualification/reuse machinery. |
@@ -281,15 +291,16 @@ Windows evidence is required before either can be completed or claimed supported
 
 ## Claims and evidence
 
-Live fleet activity verified 2026-10-07 during the authorized completion run:
+Live fleet activity verified 2026-10-10 for the Go/TypeScript release:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | ACTIVE | K50/K51 assigned controls, combined normal727.629s/race1256.142s/vet2.040s and source242 pins accepted; cards DONE, final docs/index review before local commit. K10D independent lifecycle+skip normal/race/vet running in exclusive SDK session99522; source7 frozen. |
-| `/root/runtime_implementation` | SOURCE CORRECTION | Ruby3 mixed-failure/workspace-owner corrections authored and reviewed, final advisory underway. .NET3 exact native ExecutorUri correction underway. Maven5, mixed Go3, reader3, PHPUnit4 and NativeGroups7 frozen. Lifecycle awaits committed common API; no SDK/compiler tests. |
-| `/root/completion_review` | ACTIVE SOURCE / EVIDENCE REVIEW | Final common8-file docs/evidence/canonical index review; Ruby corrections/source advisory review. Maven/PHP controllers and eight tiny Python controls accepted cb8a8e24. No native/Go/compiler execution or source edits. |
-| `/root/language_review` | COMPLETE / IDLE | Maven five pins/nine advisory identities and final .NET phase1 counter/metadata/line/name-source controls GREEN. Actual C# bridge/API and native frameworks unverified. Pure review, no execution or edits. |
-| `/root/completion_testing` | SOURCE-ONLY QA PREPARATION | Maven/PHP shared controller preparation complete: finalfreeze4de0/eight controls passed/independent cb8a accepted; native framework gates queued. Authoring exact .NET bridge C# API/128-129 metadata/counter controls and bounded compiler controller, no SDK execution. |
+| `/root` | ACTIVE | K10D/K14A actual controls and exact ten-file integration independently reviewed; frozen source249 normal843.480s/race1414.513s/vet1.278s passed. Final staged review and local commit close this milestone; shared CLI/execution integration follows Go/TS qualification. |
+| `/root/go_release` | DESIGN COMPLETE / WAITING HANDOFF | Typed closed local helpers, explicit compiler/language/variant facts and reachable group identities. No source mutation or SDK runs before K14A closeout and exact implementation claim. |
+| `/root/typescript_release` | DESIGN COMPLETE / WAITING HANDOFF | Real restricted Vitest startup/collection/run and private Node issuance. Restore the missing locked fixture before actual tests; macOS qualification remains separate. |
+| `/root/release_acceptance` | INDEPENDENT REVIEW | Source/evidence/document closeout accepted subject to final board/status/canonical updates; release CLI scenario matrix next. |
+
+Other-language assignments below are historical and deferred from active work.
 
 Previous `/root/factory_*` agents are historical owners, not active assignments.
 K07 and K08 passed their corrected local card gates after independent macOS/Linux
@@ -447,3 +458,35 @@ LA02A, LA02B, LA02C | DOING | /root/completion_testing source-only QA | NEW priv
 K14B | DESIGN | /root/completion_review read-only | Future opaque retained typed binding table, bounded batch accessor and native helper certifier/sole issuer seams; NO code | Current compiler-selected import/export/type evidence inspected. Design must bind actual variants, caller identifier offset/spelling, declaration identity, primitive signature, module/source/compiler/env/import map and dormant declarations; host checker compatibility explicit | Immutable cloned descriptive facts cannot issue proofs. Never expose mutable AST/types.Info or equate object pointers/export positions/path strings across separate checks. Existing hard dependencies K14A/K50 remain unfinished; no implementation authorized yet.
 
 K50, K51 | DONE | /root coordinator + independent source/actual/advisory reviewers | Exact five source files and shared-reader-stage-2026-10-07.json; full source242 pins unchanged | All assigned macOS/Linux reader/collector/observed-stage controls accepted; combined whole-main normal727.629s/race1256.142s/vet2.040s exit0 and joined; source/test/index Mori complete/no diagnostics/truncation | Shared reader and guarded native nonzero report observation integrated locally. Final documentation/index review and local commit follows; K10D remains excluded and all provider/native/receipt authority unchanged. Terminal record supersedes earlier K50/K51 DOING/REVIEW records retained as history.
+
+LA02A, LA02B, LA02C | DOING | /root/runtime_implementation source phase2 | /tmp/hayaku-dotnet-closure-worktree NEW internal/adapter/dotnet/closure.go plus existing owned dotnet.go/bridge.cs/closure_test.go ONLY; exact committed d95be80 common/snapshot files supporting read-only inputs | K51/K50 DONE, all full gates and final independent review accepted; .NET phase1 URI correction awaiting final source/Mori review | Add configured SDK/MSBuild/source/assembly/resource/adapter closure and native discovery/run through shared Session/ObserveNative; preserve exact native nonzero, lifecycle gaps and original command/filter semantics. No custom native process wrapper, planner/cache/backend/registration branches or runtime/receipt authority. Actual C# SDK and all six framework/platform gates later under serial handoff.
+
+K10D | REVIEW | /root + independent actual reviewer | Frozen seven-source d3445c82, independent controller a997bcef, actual5,644,078-byte composite3a5f620b | Exact lifecycle+skip normal142.217s/race203.751s/vet0.352s passed/no skips; original per-context180s bounds retained. All source237/tool8 guards matched, eleven steps joined, owned/native/named inventories empty. Independent262e24db validates original addon controls and retained fourteen normal/race parent passes | Assigned operational acceptance complete; main source integration, combined whole repository gates and canonical review pending. Earlier parser/space/daemon/compound timeout failures remain dated INCOMPLETE. No provider/receipt/CI authority.
+
+K10D, K14A | REVIEW | /root integration preparation | Main exact seven addon files from frozen d3445c82 plus exact three Go external files from frozen source manifest; docs/implementation-status.md and digest-only composed evidence later | K10D assigned actual acceptance and independent262e24db GREEN; K14A proofs and macOS normal/race plus Linux normal passed, Linux race/finalguards pending; main baseline of all five existing changed files matches candidate base8c78a77 | Prepare exact ten-file integration plan only until K14A final actual review GREEN. Then integrate immutable bytes, freeze full source and run combined whole repository normal/race/vet, canonical Mori and independent composition before DONE. No other native/runner/core files, no deadline changes or provider authority.
+
+K14A | REVIEW | /root actual completion | Actual composite19278c2506496ae40222b07293085463b821cacd3cb1f069a9323cc69f63171c, unchanged source3/controller e3fcb844 | Proof normal4.434s/race5.383s; actual macOS normal149.979s/race262.748s and Linux normal190.167s/race290.490s all required parent families passed without skips; source/tool finalguards and owned/native/named cleanup matched | Independent final actual review pending before exact main integration/full repository normal/race/vet and canonical review. Restricted existing Go private issuer only; no broader helper-import or fixture authority.
+
+K10D, K14A | DOING | /root exact main integration | Ten reviewed source bytes integrated; whole source249 manifest captured, including two existing Go fixture module files additionally frozen | Independent K14A actual/integration5449927a GREEN and K10D finalactual262e24db GREEN; all donor/main exact hashes matched. Preparation assertion expected247 but rg also includes two existing fixture go.mod files; no test ran before corrected249 frozen cohort | Run unchanged bounded combined full normal/race/vet controller6af1fb17, canonical Mori and independent final review before DONE/commit. Expanded read-only source guard cohort adds no execution or qualification policy.
+
+LA03A, LA03B | DOING | /root/completion_testing independent source-only QA | NEW private Ruby observer API/mixed-failure fixtures and bounded actual controller only in /tmp/hayaku-language-acceptance-bdhM36/fixtures/ruby-phase1-qa-sqcsdyke; Ruby source3/manifest fb1f2001 read-only, full guarded checkpoint allowed | Corrected Ruby source/advisory991060d9 GREEN; exact Minitest full failure-array and workspace owner fixes unexecuted | Preserve native original entrypoints; source-author actual healthy inventory/outcomes and first-skip/first-assertion plus later teardown-error/warning rejection, original native exit and closed-event/inventory mismatch controls. No copied implementation or Ruby lifecycle/source edits. SDK execution held during root full gates; independent source/Mori review before actual macOS/Linux.
+
+LA03A, LA03B | DOING | /root/completion_testing source-only QA extension | Private fixture ruby-phase1-qa-sqcsdyke NEW qa/main.go and go.mod only; frozen Ruby3 checkout is supporting read-only local replace | Independent actual bridge results should be reconciled by exported production DecodeInventory/Reconcile rather than a duplicate Python implementation | Author bounded private native-output probe with exact source/tool/compiled-byte provenance. Go compilation and original native runner execution remain serialized after root full gates; no main/Ruby lifecycle edits or runtime qualification.
+
+LA02A, LA02B, LA02C | REVIEW | /root + independent QA reviewer | Private ordered Compatibility_v3 c60e5e1e/controller_v4 d97482ef/outer_v4 1dc3eaac/compactfreeze_v5 5d5b5df5; retained complete producer checkpoint8698d066 | Independent9b2a85b2 SOURCE/advisory GREEN; all twenty control identities/bounds unchanged, both native projections cross-bound pairwise to real KV-array type/count/order. All seventeen frozen inputs matched, source/test Mori complete with seven reused intentional source identities and zero test groups | Actual macOS/Linux API compilation and controls await root13454 SDK-slot drain. Earlier unordered positive and oversized unexecuted preparation freeze remain historical; no API/runtime acceptance claimed.
+
+K14B | DESIGN | /root/completion_review read-only refinement | Future typedfacts.go/accessor plus small closure.go retained module-language/variant seam; optional selected-SDK fixed fact helper only for actual unsupported checker contexts | Live selected-type checker review confirms empty Config.GoVersion disables version checks and listedPackage.Module lacks GoVersion. Root composed K14A still DOING; no dependent implementation | Prefer explicit reviewed host-checker/selected-compiler/language/sizes admission with captured export-only importer and unknown-mismatch fallback. Selected-SDK helper, if needed, binds fixed source/build/SDK/binary/wire and exact export ImportMap; it remains descriptive and cannot replace private dormant-source proof. No version-string-only equivalence or invented exported declaration offsets.
+
+K14A, K10D, K40 | DOING | /root release integration | Main tested ten source files, docs/implementation-status.md, docs/native-groups.md, NEW docs/go-typescript-release-plan.md and NEW digest-only integration evidence; coordinator owns board | User resumes with Go/TypeScript release priority; all249 frozen source hashes and complete normal843.480s/race1414.513s/vet1.278s log hashes currently match; no code change since passing checks | Close final review/documentation/commit without repeating unchanged full tests. No other-language resumption or publishing.
+
+K14B, K14C | DESIGN | /root/go_release | Existing source read-only until K14A completion; future isolated worktree exact golang typedfacts/closure plus native Go dependency proof files and tests only | K50 DONE; K14A actual and full composition passed but final closeout pending | Inspect compiler-selected variant/type context and original-private producer. Implementation requires coordinator dependency handoff; no common selector/CLI/backend edits or SDK tests until serialized slot assigned.
+
+K16B, K16C | DESIGN | /root/typescript_release | Existing TypeScript/Vitest source read-only until K10D completion; future isolated worktree native Node runtime/issuer and adapter Vitest runtime files/tests only | K15/K16A foundations DONE; K10D actual and full composition passed but final closeout pending | Trace real locked Vitest startup, transform, collect and execute; produce concrete supported profile with honest original fallback. No source-only parser qualification, core/CLI/backend edits or SDK tests until assigned.
+
+K38, K39, K40 | REVIEW | /root/release_acceptance | Current completed source/results plus release docs read-only; future independent fixture scope claimed separately | User prioritizes Go/TypeScript only; source review5edaf398 and all full gates passed; source/log pins unchanged | Review ten-file integration and release-plan closeout; identify exact CLI acceptance gaps and platform/runners. No code mutation or SDK tests; return concise blocking findings.
+
+K14A, K10D | DONE | /root + independent /root/release_acceptance | Exact ten integrated source files and release documentation | All249 frozen source files and normal/race/vet log hashes match; assigned addon Linux and external Go macOS/Linux controls passed without required skips; final source/review receipts262e24db,5449927a,5edaf398 accepted | Local integration only. Restricted private Go authority remains; addons grant no Node/Vitest authority. Unchanged source gates reused; final staged canonical review and local commit recorded with this closeout.
+
+K14B | DOING | /root/go_release | NEW isolated /tmp/hayaku-go-release-worktree from the K14A/K10D closeout commit; internal/adapter/golang/golang.go metadata only, closure.go, NEW typedfacts.go/typedfacts_test.go; native NEW go_dependency_proof.go/go_dependency_proof_test.go plus go.go/goclosure.go/proof.go and associated Go tests only | K14A/K50 DONE with assigned actual controls, full composition and independent review; exact selected compiler/language/variant design complete | Implement typed closed local helpers and reachable group identities, explicit accepted compiler admission, cleanup-error propagation and conservative fallback. No core selector/CLI/backend/cache edits. K14C setup implementation waits for K14B acceptance. Serialized SDK/native slot required before execution.
+
+K16B | DOING | /root/typescript_release | NEW isolated /tmp/hayaku-typescript-release-worktree from the K14A/K10D closeout commit; adapter/vitest NEW runtime.go/runtime.mjs/runtime_test.go; native NEW node_runtime.go/node_runtime_test.go; exact Go/TypeScript SDK fixture restoration under newly private /tmp/hayaku-language-acceptance-* only | K10D/K15/K06/K09 DONE; real restricted Vitest API/source plan complete; historical installed fixture bytes no longer present | Implement and validate the real locked Vitest runtime profile, exact complete collection and terminal outcomes under enforced Linux context. macOS remains original full fallback until separately qualified. Restore only the approved exact pinned fixture with official integrity evidence; no global installs. K16C issuance waits for K16B acceptance. SDK restoration assigned this slot; native executions separately serialized.

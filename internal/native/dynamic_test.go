@@ -194,9 +194,17 @@ func TestDynamicCaptureRejectsSourceCopyAndPrivateDrift(t *testing.T) {
 					t.Fatal(err)
 				}
 			case "copy-membership":
-				if err := os.WriteFile(filepath.Join(runtime.dir, "unexpected"), []byte("outside manifest"), 0400); err != nil {
+				name := filepath.Join(runtime.dir, "unexpected")
+				if err := os.WriteFile(name, []byte("outside manifest"), 0400); err != nil {
 					t.Fatal(err)
 				}
+				// Close preserves undeclared siblings. Repair only this test's
+				// injected marker after the unchanged verification assertion.
+				t.Cleanup(func() {
+					if err := os.Remove(name); err != nil {
+						t.Error(err)
+					}
+				})
 			case "source-alias":
 				name := program.primary.source
 				target := filepath.Join(dir, "alias-target")

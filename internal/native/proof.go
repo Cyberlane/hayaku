@@ -11,12 +11,75 @@ import (
 	"unicode/utf8"
 )
 
-const proofVersion = "go-pure-package-v1"
+const proofVersion = "go-pure-package-v2-external"
 
 // qualifyGo is deliberately a whitelist, not an effect blacklist or coverage
 // inference. Every declaration and branch is checked. Unknown syntax broadens.
 // The trusted Go compiler, testing package and runtime are part of this contract.
 func qualifyGo(files map[string][]byte) ([]string, error) {
+	// Go links the internal and external test packages into one test binary.
+	// Keep their callable namespaces separate while rejecting ambiguous native
+	// test names, which the existing result decoder cannot distinguish.
+	packages := map[string]map[string][]byte{}
+	for name, data := range files {
+		if !strings.HasSuffix(name, ".go") {
+			return nil, errors.New("non-Go package input")
+		}
+		file, err := parser.ParseFile(token.NewFileSet(), name, data, parser.PackageClauseOnly)
+		if err != nil {
+			return nil, errors.New("Go source could not be parsed")
+		}
+		pkg := file.Name.Name
+		if packages[pkg] == nil {
+			packages[pkg] = map[string][]byte{}
+		}
+		packages[pkg][name] = data
+	}
+	if len(packages) == 0 || len(packages) > 2 {
+		return nil, errors.New("package namespaces outside pure contract")
+	}
+	names := make([]string, 0, len(packages))
+	for name := range packages {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	if len(names) == 2 {
+		if names[1] != names[0]+"_test" {
+			return nil, errors.New("external test package name mismatch")
+		}
+		for name := range packages[names[1]] {
+			if !strings.HasSuffix(name, "_test.go") {
+				return nil, errors.New("external package source must be a test file")
+			}
+		}
+	}
+	cases := map[string]bool{}
+	for _, name := range names {
+		items, err := qualifyGoNamespace(packages[name], len(names) == 2)
+		if err != nil {
+			return nil, err
+		}
+		for _, item := range items {
+			if cases[item] {
+				return nil, errors.New("duplicate test name across package namespaces")
+			}
+			cases[item] = true
+		}
+	}
+	if len(cases) == 0 || len(cases) > 10000 {
+		return nil, errors.New("empty or oversized test inventory")
+	}
+	result := make([]string, 0, len(cases))
+	for name := range cases {
+		result = append(result, name)
+	}
+	sort.Strings(result)
+	return result, nil
+}
+
+// qualifyGoNamespace checks all source, including namespaces with no registered
+// tests. Only the combined binary inventory may satisfy the nonempty requirement.
+func qualifyGoNamespace(files map[string][]byte, allowEmpty bool) ([]string, error) {
 	fset := token.NewFileSet()
 	parsed := []*ast.File{}
 	funcs := map[string]bool{}
@@ -68,7 +131,7 @@ func qualifyGo(files map[string][]byte) ([]string, error) {
 		}
 		parsed = append(parsed, f)
 	}
-	if len(tests) == 0 || len(tests) > 10000 {
+	if (len(tests) == 0 && !allowEmpty) || len(tests) > 10000 {
 		return nil, errors.New("empty or oversized test inventory")
 	}
 	builtins := map[string]bool{"len": true, "cap": true, "append": true, "copy": true, "int": true, "int8": true, "int16": true, "int32": true, "int64": true, "uint": true, "uint8": true, "uint16": true, "uint32": true, "uint64": true, "float32": true, "float64": true, "string": true, "bool": true, "byte": true, "rune": true, "min": true, "max": true, "clear": true}

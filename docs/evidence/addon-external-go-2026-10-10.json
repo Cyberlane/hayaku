@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "scope": "Captured Linux addon roles and pure external Go test namespaces",
+  "status": "local integration and assigned acceptance reviewed; unpublished",
+  "source_pins": {
+    "internal/native/addon.go": "0396f1cbbb1bf94091b1330ddc459e35bfddbbecbc233eb29fc784f3382a513d",
+    "internal/native/addon_boundary_test.go": "00a16849e74a8a81ae7365cc10c54bb53b48ed6439257918d402ca63fca5a459",
+    "internal/native/addon_test.go": "b5dadaa83d54b07f7418980f8696a028475c93a0995d9784706c64caaeb31d3b",
+    "internal/native/backend.go": "19eaaf708a76a3b77883a8f4c654783803961fa55f4fe8de847e4aba8c3fb2a4",
+    "internal/native/dynamic.go": "8475545c10e7ecc1940e022b17aa09808e316ff54084b47d38e43f49e812ec5c",
+    "internal/native/dynamic_test.go": "cf99a1c1fbf9bad1d37820473aa240757dcbb34f2c3fbe5615b7d1ecf4bcdcf7",
+    "internal/native/external_boundary_test.go": "9c69cdb53328e06b53cf018dd595bc658b490ba3ef26efe804114b712ecc6509",
+    "internal/native/external_proof_test.go": "445aa95383c8362ac81fefb8dca1c7f4ee8a8ee7443f322d13e6c606e90345bb",
+    "internal/native/native_test.go": "dbb348bf7a0c0433c7e9131ae29ee34d750e68ac410510ec5a9196a58c325faa",
+    "internal/native/proof.go": "ec04e27ae50e4759de73f5ce445e9e6061f2d80b51eddb03ae25ed288091c544"
+  },
+  "whole_repository_source_file_count": 249,
+  "whole_repository_source_manifest_sha256": "3f7aee5e4d367ed5fec091b28e8af0d98987d8b222013dd08a7ffeb60dd78ff0",
+  "whole_repository_platform": "darwin-arm64",
+  "whole_repository_gates": {
+    "normal": {
+      "exit_code": 0,
+      "seconds": 843.48,
+      "log_sha256": "59a832c3e4fadac041e178e7ce30f09821a802e7bff7a0d675e56e88700dfbd4",
+      "joined": true
+    },
+    "race": {
+      "exit_code": 0,
+      "seconds": 1414.513,
+      "log_sha256": "c422c97bb409b291da380a1e8f880cddf8475fc46ccaf9a09f07bd53425b0c4b",
+      "joined": true
+    },
+    "vet": {
+      "exit_code": 0,
+      "seconds": 1.278,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "joined": true
+    }
+  },
+  "accepted_review_records": [
+    {
+      "name": "hayaku-addon-final-actual-independent-review.json",
+      "sha256": "262e24dbe8da6571082ea9d66e9657641ff45c941a26a129e150f608689821c8"
+    },
+    {
+      "name": "hayaku-k14a-actual-integration-independent-review.json",
+      "sha256": "5449927a52c30022694095fb5746628b156a20a9577c92a591a4bdd667502385"
+    },
+    {
+      "name": "hayaku-addon-external-composed-independent-source-review.json",
+      "sha256": "5edaf398d5ca4b56c51fa6bded5519534ede8bbda36e0550f7ff686de5bdfc73"
+    }
+  ],
+  "assigned_acceptance": {
+    "addon": "Linux arm64 role, NAPI/Rolldown, denial, drift, alias, output, cancellation and cleanup controls; retained normal/race regressions",
+    "external_go": "Five source-proof families normal/race and six native families each macOS/Linux normal/race, with complete case and private issuer/cache/audit guards",
+    "required_control_skips": 0
+  },
+  "boundaries": [
+    "Addon transport is operational and grants no user FFI, general Node/Vitest qualification or passing-receipt authority.",
+    "External Go namespace support retains the existing restricted private pure-source issuer; unsupported imports, effects and setup retain full original execution.",
+    "Historical disk/daemon/parser and compound-fixture deadline failures remain recorded as incomplete; the final fixture split retained original per-context bounds.",
+    "Assigned isolated runtime records and local composition are distinct from hosted CI, published artifacts and consumer acceptance."
+  ],
+  "external_acceptance": "not executed",
+  "published": false
+}

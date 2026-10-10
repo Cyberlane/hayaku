@@ -41,8 +41,9 @@ been established for representative consumers.
 
 The first certifier accepts a small, deliberately conservative subset:
 
-- One package, including same-package test files; no mutable package globals,
-  initialization hooks, methods, external test packages or native object files.
+- A complete package source map, including same-package and external test
+  namespaces; no mutable package globals, initialization hooks, methods or native
+  object files. Both namespaces must meet the same closed pure-source whitelist.
 - Direct local function calls, scalar/string/array/slice computation, constants,
   loops and ordinary control flow. The exact syntax is a whitelist in source.
 - Only `testing` imports in test files, conventional test signatures and a fixed
@@ -251,3 +252,13 @@ These fixtures never pull an image or install a runner. Linux arm64 was exercise
 locally with the installed OrbStack daemon; amd64 cross-compilation is a build
 check, not runtime qualification. Finite adversarial fixtures and local review do
 not establish a soundness proof, production approval or published availability.
+
+## Captured native addon roles
+
+The internal dynamic transport can admit bounded, explicitly captured Linux
+ELF addons and their closed loader/library dependencies in a separate executable
+role. Source/copy/alias/context guards remain live; ordinary resources and scratch
+retain their no-executable policy. Actual Linux NAPI and pinned Rolldown controls,
+denials, drift, cancellation, output bounds and cleanup checks passed, followed by
+full repository normal/race/vet composition. This operational API grants no user
+FFI, Node/Vitest equivalence or passing-receipt authority.

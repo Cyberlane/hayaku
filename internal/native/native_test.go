@@ -164,15 +164,45 @@ func TestInstalledLinuxNativeGroups(t *testing.T) {
 	if e != nil || !revoked.Passed || !revoked.Groups[0].Executed || revoked.Groups[0].Reused || revoked.Groups[0].Key != drifted.Groups[0].Key {
 		t.Fatalf("drift retained earlier authority %+v %v", revoked, e)
 	}
-	// Genuine skips are successful, but cannot mint a reusable all-cases pass.
+}
+
+// Skip receipt semantics form an independent scenario with fresh source/cache.
+// Both native executions share the original three-minute scenario bound.
+func TestInstalledLinuxNativeGroupSkips(t *testing.T) {
+	image := os.Getenv("HAYAKU_NATIVE_IMAGE")
+	if image == "" {
+		t.Skip("set HAYAKU_NATIVE_IMAGE to installed immutable Linux image ID")
+	}
+	arch := os.Getenv("HAYAKU_NATIVE_ARCH")
+	if arch == "" {
+		arch = "arm64"
+	}
+	root := t.TempDir()
+	cache := filepath.Join(t.TempDir(), "cache")
+	write(t, root, "go.mod", "module sample\ngo 1.26\n")
+	write(t, root, "b/sample.go", "package sample;func Value()int{return 1}")
 	write(t, root, "b/sample_test.go", `package sample;import "testing";func TestOptional(t *testing.T){t.Skip("fixture")}`)
+	config := Config{Schema: 1, Image: image, Architecture: arch, Packages: []string{"./b"}}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	var key string
 	for i := 0; i < 2; i++ {
-		skipped, e := Go(ctx, root, driftConfig, cache, false)
-		if e != nil || !skipped.Passed || !skipped.Complete || skipped.Groups[0].Reused || !skipped.Groups[0].Executed || skipped.Groups[0].Outcomes.Tests[0].Action != "skip" {
-			t.Fatalf("skip handling %+v %v", skipped, e)
+		skipped, err := Go(ctx, root, config, cache, false)
+		if err != nil || !skipped.Passed || !skipped.Complete || len(skipped.Groups) != 1 {
+			t.Fatalf("skip handling %+v %v", skipped, err)
+		}
+		group := skipped.Groups[0]
+		if !group.Qualified || !group.Complete || !group.Passed || group.Context != "linux-"+arch || group.Key == "" || group.Cache != "miss" || group.Reused || !group.Executed || len(group.Outcomes.Tests) != 1 || group.Outcomes.Tests[0].Test != "TestOptional" || group.Outcomes.Tests[0].Action != "skip" {
+			t.Fatalf("actual native skip handling %+v", group)
+		}
+		if i != 0 && group.Key != key {
+			t.Fatal("unchanged skip scenario changed its receipt identity")
+		}
+		key = group.Key
+		if _, err := os.Lstat(filepath.Join(cache, key+".json")); !os.IsNotExist(err) {
+			t.Fatal("successful native skip minted a reusable receipt", err)
 		}
 	}
-
 }
 func TestCancelledAuditRevokesBeforeBuild(t *testing.T) {
 	root := t.TempDir()

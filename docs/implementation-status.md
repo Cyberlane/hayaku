@@ -136,6 +136,16 @@ The source and tests define current behavior. “Native” below means installed
   Manual-loader startup differs from ordinary Node startup; these raw results
   grant no runtime equivalence, provider qualification or receipt authority.
   See [operational dynamic transport](native-groups.md#operational-dynamic-program-transport).
+- Captured Linux native addons use a separate executable role with closed
+  loader/library dependencies and live source/copy/context checks. Actual NAPI
+  and Rolldown controls and full normal/race/vet composition passed. Resource
+  no-executable restrictions remain; this adds no user FFI or Node/Vitest receipt
+  authority.
+- Restricted pure-Go qualification accepts complete internal/external test
+  namespace maps with exact combined cases and unchanged private issuer guards.
+  Actual macOS/Linux normal/race source, failure, skip, drift, audit and cache
+  controls passed, followed by full repository normal/race/vet composition.
+  Helper imports and setup/fixture qualification remain unfinished.
 - SwiftPM/Xcode closure APIs now bind compiler bytes, source/resources, build
   producers and private test products with fresh pre/post invocation checks.
   Actual installed normal/race tests passed within original fixture deadlines.

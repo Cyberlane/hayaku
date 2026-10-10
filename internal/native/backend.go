@@ -269,7 +269,10 @@ func (b Backend) executePrograms(ctx context.Context, a Artifact, primary *captu
 		controls = append(controls, resourceControl)
 		dynamicContract = &dynamicInvocation{Loader: dynamic.runtime.loaderName(), ResourcesDigest: digest(resources)}
 		defer func() {
-			if err := errors.Join(dynamic.Verify(ctx), verifyDynamicTransport(ctx, dynamicCopies)); err != nil {
+			// Interruption must retain detectable copied-runtime drift before cleanup.
+			post, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel()
+			if err := errors.Join(dynamic.Verify(post), verifyDynamicTransport(post, dynamicCopies)); err != nil {
 				result.Completed = false
 				runErr = errors.Join(runErr, err)
 			}
