@@ -105,10 +105,10 @@ live-verified.
 
 ## Read results and audit
 
-v0.6.2 validates supplied Vitest inventories before controller admission.
-Malformed inventories are rejected on every architecture; unsupported controllers
-cannot parse or mint authority. Valid inventories retain the same source,
-controller, tool and runtime checks, with no additional qualified context.
+Vitest admission remains controller-first. Unsupported controllers cannot parse
+or mint authority; admitted controllers must pass the same source, inventory,
+tool and runtime checks. The v0.6.2 forged-inventory regression asserts the
+appropriate rejection on each architecture, with no new qualified context.
 
 Reports expose `executed`, `reused`, `qualified`, `complete` and `passed` for each
 group, plus exact native case outcomes and fallback reasons. A workspace fallback

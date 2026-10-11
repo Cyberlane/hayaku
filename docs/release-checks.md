@@ -9,9 +9,15 @@ Windows, additional native qualification and external consumer acceptance remain
 deferred.
 
 The completed local restricted native milestone below is carried forward with
-v0.6.2's narrow Vitest inventory-validation ordering correction; accepted runtime
-contexts do not change. Its historical sources, counts and 139-payload cleanup
+v0.6.2's portable Vitest regression expectations; production controller-first
+admission and accepted runtime contexts do not change. Its historical sources, counts and 139-payload cleanup
 proof remain separate from hosted gates and any later download scratch cleanup.
+
+The first pre-tag v0.6.2 check at `5e1ba355` failed the unsupported-controller
+precedence regression on Linux AMD64. Its raw log and failed readiness receipt
+are retained. The issuer was restored byte-for-byte to the earlier reviewed
+production source; only the forged-inventory test expectation varies by admitted
+controller profile. No v0.6.2 tag was created for that failed candidate.
 
 # v0.6.0 historical local release candidate
 

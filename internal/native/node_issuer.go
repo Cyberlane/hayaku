@@ -128,20 +128,20 @@ func vitestToolContext(p *PreparedVitestRuntime, envelope *Envelope) (string, er
 }
 
 func verifyVitestIssuerScope(ctx context.Context, p *PreparedVitestRuntime, proof *vitestWorkspaceProof, inventory model.ExecutionInventory) error {
-	if proof == nil || p == nil || p.prepared == nil || p.request.Source == nil {
-		return errors.New("Vitest private workspace and runtime owners required")
-	}
-	if err := vitestadapter.MatchCases(inventory, p.expected); err != nil {
-		return err
-	}
 	if err := verifyVitestController(runtime.GOOS, runtime.GOARCH); err != nil {
 		return err
+	}
+	if proof == nil || p == nil || p.prepared == nil || p.request.Source == nil {
+		return errors.New("Vitest private workspace and runtime owners required")
 	}
 	if err := proof.verify(ctx); err != nil {
 		return err
 	}
 	if proof.scope.root != p.request.Files.Root || !slices.Equal(proof.scope.sources, p.request.Files.Sources) || !slices.Equal(proof.scope.tests, p.request.Files.Tests) {
 		return errors.New("Vitest configured complete scope differs from producer")
+	}
+	if err := vitestadapter.MatchCases(inventory, p.expected); err != nil {
+		return err
 	}
 	if p.backend.Image != vitestOriginalImage || p.request.Source.request.Root != proof.scope.root || !slices.Equal(p.request.Source.request.Sources, proof.scope.sources) || !slices.Equal(p.request.Source.request.Tests, proof.scope.tests) || p.prepared.ModulesDigest() != vitestModulesDigest {
 		return errors.New("Vitest original and native producer contexts differ")

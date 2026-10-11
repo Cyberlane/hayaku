@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -252,7 +253,11 @@ func TestNodeIssuerForgedInventoryRejectedBeforeToolAdmission(t *testing.T) {
 	p := &PreparedVitestRuntime{prepared: prepared, expected: cloneInventory(inventory), request: NodeRuntimeRequest{Files: files, Source: &NodeSourceCertificate{}}}
 	forged := cloneInventory(inventory)
 	forged.Cases[0].ID = `["caller",0]`
-	if artifacts, err := issueVitestArtifacts(context.Background(), p, proof, forged); err == nil || len(artifacts) != 0 || !strings.Contains(err.Error(), "cases differ") {
+	wanted := "cases differ"
+	if err := verifyVitestController(runtime.GOOS, runtime.GOARCH); err != nil {
+		wanted = err.Error()
+	}
+	if artifacts, err := issueVitestArtifacts(context.Background(), p, proof, forged); err == nil || len(artifacts) != 0 || !strings.Contains(err.Error(), wanted) {
 		t.Fatal("forged native inventory reached fixed-tool admission", err)
 	}
 	if artifacts, err := issueVitestArtifacts(context.Background(), p, proof, inventory); err == nil || len(artifacts) != 0 {
