@@ -27,7 +27,7 @@ jobs:
       matrix:
         runner: [ubuntu-24.04, macos-15]
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 20
+    timeout-minutes: 60
     env:
       GOTOOLCHAIN: local
       GOPROXY: "off"
@@ -106,6 +106,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     env:
+      HAYAKU_CARGO_REQUIRED: "1"
       GOTOOLCHAIN: local
       GOPROXY: "off"
       GOSUMDB: "off"
@@ -156,7 +157,7 @@ jobs:
           echo "$RUNNER_TEMP/hayaku-nextest" >> "$GITHUB_PATH"
           echo "HAYAKU_NEXTEST_REQUIRED=1" >> "$GITHUB_ENV"
       - name: Verify native discovery, execution and outcomes
-        run: go test -race -count=1 ./internal/adapter/native ./internal/adapter/nextest ./internal/adapter/pytest ./internal/runner/native ./internal/app
+        run: go test -race -count=1 ./internal/adapter/cargo ./internal/adapter/native ./internal/adapter/nextest ./internal/adapter/pytest ./internal/runner/native ./internal/app
 
   apple:
     if: ${{ inputs.release-profile != 'go-typescript' }}

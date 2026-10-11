@@ -20,7 +20,7 @@ suites run with controlled inputs and restricted access to your computer. Reuse
 requires unchanged code, inputs, and execution settings; it does not replace or
 prove the result of your normal test suite.
 
-**v0.6.1 focuses on Go and TypeScript/Vitest.**
+**v0.6.2 focuses on Go and TypeScript/Vitest.**
 `hayaku native` shares authenticated group reuse, audits and complete original
 fallback across restricted compiler/framework profiles. Local CLI/platform
 acceptance, four archive checks and task cleanup passed locally. Hosted
@@ -37,8 +37,8 @@ the source and build, and license notices.
 For macOS with Apple Silicon:
 
 ```sh
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.6.1/hayaku-darwin-arm64.tar.gz
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.6.1/SHA256SUMS
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.6.2/hayaku-darwin-arm64.tar.gz
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.6.2/SHA256SUMS
 grep '  hayaku-darwin-arm64.tar.gz$' SHA256SUMS | shasum -a 256 -c -
 tar -xzf hayaku-darwin-arm64.tar.gz
 mkdir -p "$HOME/.local/bin"
@@ -57,7 +57,7 @@ identity. See [download verification and build details](docs/distribution.md).
 With Go 1.27.1 installed:
 
 ```sh
-go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.6.1
+go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.6.2
 ```
 
 No npm package, account, or background service is needed. Git and your test tools

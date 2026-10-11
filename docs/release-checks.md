@@ -1,6 +1,22 @@
-# v0.6.0 local release candidate
+# v0.6.2 publication preparation
 
-All finite local Go/TypeScript release gates passed; no v0.6.0 tag or release has been published.
+Publication preparation is authorized. The failed signed v0.6.0 and v0.6.1 tags
+remain immutable; neither produced a release. Corrected hosted core gates, four
+Vitest compatibility pairs and WASI pilots are pending on Linux and macOS.
+Ordinary Apple/Rust lanes remain visible in CI and are deferred from this scoped
+release. Published asset verification is pending publication and download checks.
+Windows, additional native qualification and external consumer acceptance remain
+deferred.
+
+The completed local restricted native milestone below is carried forward with
+v0.6.2's narrow Vitest inventory-validation ordering correction; accepted runtime
+contexts do not change. Its historical sources, counts and 139-payload cleanup
+proof remain separate from hosted gates and any later download scratch cleanup.
+
+# v0.6.0 historical local release candidate
+
+All finite local Go/TypeScript release gates passed. The failed signed v0.6.0
+tag is preserved; no v0.6.0 release was published.
 The restricted Go profile uses Go 1.27.1 on macOS ARM64 and Linux ARM64.
 TypeScript/Vitest uses the fixed Linux ARM64 runtime from either controller.
 The two AMD64 archive targets are build-only; Windows packaging and runtime
@@ -130,9 +146,10 @@ retained, including a strict file-mode metadata mismatch corrected before deleti
 
 Runtime source is `13084875`; archive source is `ad6c4ced`. This later documentation
 closeout does not change the archived runtime bytes or rebuild the already
-accepted artifacts. Hosted CI, consumer acceptance and publication remain
-separate open actions. Tiny fixtures establish no representative speedup.
-Published v0.5.1 evidence below does not qualify this candidate.
+accepted artifacts. The v0.6.2 publication preparation status above supersedes
+this candidate's external handoff status; the records here remain local historical
+evidence. Tiny fixtures establish no representative speedup. Published v0.5.1
+evidence below does not qualify this candidate.
 
 # v0.5.1 release checks
 

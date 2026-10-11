@@ -1,8 +1,11 @@
 # Go and TypeScript native execution
 
-This guide describes the Go/TypeScript release candidate. Its final acceptance
-and publication status are recorded in [implementation status](implementation-status.md)
-and the [release plan](go-typescript-release-plan.md).
+This guide describes the completed local restricted Go/TypeScript profiles
+carried forward into authorized v0.6.2 publication preparation. Corrected hosted
+gates and published asset verification remain pending; failed signed v0.6.0/v0.6.1
+tags are preserved without releases. Current status is recorded in
+[implementation status](implementation-status.md) and the
+[release plan](go-typescript-release-plan.md).
 
 `hayaku native` executes configured test workspaces. A cold run executes every
 qualified group. A later run can reuse a complete authenticated passing result
@@ -16,12 +19,12 @@ and an owned decoder. Historical code coverage is not needed to authorize reuse.
 
 ## Enroll Go
 
-Install Go separately. The candidate qualified compiler profile is Go 1.27.1,
+Install Go separately. The qualified compiler profile is Go 1.27.1,
 and Hayaku itself must be built with Go 1.27.1 for its typed checker to qualify
 that compiler. Release archives use that build toolchain. The actual installed
 acceptance matrix is macOS ARM64 and Linux ARM64. The two AMD64 targets are
-build-only archive targets; their v0.6.0 headers, checksums and embedded build
-information passed verification. Extracted ARM64 CLI smokes passed on both platforms. The release
+build-only archive targets; historical local archive headers, checksums and embedded
+build information passed verification. Extracted ARM64 CLI smokes passed on both platforms. The release
 packages four macOS/Linux archives; Windows is deferred.
 Choose every explicit test package required by the original suite:
 
@@ -101,6 +104,11 @@ are handled separately from user source; the complete fixed module tree stays
 live-verified.
 
 ## Read results and audit
+
+v0.6.2 validates supplied Vitest inventories before controller admission.
+Malformed inventories are rejected on every architecture; unsupported controllers
+cannot parse or mint authority. Valid inventories retain the same source,
+controller, tool and runtime checks, with no additional qualified context.
 
 Reports expose `executed`, `reused`, `qualified`, `complete` and `passed` for each
 group, plus exact native case outcomes and fallback reasons. A workspace fallback

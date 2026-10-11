@@ -19,6 +19,13 @@ Archive ordering, modes and timestamps are fixed. Timestamps derive from the sou
 
 ## Public release workflow
 
+v0.6.2 publication preparation is authorized. Failed signed v0.6.0/v0.6.1 tags
+are preserved; neither produced a release. The local restricted native milestone
+is complete, while corrected scoped hosted gates and published asset verification
+remain pending. Ordinary Apple/Rust lanes remain visible in CI and are deferred
+from this release; Windows, additional native qualification and external consumer
+acceptance remain deferred.
+
 The workflow accepts strict `vMAJOR.MINOR.PATCH` tags, runs required CI and verifies that the CLI version matches the tag. Matching release notes are required. It builds four macOS/Linux archives from the exact clean tag with Go 1.27.1, checks their checksums, and smoke-tests the extracted Linux amd64 binary. The Go/TypeScript publication profile retains full tests/races/vet, four Vitest compatibility pairs and WASI pilots on Linux and macOS. Installed other-language lanes remain in ordinary CI; they do not qualify this scoped release. Publication starts with a draft containing all assets before making the release public. See [release checks](release-checks.md) for actual remote acceptance evidence.
 
 Other advertised targets have cross-compilation evidence unless separately recorded. Binaries are not signed or notarized. Neither the local builder nor publication enrolls a consumer's CI or qualifies additional native contexts. [Capsule reuse](capsules.md) applies only to its own deterministic WASI contract; Windows execution and cache qualification are deferred.

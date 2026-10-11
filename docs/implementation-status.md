@@ -1,13 +1,17 @@
 # Implementation status
 
-The source and tests define current behavior. “Native” below means installed-runner evidence and result handling, not complete runtime influence or permission to skip a native suite. Original native plan commands remain full. The unreleased restricted native group command has its own contract, described below. v0.4.0 permits whole-suite reuse only within the separately enforced [deterministic WASI contract](capsules.md).
+The source and tests define current behavior. “Native” below means installed-runner evidence and result handling, not complete runtime influence or permission to skip a native suite. Original native plan commands remain full. The restricted native group command has its own contract, described below. v0.4.0 permits whole-suite reuse only within the separately enforced [deterministic WASI contract](capsules.md).
 
 ## Go and TypeScript release priority
 
-The local v0.6.0 candidate is complete for the restricted Go and TypeScript/Vitest profiles.
+The local restricted Go and TypeScript/Vitest milestone is complete. v0.6.2
+publication preparation is authorized; the failed signed v0.6.0 and v0.6.1 tags
+are preserved, and neither produced a release. Corrected hosted core gates,
+four Vitest compatibility pairs and WASI pilots remain pending on Linux and macOS.
+Published asset verification and external consumer acceptance remain pending.
 Other-language expansion and Windows qualification are deferred; subsequent
-releases add one language each. Publication and hosted CI acceptance remain
-separate from local implementation and verification.
+releases add one language each. Ordinary Apple/Rust CI lanes remain visible and
+are deferred from this scoped publication profile.
 
 - Restricted Go helpers, external tests and string fixtures, the private Vitest
   issuer, complete inventories and transactional `native-init` share the same
@@ -34,10 +38,10 @@ separate from local implementation and verification.
   an AST/source-only proposal for CI omission.
 
 See the [release plan](go-typescript-release-plan.md),
-[candidate setup guide](go-typescript-native.md) and
+[supported-profile setup guide](go-typescript-native.md) and
 [dependency kanban](affected-tests-kanban.md) for the exact completion scope.
 
-## Unreleased shared execution work
+## Shared execution foundations
 
 - Shared analysis/runner composition, entrypoint/environment binding and normalized
   outcome validation are integrated into native execution and shadow comparison.
@@ -208,7 +212,8 @@ See the [release plan](go-typescript-release-plan.md),
   additional language certifiers and representative consumer CI savings
   remain unfinished. Original native plan gates remain full.
 
-These source capabilities are not a published release or production acceptance.
+The scoped local release milestone above does not establish production consumer
+acceptance or qualification for the additional contexts described here.
 
 The dependency-linked [affected-test execution kanban](affected-tests-kanban.md)
 tracks the remaining shared engine, language/runtime qualification and end-to-end
@@ -229,8 +234,8 @@ cards do not authorize native omission or change the capabilities listed here.
 
 | Integration | Implemented evidence | Assurance |
 | --- | --- | --- |
-| Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted package reuse on macOS/Linux, including compiler-selected pure local helpers, external tests and string fixtures | Ordinary native plans remain full; cgo, concurrency, dynamic setup and unknown external influence run original scopes. Candidate composed release gates remain pending |
-| Vitest | Four exact Vitest/Vite pairs for ordinary evidence; fixed 4.1.11/8.2.2 candidate private file reuse with Node 22.18.0 / TypeScript 6.0.2 and complete runtime closure | Custom Cloudflare/VM/browser/typecheck contexts remain unqualified. Private issuer/CLI acceptance and hosted CI remain separate from ordinary adapter checks |
+| Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted package reuse on macOS/Linux, including compiler-selected pure local helpers, external tests and string fixtures | Ordinary native plans remain full; cgo, concurrency, dynamic setup and unknown external influence run original scopes. Local composed native gates passed; corrected v0.6.2 hosted gates remain pending |
+| Vitest | Four exact Vitest/Vite pairs for ordinary evidence; fixed 4.1.11/8.2.2 private file reuse with Node 22.18.0 / TypeScript 6.0.2 and complete runtime closure | Custom Cloudflare/VM/browser/typecheck contexts remain unqualified. Local private issuer/CLI acceptance is carried forward with unchanged qualified contexts; v0.6.2 hosted gates remain pending |
 | Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |

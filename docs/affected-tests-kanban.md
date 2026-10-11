@@ -25,7 +25,7 @@ and acceptance. New work for other languages is deferred until that release is
 complete, then proceeds one language per release. Existing unfinished language
 worktrees are preserved; historical DOING records do not authorize their resumption.
 
-The local v0.6.0 release has the following finite gates. The broader K39 consumer
+The local restricted native milestone has the following finite gates. The broader K39 consumer
 performance and K41 all-language promises remain separate backlog work; passing
 these gates cannot establish representative consumer speedups or hosted acceptance.
 
@@ -36,13 +36,18 @@ these gates cannot establish representative consumer speedups or hosted acceptan
 | R06-CORE | DONE | K31, K48, reviewed K52/K32/K33 handoffs | Shared launch/inventory/cache/audit/outcome engine, retained ownership and transactional enrollment accepted; no public configuration can mint authority. |
 | R06-QA | DONE | Frozen R06-GO, R06-TS, R06-CORE operational handoffs | All 21 core/native obligations passed with 304 mandatory native terminals, 164 measured CLI steps, matching input guards and drained owned processes; independent composition review and canonical staged Mori passed. |
 | R06-HANDOFF | DONE | R06-GO, R06-TS, R06-CORE, R06-QA | Signed runtime source `13084875` and ordinary packager source `ad6c4ced`; four archives/checksums and actual ARM64 smokes accepted by review `478231e4`. All 139 obsolete payloads removed after complete guarded preflights; 9.42 GiB logical bytes removed, evidence and release files retained. Local publication preparation complete. |
+| R06-PUBLISH | DOING | R06-HANDOFF, explicit publication approval | Signed v0.6.2 correction preparation; all 12 scoped hosted jobs must pass before tagging, then required release verification, public download checks, exact-source ARM64 smokes and disposable scratch cleanup. |
 
-Publication awaits explicit approval after the completed local handoff. The two
+v0.6.2 publication preparation is authorized after the completed local handoff.
+The failed signed v0.6.0 and v0.6.1 tags are preserved; neither produced a release. The two
 AMD64 archives passed build-only verification; ARM64 archive smokes ran on both
 platforms. Windows packaging and runtime qualification are deferred. Subsequent
 language releases require their own scoped acceptance gates.
 
-Hosted CI: **OPEN, not run**. External consumer acceptance: **OPEN**. These are
+Hosted CI: **PENDING** for corrected core gates, four Vitest compatibility pairs
+and WASI pilots on Linux and macOS. Ordinary Apple/Rust lanes remain visible in
+CI and are deferred from this scoped release. Published asset verification:
+**PENDING**. External consumer acceptance: **OPEN, deferred**. These remain
 separate from the completed K37 local CI-equivalent lane and R06 local gates.
 
 ## Board rules
@@ -147,7 +152,7 @@ acceptance; these local states do not qualify hosted CI or arbitrary programs.
 | K33 | CORE | K32, K02 | Aggregate outcome reconciliation | Every required case/group has an executed terminal outcome or authenticated pass; startup/build/hook errors, unexpected identities, truncation, cancellation and drift cannot produce green. |
 | K35 | CORE | K33, K02, K48 | Full audits, revocation and recovery | Forced-full and scheduled audit paths revoke previous authority before execution, including cancellation/failure; mismatches revoke relevant qualification and retain original full gates. |
 | K36 | CLI | K33, K30 | One end-to-end command and explanation | Setup/doctor/plan/run connect qualified paths and original fallbacks; stable reports distinguish executed, reused, affected, broadened and incomplete scopes without exposing source or environment values. |
-| K37 | CI | K34, K35, K36 | Local CI-equivalent workflow | Reviewed offline helper and 21 actual core/native gates bind exact revisions, provisioned tools, private cache authority, fallback and audits. Hosted CI remains OPEN and unexecuted; external workflow actions require approval. |
+| K37 | CI | K34, K35, K36 | Local CI-equivalent workflow | Reviewed offline helper and 21 actual core/native gates bind exact revisions, provisioned tools, private cache authority, fallback and audits. v0.6.2 publication preparation is authorized; corrected scoped hosted gates remain pending. |
 | K38 | QA | K33, K35, K03 | Independent selection and isolation review | Review the influence algorithm and backend assumptions; run real hidden-dependency, unexecuted-effect, state, bypass, cache and fault cases against original full runs. Passing comparisons alone confer no qualification. |
 | K14A | GO | K13, K06, K10 | Pure external Go test namespaces | Certify the complete mixed internal/external source map by namespace with exact combined case identities and unchanged private issuer/context binding; duplicate cases and unsupported imports or dormant effects broaden. |
 | K10D | RUNTIME | K10B, K10C, K09, F03 | Captured native addon execution roles | Admit only explicitly captured native addon bytes and their loader/library closure in a separate executable runtime role, preserving resource noexec restrictions, bounded inputs and denial policy; actual supported addons require source/tool/alias/live-drift/cancellation controls and cannot grant user FFI or provider authority. |
@@ -449,10 +454,10 @@ Fleet closeout recorded 2026-10-11 for the Go/TypeScript release:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | LOCAL HANDOFF COMPLETE | Runtime/core 21 gates, signed source, four archived targets, all 139 payload removals and documentation closeout complete. Publication requires approval. |
-| `/root/release_review` | COMPLETED | Root/native matrix, artifact actuals and finite cleanup actuals accepted; cleanup review `8880e921` verifies all removals, retained records and final assets. No active assignment. |
+| `/root` | PUBLICATION PREPARATION AUTHORIZED | Local runtime/core 21 gates, signed source, four archived targets and all 139 payload removals complete. Failed signed v0.6.0/v0.6.1 tags preserved without releases; corrected v0.6.2 scoped hosted gates and published asset verification pending. |
+| `/root/release_review` | COMPLETED | Historical matrix/artifact/cleanup review accepted; finite v0.6.2 source and workflow correction review passed. Documentation review precedes final candidate commit. |
 | `/root/typescript_release` | COMPLETED; HISTORICAL OWNER | Private Vitest issuer and actual composed CLI controls accepted for the documented fixed runtime. No active assignment. |
-| `/root/release_records` | COMPLETED | Final cleanup helpers and focused mode correction reviewed; before deletion, 921 pinned records retained with mandatory provenance fields unchanged. No active assignment. |
+| `/root/release_records` | COMPLETED | Historical cleanup records retained; six v0.6.2 pending-status documents corrected and returned for coordinator review. |
 | `/root/native_finish` | COMPLETED | Four ordinary macOS/Linux archives and actual ARM64 smokes passed. AMD64 is build-only; Windows is deferred. No active assignment. |
 
 Other-language assignments below are historical and deferred from active work.

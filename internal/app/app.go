@@ -25,7 +25,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-var Version = "0.6.1"
+var Version = "0.6.2"
 
 // Run returns a nonzero status for invalid policy, incomplete execution or misses.
 func Run(ctx context.Context, args []string, out, errout io.Writer) int {

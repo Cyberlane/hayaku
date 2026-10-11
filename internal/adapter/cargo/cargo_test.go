@@ -14,8 +14,11 @@ import (
 
 func rustFixture(t *testing.T) (string, model.Workspace) {
 	t.Helper()
+	if os.Getenv("HAYAKU_CARGO_REQUIRED") != "1" {
+		t.Skip("installed Cargo acceptance requires HAYAKU_CARGO_REQUIRED=1")
+	}
 	if _, err := exec.LookPath("cargo"); err != nil {
-		t.Skip("native Cargo unavailable")
+		t.Fatal("native Cargo unavailable")
 	}
 	root := t.TempDir()
 	files := map[string]string{
