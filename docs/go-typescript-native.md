@@ -1,11 +1,12 @@
 # Go and TypeScript native execution
 
-This guide describes the completed local restricted Go/TypeScript profiles
-carried forward into authorized v0.6.2 publication preparation. Corrected hosted
-gates and published asset verification remain pending; failed signed v0.6.0/v0.6.1
-tags are preserved without releases. Current status is recorded in
-[implementation status](implementation-status.md) and the
-[release plan](go-typescript-release-plan.md).
+This guide describes the restricted Go/TypeScript profiles carried forward into
+[published v0.6.2](https://github.com/Cyberlane/hayaku/releases/tag/v0.6.2).
+Scoped hosted gates and independently reviewed public downloads and ARM64 CLI
+checks passed, with no additional qualified runtime context. Failed signed
+v0.6.0/v0.6.1 tags are preserved without releases. Current status is recorded in
+[implementation status](implementation-status.md), the
+[release plan](go-typescript-release-plan.md) and [release checks](release-checks.md).
 
 `hayaku native` executes configured test workspaces. A cold run executes every
 qualified group. A later run can reuse a complete authenticated passing result
@@ -22,10 +23,13 @@ and an owned decoder. Historical code coverage is not needed to authorize reuse.
 Install Go separately. The qualified compiler profile is Go 1.27.1,
 and Hayaku itself must be built with Go 1.27.1 for its typed checker to qualify
 that compiler. Release archives use that build toolchain. The actual installed
-acceptance matrix is macOS ARM64 and Linux ARM64. The two AMD64 targets are
-build-only archive targets; historical local archive headers, checksums and embedded
-build information passed verification. Extracted ARM64 CLI smokes passed on both platforms. The release
-packages four macOS/Linux archives; Windows is deferred.
+acceptance matrix is macOS ARM64 and Linux ARM64. Public archive headers,
+checksums, tagged documents and embedded build information passed verification
+for all four targets. Extracted public ARM64 CLI checks passed on both platforms.
+The publication workflow's Linux AMD64 version smoke is an integrity check;
+neither AMD64 target has affected-native qualification. The historical local
+runtime matrix remains separately attributed in [release checks](release-checks.md).
+The release packages four macOS/Linux archives; Windows is deferred.
 Choose every explicit test package required by the original suite:
 
 ```sh

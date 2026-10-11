@@ -1,12 +1,44 @@
-# v0.6.2 publication preparation
+# v0.6.2 published release checks
 
-Publication preparation is authorized. The failed signed v0.6.0 and v0.6.1 tags
-remain immutable; neither produced a release. Corrected hosted core gates, four
-Vitest compatibility pairs and WASI pilots are pending on Linux and macOS.
-Ordinary Apple/Rust lanes remain visible in CI and are deferred from this scoped
-release. Published asset verification is pending publication and download checks.
+[v0.6.2 is published](https://github.com/Cyberlane/hayaku/releases/tag/v0.6.2)
+from tagged source `e35ab3177e7433e524d266ed058fb193cbaf3c8b`, with signed tag
+object `07e459e9c3d44bdda9d61bd52089a7b9bd8abbd6`.
+[Pre-tag run 38103746425](https://github.com/Cyberlane/hayaku/actions/runs/38103746425)
+and [release run 38105186632](https://github.com/Cyberlane/hayaku/actions/runs/38105186632)
+passed all twelve scoped verification jobs: full Go normal/race/vet on Linux
+and macOS, eight Vitest compatibility jobs and two WASI pilots. The release run
+also passed publication, including archive checksums and an extracted Linux
+AMD64 CLI version smoke. That smoke establishes release integrity, with no
+AMD64 affected-native qualification.
+
+The ordinary pre-tag run's overall result remains red because its deferred Apple
+and Linux other-native jobs failed. All twelve jobs required by this scoped
+release passed; the tagged release run passed verification and publication.
+
+Public download provenance receipt SHA256: `4c16b7f449aaf55120476186f34a9c98b723c3806c5850e7233377ac2b983080`.
+Exactly six public assets were checked: four macOS/Linux archives, `manifest.json`
+and `SHA256SUMS`. All four archive inventories, headers, modes and metadata passed;
+each contains the 44 exact tagged documents and its binary, totalling 45 members.
+Embedded build information matches Go 1.27.1, module v0.6.2, the clean full tagged
+commit, UTC commit time, platform settings and checksum-pinned dependencies.
+
+Downloaded-artifact verification report SHA256: `7efd6fbdbe300cec342f820766f3cf13ca1e8882e65e6b30c22327a925404ae5`.
+Independent actual review SHA256: `d56bf4b1a4baa7d76edc95bcdaea9ee62f42b6c95369fe532dce3d3825305559`.
+The verifier recorded `86` completed, joined commands and
+`172` retained bounded raw logs. Public ARM64 binaries passed
+version, help and catalog checks on macOS and Linux; Linux kernel, UID501 and GID20
+controls also passed. Source, tag, selected tools, private Docker configuration,
+asset and extracted-member guards matched, with empty final owned-container
+inventories and no cleanup errors. Scratch cleanup: `passed`;
+`7` newly created payload directories were removed,
+while all downloads, reports and raw logs were retained.
+
+The archives contain the tagged documentation snapshot. This later documentation
+closeout does not change their tagged source or rebuild their bytes.
+The failed signed v0.6.0/v0.6.1 tags remain immutable without releases. Ordinary
+Apple/Rust lanes remain visible in CI and are deferred from this scoped release.
 Windows, additional native qualification and external consumer acceptance remain
-deferred.
+deferred; these release checks establish no representative consumer speedup.
 
 The completed local restricted native milestone below is carried forward with
 v0.6.2's portable Vitest regression expectations; production controller-first

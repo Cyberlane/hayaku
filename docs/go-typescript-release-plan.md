@@ -34,14 +34,16 @@ different qualified contexts, which must be explicit in reports and docs.
 
 K14B/C and K16B/C are complete for the documented initial profiles. All finite
 R06 local gates passed, including independently reviewed archives and cleanup.
-The reproducible local CI-equivalent lane is complete. v0.6.2 publication
-preparation is authorized; failed signed v0.6.0/v0.6.1 tags are preserved without
-releases. Corrected hosted core gates, four Vitest compatibility pairs and WASI
-pilots on Linux and macOS remain pending, as does published asset verification.
-Ordinary Apple/Rust lanes remain visible in CI and are deferred from this scoped
-release. Existing adapters for other languages remain intact; their new
-implementation and qualification, Windows and external consumer acceptance are
-deferred.
+The reproducible local CI-equivalent lane is complete, and
+[v0.6.2 is published](https://github.com/Cyberlane/hayaku/releases/tag/v0.6.2).
+Scoped hosted core gates, four Vitest compatibility pairs and WASI pilots passed
+on Linux and macOS. Public downloads, exact-source ARM64 CLI checks and disposable
+scratch cleanup passed independent review; [release checks](release-checks.md)
+bind the tagged source, signed tag object, hosted runs and actual receipt digests.
+Failed signed v0.6.0/v0.6.1 tags are preserved without releases. Ordinary Apple/Rust
+lanes remain visible in CI and are deferred from this scoped release. Existing
+adapters for other languages remain intact; their new implementation and
+qualification, Windows and external consumer acceptance remain deferred.
 
 ## Required acceptance
 

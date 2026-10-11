@@ -4,14 +4,15 @@ The source and tests define current behavior. “Native” below means installed
 
 ## Go and TypeScript release priority
 
-The local restricted Go and TypeScript/Vitest milestone is complete. v0.6.2
-publication preparation is authorized; the failed signed v0.6.0 and v0.6.1 tags
-are preserved, and neither produced a release. Corrected hosted core gates,
-four Vitest compatibility pairs and WASI pilots remain pending on Linux and macOS.
-Published asset verification and external consumer acceptance remain pending.
-Other-language expansion and Windows qualification are deferred; subsequent
-releases add one language each. Ordinary Apple/Rust CI lanes remain visible and
-are deferred from this scoped publication profile.
+The local restricted Go and TypeScript/Vitest milestone is complete, and
+[v0.6.2 is published](https://github.com/Cyberlane/hayaku/releases/tag/v0.6.2).
+Scoped hosted core gates, four Vitest compatibility pairs and WASI pilots passed
+on Linux and macOS. Public downloads, exact-source ARM64 CLI checks and disposable
+scratch cleanup passed independent review; see [release checks](release-checks.md).
+The failed signed v0.6.0 and v0.6.1 tags are preserved without releases.
+Other-language expansion, Windows qualification and external consumer acceptance
+remain deferred; subsequent releases add one language each. Ordinary Apple/Rust
+CI lanes remain visible and are deferred from this scoped publication profile.
 
 - Restricted Go helpers, external tests and string fixtures, the private Vitest
   issuer, complete inventories and transactional `native-init` share the same
@@ -234,8 +235,8 @@ cards do not authorize native omission or change the capabilities listed here.
 
 | Integration | Implemented evidence | Assurance |
 | --- | --- | --- |
-| Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted package reuse on macOS/Linux, including compiler-selected pure local helpers, external tests and string fixtures | Ordinary native plans remain full; cgo, concurrency, dynamic setup and unknown external influence run original scopes. Local composed native gates passed; corrected v0.6.2 hosted gates remain pending |
-| Vitest | Four exact Vitest/Vite pairs for ordinary evidence; fixed 4.1.11/8.2.2 private file reuse with Node 22.18.0 / TypeScript 6.0.2 and complete runtime closure | Custom Cloudflare/VM/browser/typecheck contexts remain unqualified. Local private issuer/CLI acceptance is carried forward with unchanged qualified contexts; v0.6.2 hosted gates remain pending |
+| Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted package reuse on macOS/Linux, including compiler-selected pure local helpers, external tests and string fixtures | Ordinary native plans remain full; cgo, concurrency, dynamic setup and unknown external influence run original scopes. Local composed native gates passed; scoped v0.6.2 hosted core gates and public artifact verification passed |
+| Vitest | Four exact Vitest/Vite pairs for ordinary evidence; fixed 4.1.11/8.2.2 private file reuse with Node 22.18.0 / TypeScript 6.0.2 and complete runtime closure | Custom Cloudflare/VM/browser/typecheck contexts remain unqualified. Local private issuer/CLI acceptance is carried forward with unchanged qualified contexts; scoped v0.6.2 hosted Vitest gates and public ARM64 CLI checks passed |
 | Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |
