@@ -105,6 +105,7 @@ func TestDocumentationPreservesLinkedFilesAndRequiresLicenseNotices(t *testing.T
 		"docs/portable-cache.md":                         "Cache authority workflow\n",
 		"docs/runner-provisioning.md":                    "Installed fixture provenance\n",
 		"docs/releases/v0.6.0.md":                        "Go and TypeScript release notes\n",
+		"docs/releases/v0.6.1.md":                        "Go fixture formatting correction notes\n",
 		"docs/pilot-methodology.md":                      "Measurement methodology\n",
 		"docs/pilot-results.md":                          "Pilot observations\n",
 		"docs/release-checks.md":                         "Release check commands\n",

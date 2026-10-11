@@ -20,11 +20,12 @@ suites run with controlled inputs and restricted access to your computer. Reuse
 requires unchanged code, inputs, and execution settings; it does not replace or
 prove the result of your normal test suite.
 
-**The unreleased v0.6.0 candidate focuses on Go and TypeScript/Vitest.**
+**v0.6.1 focuses on Go and TypeScript/Vitest.**
 `hayaku native` shares authenticated group reuse, audits and complete original
 fallback across restricted compiler/framework profiles. Local CLI/platform
-acceptance, four archive checks and task cleanup passed locally; publication
-requires approval. See [candidate setup](docs/go-typescript-native.md)
+acceptance, four archive checks and task cleanup passed locally. Hosted
+publication status is recorded in [release checks](docs/release-checks.md).
+See [setup](docs/go-typescript-native.md)
 and [implementation status](docs/implementation-status.md).
 
 ## Install
@@ -36,8 +37,8 @@ the source and build, and license notices.
 For macOS with Apple Silicon:
 
 ```sh
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.5.1/hayaku-darwin-arm64.tar.gz
-curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.5.1/SHA256SUMS
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.6.1/hayaku-darwin-arm64.tar.gz
+curl -fLO https://github.com/Cyberlane/hayaku/releases/download/v0.6.1/SHA256SUMS
 grep '  hayaku-darwin-arm64.tar.gz$' SHA256SUMS | shasum -a 256 -c -
 tar -xzf hayaku-darwin-arm64.tar.gz
 mkdir -p "$HOME/.local/bin"
@@ -46,24 +47,23 @@ install -m 755 hayaku "$HOME/.local/bin/hayaku"
 hayaku version
 ```
 
-Linux uses `hayaku-linux-*.tar.gz`; Windows uses `hayaku-windows-*.zip`.
-Builds are available for macOS, Linux, and Windows on amd64 and arm64. A build
-being available does not mean it has been tested on that platform; Windows and
-setups outside the tested matrix remain experimental. macOS binaries are not
+Linux uses `hayaku-linux-*.tar.gz`. This release provides macOS and Linux builds
+on amd64 and arm64. Qualified native acceptance covers the documented ARM64
+contexts; AMD64 archives do not qualify affected native execution. Windows
+packaging and qualification are deferred. macOS binaries are not
 Apple-signed or notarized. Checksums verify the file contents, not the publisher's
 identity. See [download verification and build details](docs/distribution.md).
 
-With Go 1.26 or newer installed:
+With Go 1.27.1 installed:
 
 ```sh
-go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.5.1
+go install github.com/Cyberlane/hayaku/cmd/hayaku@v0.6.1
 ```
 
 No npm package, account, or background service is needed. Git and your test tools
 must already be installed; Hayaku does not download commits or install runners.
 The core uses the Go standard library, with pinned wazero and platform dependencies
-for WASI execution. WASI suites run on Windows, but result reuse is disabled until
-cache permissions have been verified there.
+for WASI execution. Windows execution and cache qualification are deferred.
 
 ## Start with a plan
 
