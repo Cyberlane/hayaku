@@ -31,15 +31,15 @@ these gates cannot establish representative consumer speedups or hosted acceptan
 
 | Release gate | State | Dependencies | Required result |
 | --- | --- | --- | --- |
-| R06-GO | REVIEW | K14A, K50, reviewed K14B/C handoffs | Restricted compiler-selected helpers, external tests and string fixtures; actual macOS/Linux normal/race and private original-fallback lifecycle. |
-| R06-TS | REVIEW | K10D, K10E, K15, reviewed K16A/B/C handoffs | Fixed Linux ARM64 Vitest runtime, complete source/case graph and private file issuer; unsupported inputs run the exact original command. |
-| R06-CORE | REVIEW | K31, K48, reviewed K52/K32/K33 handoffs | Shared launch/inventory/cache/audit/outcome engine, retained ownership and transactional enrollment; no public configuration can mint authority. |
-| R06-QA | REVIEW | Frozen R06-GO, R06-TS, R06-CORE operational handoffs | All 21 core/native obligations passed with 304 mandatory native terminals, 164 measured CLI steps, matching input guards and drained owned processes; final composition and staged review precede completion. |
-| R06-HANDOFF | BLOCKED | R06-GO, R06-TS, R06-CORE, R06-QA | Independent final review, accurate docs, local commit, six versioned archives/checksums, actual ARM64 archive smoke checks and disposable-task cleanup. |
+| R06-GO | DONE | K14A, K50, reviewed K14B/C handoffs | Restricted compiler-selected helpers, external tests and string fixtures; actual macOS/Linux normal/race and private original-fallback lifecycle accepted. |
+| R06-TS | DONE | K10D, K10E, K15, reviewed K16A/B/C handoffs | Fixed Linux ARM64 Vitest runtime, complete source/case graph and private file issuer accepted; unsupported inputs run the exact original command. |
+| R06-CORE | DONE | K31, K48, reviewed K52/K32/K33 handoffs | Shared launch/inventory/cache/audit/outcome engine, retained ownership and transactional enrollment accepted; no public configuration can mint authority. |
+| R06-QA | DONE | Frozen R06-GO, R06-TS, R06-CORE operational handoffs | All 21 core/native obligations passed with 304 mandatory native terminals, 164 measured CLI steps, matching input guards and drained owned processes; independent composition review and canonical staged Mori passed. |
+| R06-HANDOFF | DOING | R06-GO, R06-TS, R06-CORE, R06-QA | Signed runtime source committed; ordinary four-target packager scope corrected and focused checks passed. Four macOS/Linux archives/checksums, actual ARM64 archive smoke checks and disposable-task cleanup remain. |
 
-Publication is a separate authorized action after the local handoff. Windows
-archives are build-only targets; the v0.6.0 artifact checks are pending. Windows
-runtime qualification is deferred. Subsequent language releases require their own
+Publication is a separate authorized action after the local handoff. The two
+AMD64 archives are build-only targets; the v0.6.0 artifact checks are pending.
+Windows packaging and runtime qualification are deferred. Subsequent language releases require their own
 scoped acceptance gates.
 
 ## Board rules
@@ -443,11 +443,11 @@ Live fleet activity verified 2026-10-11 for the Go/TypeScript release:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | STAGED SOURCE AND ARTIFACT PREPARATION | Final projection `a6cfa9bd` and freeze `e0142f08` match all reviewed source bytes. Root composition `8e312b1f` binds core3, current native8 and impact-qualified historical10: 304 mandatory native terminals and 164 measured CLI steps. Failed/interrupted history remains unaccepted. Canonical staged Mori, signed local source, archives and finite disposable-task cleanup remain pending. |
-| `/root/release_review` | CORE/NATIVE ACCEPTED; ROOT COMPOSITION REVIEW | Review `bb0c9c9f` accepts current core normal/race/vet; `43be6f27` accepts current native8, final guards, all 33 helper joins and exact detached-controller absence. Every required native terminal passes without skips; core optional skips are disclosed. Root21 data composition is under narrow review. Artifacts remain pending. |
-| `/root/typescript_release` | SOURCE HANDOFF COMPLETE | Six K16B real Vitest normal/race phases accepted without skips, receipt fb699b90. Private issuer is integrated with independently reviewed cache identity corrections. Composed issuer/CLI qualification remains pending. |
-| `/root/release_records` | PRIVATE EVIDENCE RETAINED; IDLE | Preparatory index `553c25f9` retains 575 metadata/log records with exact mandatory provenance copy fields and unchanged interrupted history. All copies were rechecked under existing bounds. Status remains incomplete and cannot authorize cleanup until staged/artifact results and passed wrappers are bound. |
-| `/root/native_finish` | NATIVE EXECUTION COMPLETE; IDLE | Both current normal results plus six fresh phases form accepted native8 proof `9c17b938` with 154 required terminals and 128 CLI costs. Fresh aggregate `883ae328` passes with no post failures; final drain closure `e034ac57` confirms controller95373 absent and owned inventories empty. Independent review `43be6f27` accepts actual results and unchanged input guards. No tests remain in this lane. |
+| `/root` | RELEASE PACKAGING AND CLEANUP COORDINATION | Root composition `8e312b1f` binds core3, current native8 and impact-qualified historical10: 304 mandatory native terminals and 164 CLI steps. Signed runtime source `13084875` and canonical staged Mori passed. The packaging-only target declaration removes deferred Windows without changing runtime functions. Archives and finite disposable-task cleanup remain. |
+| `/root/release_review` | PACKAGING AND CLEANUP SOURCE REVIEW | Reviews `43be6f27` and `935c1d21` accept native8 and root21. Review now covers ordinary four-target packaging and finite cleanup; no native tests remain. Failed/interrupted aggregates stay unaccepted. |
+| `/root/typescript_release` | COMPLETED; HISTORICAL OWNER | The private Vitest issuer and actual composed CLI checks are accepted for the fixed supported runtime. This agent has no active assignment. |
+| `/root/release_records` | FINITE CLEANUP SOURCE PREPARATION | Preparation `8201a96c` retains 606 proof/log records, including failed Windows packaging history. Copies and mandatory provenance fields are checked. It remains incomplete and cannot authorize cleanup until actual archive acceptance is retained. |
+| `/root/native_finish` | FOUR-TARGET ARTIFACT PREPARATION | Native8 proof `9c17b938` is accepted. Preparing the ordinary macOS/Linux packager and archive verifier, with actual ARM64 smokes and AMD64 build-only checks. Windows packaging and runtime execution are deferred. |
 
 Other-language assignments below are historical and deferred from active work.
 

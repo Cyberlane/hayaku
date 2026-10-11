@@ -3,11 +3,12 @@
 Local core and native acceptance passed; no v0.6.0 tag or release has been published.
 The restricted Go profile uses Go 1.27.1 on macOS ARM64 and Linux ARM64.
 TypeScript/Vitest uses the fixed Linux ARM64 runtime from either controller.
-The other four archive targets are build-only; Windows runtime qualification is
-not part of this release.
+The two AMD64 archive targets are build-only; Windows packaging and runtime
+qualification are not part of this release.
 
-The final 48-file projection `a6cfa9bd` freezes 312 code files and 519 donor
-entries. The shared coordinator, private producers, complete inventories,
+Runtime acceptance at source commit `13084875` used the 48-file projection
+`a6cfa9bd`, freezing 312 code files and 519 donor entries. The later packaging
+declaration delta is attributed separately below. The shared coordinator, private producers, complete inventories,
 authenticated reuse, full original fallback and transactional enrollment passed
 independent source review. See [supported profiles](go-typescript-native.md)
 for the exact syntax, runner, toolchain and platform limits.
@@ -81,10 +82,24 @@ regressions and vet passed. A separate core-driver environment error was repaire
 without changing product behavior. Failed and interrupted aggregates remain
 unaccepted even when individual completed results are relevant.
 
-Immutable staged Mori review, signed local source, six archives, extracted ARM64
-smoke checks and authorized task cleanup remain pending. Hosted CI and external
-consumer acceptance are separate. Published v0.5.1 evidence below does not
-qualify this candidate.
+Canonical immutable staged Mori passed before signed local source commit
+`13084875a529da4fdbf7fe984b90bbdc060630ed`: production and test scans analyzed
+310/310 supported files and 49/49 changed supported files, with no warnings,
+parse diagnostics or truncation. Similarities are advisory; they do not qualify
+omission. Independent root-composition review `935c1d21` accepts all 21 gates.
+
+The first archive attempt failed while compiling Windows because existing native
+enforcement uses Unix-only APIs. Its failed aggregate `eb09a8a9` and all joined
+command logs remain unaccepted history. The ordinary committed archive builder
+now lists only the four macOS/Linux targets. This packaging declaration is the
+sole Go source change after runtime acceptance; every function body, import and
+type is unchanged. Focused packager normal/race/vet passed in 1.883/3.607/0.303
+seconds with unchanged runtime source pins and drained command groups. The
+release workflow uses this ordinary builder; no overlay is required.
+
+Four archives, extracted ARM64 smoke checks and authorized task cleanup remain
+pending. Hosted CI and external consumer acceptance are separate. Published
+v0.5.1 evidence below does not qualify this candidate.
 
 # v0.5.1 release checks
 

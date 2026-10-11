@@ -19,8 +19,9 @@ and an owned decoder. Historical code coverage is not needed to authorize reuse.
 Install Go separately. The candidate qualified compiler profile is Go 1.27.1,
 and Hayaku itself must be built with Go 1.27.1 for its typed checker to qualify
 that compiler. Release archives use that build toolchain. The actual installed
-acceptance matrix is macOS ARM64 and Linux ARM64. The four other targets are
-build-only archive targets; their v0.6.0 artifact checks are pending.
+acceptance matrix is macOS ARM64 and Linux ARM64. The two AMD64 targets are
+build-only archive targets; their v0.6.0 artifact checks are pending. The release
+packages four macOS/Linux archives; Windows is deferred.
 Choose every explicit test package required by the original suite:
 
 ```sh

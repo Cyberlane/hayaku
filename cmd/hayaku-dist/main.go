@@ -32,7 +32,7 @@ import (
 
 type target struct{ os, arch string }
 
-var targets = []target{{"darwin", "amd64"}, {"darwin", "arm64"}, {"linux", "amd64"}, {"linux", "arm64"}, {"windows", "amd64"}, {"windows", "arm64"}}
+var targets = []target{{"darwin", "amd64"}, {"darwin", "arm64"}, {"linux", "amd64"}, {"linux", "arm64"}}
 
 type archiveRecord struct {
 	File     string `json:"file"`

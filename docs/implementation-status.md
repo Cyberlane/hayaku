@@ -25,8 +25,9 @@ separate from local implementation and verification.
   run the complete configured original scope. Historical coverage is unnecessary.
 - Tiny acceptance fixtures run faster in full; measured qualification and reuse
   costs establish no representative speedup. Final staged Mori, signed local
-  source, six versioned archives, extracted ARM64 checks and disposable-task
-  cleanup remain local release gates. Hosted CI and consumer acceptance are
+  runtime source and independent matrix review passed. Four macOS/Linux archives,
+  extracted ARM64 checks and disposable-task cleanup remain local release gates.
+  The ordinary archive builder excludes deferred Windows targets. Hosted CI and consumer acceptance are
   separate. This profile does not qualify arbitrary native Go/TypeScript or
   an AST/source-only proposal for CI omission.
 
