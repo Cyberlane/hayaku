@@ -19,6 +19,13 @@ are retained. The issuer was restored byte-for-byte to the earlier reviewed
 production source; only the forged-inventory test expectation varies by admitted
 controller profile. No v0.6.2 tag was created for that failed candidate.
 
+The next pre-tag check at `547db4bf` passed eleven scoped jobs, including Linux
+normal/race/vet, but macOS hit Go's default ten-minute package timer. Its active
+scenario had run four seconds when the cumulative timer fired; race testing was
+skipped. CI now uses the accepted local `-timeout=30m` package budget for both
+full test modes, inside the 60-minute job budget. Per-scenario deadlines and
+production runtime bounds are unchanged. Failed logs remain retained.
+
 # v0.6.0 historical local release candidate
 
 All finite local Go/TypeScript release gates passed. The failed signed v0.6.0
@@ -39,8 +46,8 @@ The current full repository gates passed and were independently reviewed:
 
 | Gate | Seconds | Result |
 | --- | ---: | --- |
-| `go test -count=1 -p=1 ./...` | 853.753 | 38 passing packages, three packages without tests; 2,030 passing test terminals |
-| `go test -race -count=1 -p=1 ./...` | 1508.262 | Same package/test counts; no race reports |
+| `go test -json -count=1 -p=1 -timeout=30m ./...` | 853.753 | 38 passing packages, three packages without tests; 2,030 passing test terminals |
+| `go test -json -count=1 -p=1 -timeout=30m -race ./...` | 1508.262 | Same package/test counts; no race reports |
 | `go vet ./...` | 2.272 | Exit zero, empty output |
 
 Each repository test run also records 204 optional test skips. The mandatory
