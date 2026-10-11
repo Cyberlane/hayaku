@@ -12,9 +12,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/Cyberlane/hayaku/internal/model"
 	"github.com/Cyberlane/hayaku/internal/passcache"
@@ -28,11 +30,16 @@ import (
 var workerSource embed.FS
 
 type Config struct {
-	Schema       int      `json:"schema"`
-	Platform     string   `json:"platform,omitempty"`
-	Image        string   `json:"image"`
-	Architecture string   `json:"architecture"`
-	Packages     []string `json:"packages"`
+	Schema          int      `json:"schema"`
+	Platform        string   `json:"platform,omitempty"`
+	Image           string   `json:"image"`
+	Architecture    string   `json:"architecture"`
+	Packages        []string `json:"packages"`
+	workspace       string
+	original        func(context.Context, string) (Result, error)
+	deferCleanup    bool
+	originalContext string
+	verifyOriginal  func(context.Context) error
 }
 type Report struct {
 	Schema   int      `json:"schema"`
@@ -40,6 +47,7 @@ type Report struct {
 	Complete bool     `json:"complete"`
 	Passed   bool     `json:"passed"`
 	Groups   []Result `json:"groups"`
+	finalize func(context.Context) error
 }
 
 func buildEnvironment(arch string) []string {
@@ -185,7 +193,8 @@ func goManifestProof(root string) (string, error) {
 // contract. It checks all branches and exact independent case inventory, binds
 // copied/original package and module inputs, and owns the decoder. The unrelated
 // workspace tree is checked by Go's aggregate lifecycle, not every group key.
-func issueGoArtifact(ctx context.Context, backend Backend, a Artifact, build goBuildContext, root, source, groupDir string) (Artifact, error) {
+func issueGoArtifact(ctx context.Context, backend Backend, a Artifact, build goBuildContext, root, source, groupDir string, dependencies ...*goDependencyProof) (Artifact, error) {
+	selector, workspace := a.Name, ""
 	if !slices.Equal(a.Args, []string{"-test.v", "-test.count=1", "-test.parallel=1", "-test.timeout=60s"}) || !slices.Equal(a.Env, []string{"GOMAXPROCS=1", "GODEBUG=randautoseed=0", "TZ=UTC"}) {
 		return Artifact{}, errors.New("native Go launch differs from reviewed contract")
 	}
@@ -194,22 +203,65 @@ func issueGoArtifact(ctx context.Context, backend Backend, a Artifact, build goB
 		return Artifact{}, err
 	}
 	cases, err := qualifyGo(files)
-	if err != nil || !slices.Equal(cases, a.Cases) || goSourceProof(files) != a.Proof || a.Envelope != nil || len(a.Effects) != 0 {
+	packageProof := goSourceProof(files)
+	expectedProof := packageProof
+	var dependent *GoClosure
+	var originalContext string
+	var verifyOriginal func(context.Context) error
+	if len(dependencies) > 1 {
+		return Artifact{}, errors.New("ambiguous Go dependency proof")
+	}
+	if len(dependencies) == 1 && dependencies[0] != nil {
+		request := dependencies[0]
+		selector, workspace = request.name, request.workspace
+		originalContext, verifyOriginal = request.originalContext, request.verifyOriginal
+		name := selector
+		if workspace != "" {
+			name = workspace + "::" + selector
+		}
+		if runtime.GOARCH != "arm64" || (runtime.GOOS != "darwin" && runtime.GOOS != "linux") || backend.Architecture != "arm64" || !slices.Equal(build.env, buildEnvironmentForPlatform(backend.platform(), "arm64")) {
+			return Artifact{}, errors.New("Go dependency producer context mismatch")
+		}
+		if !validPackage(selector) || strings.ContainsAny(workspace, ":\x00\r\n") || request.closure == nil || request.closure.root != root || request.closure.source != source || name != a.Name || !slices.Equal(request.env, build.env) {
+			return Artifact{}, errors.New("Go dependency producer context mismatch")
+		}
+		if workspace != "" && (originalContext == "" || verifyOriginal == nil || verifyOriginal(ctx) != nil) {
+			return Artifact{}, errors.New("Go original invocation context unavailable")
+		}
+		rechecked, checkErr := certifyGoDependency(ctx, request.closure, selector, build.env)
+		if checkErr != nil || rechecked.digest != request.digest {
+			return Artifact{}, errors.New("Go dependency producer proof mismatch")
+		}
+		cases, expectedProof, err, dependent = rechecked.cases, rechecked.digest, nil, request.closure
+	}
+	if err != nil || !slices.Equal(cases, a.Cases) || expectedProof != a.Proof || a.Envelope != nil || len(a.Effects) != 0 {
 		return Artifact{}, errors.New("native Go producer evidence mismatch")
 	}
 	manifest, err := goManifestProof(source)
 	if err != nil {
 		return Artifact{}, err
 	}
-	proof := a.Proof
-	originalGroup := filepath.Join(root, filepath.FromSlash(strings.TrimPrefix(a.Name, "./")))
+	if groupDir != filepath.Join(source, filepath.FromSlash(strings.TrimPrefix(selector, "./"))) {
+		return Artifact{}, errors.New("Go package selector differs from producer directory")
+	}
+	originalGroup := filepath.Join(root, filepath.FromSlash(strings.TrimPrefix(selector, "./")))
 	verify := func(ctx context.Context) error {
+		if verifyOriginal != nil {
+			if err := verifyOriginal(ctx); err != nil {
+				return err
+			}
+		}
+		if dependent != nil {
+			if err := dependent.Revalidate(ctx); err != nil {
+				return err
+			}
+		}
 		if err := build.verify(ctx); err != nil {
 			return err
 		}
 		for _, dir := range []string{groupDir, originalGroup} {
 			current, err := packageSources(dir)
-			if err != nil || goSourceProof(current) != proof {
+			if err != nil || goSourceProof(current) != packageProof {
 				return errors.New("native Go package changed")
 			}
 		}
@@ -231,11 +283,25 @@ func issueGoArtifact(ctx context.Context, backend Backend, a Artifact, build goB
 		return Artifact{}, err
 	}
 	producer := identity([]string{proofVersion, build.identity, manifest})
+	if originalContext != "" {
+		producer = identity([]string{producer, originalContext})
+	}
+	seal := &artifactAuthority{producer: producer, verify: verify, decode: decodeGo}
+	if workspace != "" {
+		inventory := model.ExecutionInventory{Schema: model.ExecutionSchema, Units: []model.Unit{{ID: a.Name, Workspace: workspace}}}
+		for _, name := range a.Cases {
+			inventory.Cases = append(inventory.Cases, model.Case{Unit: a.Name, ID: name})
+		}
+		inventory = cloneInventory(inventory)
+		seal.inventory = &inventory
+		a.authority = seal
+	}
 	binding, err := artifactBinding(backend, a, program, producer)
 	if err != nil {
 		return Artifact{}, err
 	}
-	a.authority = &artifactAuthority{binding: binding, location: authorityLocation(backend, a), producer: producer, verify: verify, decode: decodeGo}
+	seal.binding, seal.location = binding, authorityLocation(backend, a)
+	a.authority = seal
 	return a, nil
 }
 
@@ -349,6 +415,9 @@ func Go(ctx context.Context, root string, c Config, cacheDir string, audit bool)
 func GoWithOptions(ctx context.Context, root string, c Config, options ExecutionOptions) (report Report, returnedErr error) {
 	cacheDir, audit := options.CacheDir, options.Audit
 	report = Report{Schema: 1, Contract: contractVersion}
+	if c.workspace == "" && (c.original != nil || c.deferCleanup || c.originalContext != "" || c.verifyOriginal != nil) || c.workspace != "" && (strings.ContainsAny(c.workspace, ":\x00\r\n") || c.original == nil || !c.deferCleanup || c.originalContext == "" || c.verifyOriginal == nil) {
+		return report, errors.New("invalid private Go workspace lifecycle")
+	}
 	var cleanup *passcache.Audit
 	if audit {
 		owned := options.AuditHandle == nil
@@ -430,16 +499,32 @@ func GoWithOptions(ctx context.Context, root string, c Config, options Execution
 			return report, err
 		}
 	}
+	if audit && c.original != nil {
+		group, err := c.original(ctx, "Go workspace audit executes complete configured original scope")
+		report.Complete, report.Passed, report.Groups = group.Complete, group.Passed, []Result{group}
+		return report, err
+	}
 	temporary, err := os.MkdirTemp("", "hayaku-native-build-")
 	if err != nil {
 		return report, err
 	}
-	defer os.RemoveAll(temporary)
+	var helperClosure *GoClosure
+	var build goBuildContext
+	owner := &goBuildOwner{root: root, source: filepath.Join(temporary, "source"), temporary: temporary, options: options, verifyOriginal: c.verifyOriginal}
+	defer func() {
+		owner.build, owner.closure = build, helperClosure
+		if c.deferCleanup {
+			report.finalize = owner.finish
+		} else {
+			finishGoBuild(temporary, options, &report, &returnedErr, helperClosure)
+		}
+	}()
 	source := filepath.Join(temporary, "source")
 	if err = os.Mkdir(source, 0700); err != nil {
 		return report, err
 	}
 	sourceDigest, err := capture(ctx, root, source)
+	owner.sourceDigest = sourceDigest
 	if err != nil {
 		return report, err
 	}
@@ -450,16 +535,46 @@ func GoWithOptions(ctx context.Context, root string, c Config, options Execution
 	var backend Backend
 	backendReady := false
 	var backendErr error
-	var build goBuildContext
+	helperAttempted := false
+	var helperError error
+	fellBack := false
+	full := func(p, reason string) (Result, error) {
+		if c.original == nil {
+			return fullGo(ctx, goTool, root, p, reason)
+		}
+		fellBack = true
+		return owner.original(ctx, c.original, reason)
+	}
 	for index, p := range c.Packages {
-		group := Result{Name: p, Context: "original-host", Cache: "disabled"}
+		name := p
+		if c.workspace != "" {
+			name = c.workspace + "::" + p
+		}
+		group := Result{Name: name, Context: "original-host", Cache: "disabled"}
 		files, readErr := packageSources(filepath.Join(source, filepath.FromSlash(strings.TrimPrefix(p, "./"))))
 		cases, proofErr := qualifyGo(files)
 		if readErr != nil {
 			proofErr = readErr
 		}
+		var dependency *goDependencyProof
+		if readErr == nil && (c.workspace != "" || proofErr != nil && dependencyImportCandidate(files)) {
+			if !helperAttempted {
+				helperAttempted = true
+				helperClosure, helperError = resolveGoDependencyClosure(ctx, root, source, temporary, sourceDigest, goTool, c)
+			}
+			if helperError == nil {
+				dependency, proofErr = certifyGoDependency(ctx, helperClosure, p, buildEnvironmentForPlatform(c.Platform, c.Architecture))
+				if proofErr == nil {
+					cases = dependency.cases
+					dependency.workspace = c.workspace
+					dependency.originalContext, dependency.verifyOriginal = c.originalContext, c.verifyOriginal
+				}
+			} else {
+				proofErr = helperError
+			}
+		}
 		if proofErr != nil {
-			group, err = fullGo(ctx, goTool, root, p, proofErr.Error())
+			group, err = full(p, proofErr.Error())
 			if err != nil {
 				returnedErr = err
 			}
@@ -487,7 +602,7 @@ func GoWithOptions(ctx context.Context, root string, c Config, options Execution
 				}
 			}
 			if backendErr != nil {
-				group, err = fullGo(ctx, goTool, root, p, "native boundary unavailable ("+backendErr.Error()+"); executing complete original group")
+				group, err = full(p, "native boundary unavailable ("+backendErr.Error()+"); executing complete original group")
 				if err != nil {
 					returnedErr = err
 				}
@@ -495,23 +610,41 @@ func GoWithOptions(ctx context.Context, root string, c Config, options Execution
 				binary := filepath.Join(temporary, fmt.Sprintf("group-%d", index))
 				_, buildErr := runGo(ctx, goTool, source, build.env, "test", "-c", "-trimpath", "-buildvcs=false", "-o", binary, p)
 				if buildErr != nil {
-					group.Reason = "native test build failed"
-					group.Complete = false
-					returnedErr = buildErr
+					if c.original != nil {
+						group, err = full(p, "native test build failed; executing complete original workspace")
+						returnedErr = err
+					} else {
+						group.Reason = "native test build failed"
+						group.Complete = false
+						returnedErr = buildErr
+					}
 				} else {
-					artifact := Artifact{Name: p, Program: binary, Proof: goSourceProof(files), Cases: cases, Args: []string{"-test.v", "-test.count=1", "-test.parallel=1", "-test.timeout=60s"}, Env: []string{"GOMAXPROCS=1", "GODEBUG=randautoseed=0", "TZ=UTC"}}
-					artifact, err = issueGoArtifact(ctx, backend, artifact, build, root, source, filepath.Join(source, filepath.FromSlash(strings.TrimPrefix(p, "./"))))
+					proof := goSourceProof(files)
+					if dependency != nil {
+						proof = dependency.digest
+					}
+					artifact := Artifact{Name: name, Program: binary, Proof: proof, Cases: cases, Args: []string{"-test.v", "-test.count=1", "-test.parallel=1", "-test.timeout=60s"}, Env: []string{"GOMAXPROCS=1", "GODEBUG=randautoseed=0", "TZ=UTC"}}
+					artifact, err = issueGoArtifact(ctx, backend, artifact, build, root, source, filepath.Join(source, filepath.FromSlash(strings.TrimPrefix(p, "./"))), dependency)
 					if err == nil {
 						group, err = ExecuteWithOptions(ctx, backend, artifact, options, decodeGo)
+						// Keep attempted authority independently of the public result,
+						// which an incomplete execution may replace with full scope.
+						owner.report.Groups = append(owner.report.Groups, group)
 					}
-					if !group.Complete && ctx.Err() == nil {
-						group, err = fullGo(ctx, goTool, root, p, "native execution evidence incomplete; executing complete original group")
+					if !group.Complete && (ctx.Err() == nil || c.original != nil) {
+						group, err = full(p, "native execution evidence incomplete; executing complete original group")
 					}
 					if err != nil {
 						returnedErr = err
 					}
 				}
 			}
+		}
+		if fellBack {
+			report.Groups = []Result{group}
+			report.Complete, report.Passed = group.Complete, group.Passed
+			returnedErr = err
+			break
 		}
 		report.Groups = append(report.Groups, group)
 		report.Complete = report.Complete && group.Complete
@@ -544,10 +677,229 @@ func GoWithOptions(ctx context.Context, root string, c Config, options Execution
 		}
 	}
 	if !report.Complete {
-		_ = RevokeWithOptions(options, report)
+		returnedErr = errors.Join(returnedErr, RevokeWithOptions(options, owner.report))
 	}
 	return report, returnedErr
 }
+
+// Failed cleanup invalidates the aggregate and all receipts minted by it.
+func finishGoBuild(temporary string, options ExecutionOptions, report *Report, returnedErr *error, closure *GoClosure) {
+	if closure != nil {
+		closure.closed = true
+	}
+	if cleanupErr := os.RemoveAll(temporary); cleanupErr != nil {
+		report.Complete, report.Passed = false, false
+		*returnedErr = errors.Join(*returnedErr, errors.New("native Go build cleanup failed"), cleanupErr, RevokeWithOptions(options, *report))
+	}
+}
+
+type goBuildOwner struct {
+	verifyOriginal                        func(context.Context) error
+	root, source, temporary, sourceDigest string
+	build                                 goBuildContext
+	closure                               *GoClosure
+	options                               ExecutionOptions
+	report                                Report
+	once                                  sync.Once
+	err                                   error
+}
+
+func (owner *goBuildOwner) original(ctx context.Context, run func(context.Context, string) (Result, error), reason string) (Result, error) {
+	revokeErr := RevokeWithOptions(owner.options, owner.report)
+	owner.err = errors.Join(owner.err, revokeErr)
+	group, err := run(ctx, reason)
+	if revokeErr != nil {
+		group.Complete, group.Passed = false, false
+	}
+	return group, errors.Join(revokeErr, err)
+}
+
+// The coordinator keeps this owner alive through all later workspaces. Each
+// guard and cleanup remains mandatory even when another guard fails.
+func (owner *goBuildOwner) finish(ctx context.Context) error {
+	owner.once.Do(func() {
+		if owner.verifyOriginal != nil {
+			owner.err = errors.Join(owner.err, owner.verifyOriginal(ctx))
+		}
+		if owner.sourceDigest != "" {
+			original, err := treeIdentity(ctx, owner.root)
+			copied, copyErr := treeIdentity(ctx, owner.source)
+			if err != nil || copyErr != nil || original != owner.sourceDigest || copied != owner.sourceDigest {
+				owner.err = errors.Join(owner.err, errors.New("native Go retained source changed"), err, copyErr)
+			}
+		}
+		if owner.closure != nil {
+			owner.err = errors.Join(owner.err, owner.closure.Revalidate(ctx))
+		}
+		if owner.build.identity != "" {
+			owner.err = errors.Join(owner.err, owner.build.verify(ctx))
+		}
+		if owner.options.Authority != nil {
+			owner.err = errors.Join(owner.err, owner.options.Authority.Verify(ctx))
+		}
+		owner.err = errors.Join(owner.err, ctx.Err())
+		if owner.err != nil {
+			owner.report.Complete, owner.report.Passed = false, false
+			owner.err = errors.Join(owner.err, RevokeWithOptions(owner.options, owner.report))
+		}
+		finishGoBuild(owner.temporary, owner.options, &owner.report, &owner.err, owner.closure)
+	})
+	return owner.err
+}
+
+func init() { workspaceProviders["go"] = goWorkspace }
+
+func goWorkspaceConfig(w Workspace, c RunConfig) (Config, bool) {
+	// New typed workspace qualification is limited to the reviewed ARM64 cohort.
+	if c.Architecture != "arm64" {
+		return Config{}, false
+	}
+	args := w.Command.Args
+	if w.Adapter != "go" || w.Command.Dir != "." || len(args) < 3 || args[0] != "test" || args[1] != "-count=1" || !slices.Equal(w.Patterns, args[2:]) || len(w.Prerequisites) != 0 || len(w.BuildFlags) != 0 || len(w.Inputs) != 0 || w.NodeRuntime != nil || w.SwiftRuntime != nil || w.Vitest != nil || len(c.Environment) != 0 {
+		return Config{}, false
+	}
+	seen := map[string]bool{}
+	for _, selector := range args[2:] {
+		if !validPackage(selector) || seen[selector] {
+			return Config{}, false
+		}
+		seen[selector] = true
+	}
+	if w.Command.Executable != "go" && !filepath.IsAbs(w.Command.Executable) {
+		return Config{}, false
+	}
+	value := c.Config
+	value.Packages, value.workspace, value.deferCleanup = slices.Clone(args[2:]), w.ID, true
+	return value, true
+}
+
+func goWorkspace(ctx context.Context, root string, w Workspace, c RunConfig, options ExecutionOptions) (Report, error) {
+	w.Command.Args, w.Patterns = slices.Clone(w.Command.Args), slices.Clone(w.Patterns)
+	original := func(ctx context.Context, reason string) (Result, error) {
+		return fullWorkspace(ctx, root, w, c.Environment, reason)
+	}
+	if options.Audit {
+		group, err := original(ctx, "Go workspace audit executes complete configured original scope")
+		return Report{Schema: 1, Contract: contractVersion, Complete: group.Complete, Passed: group.Passed, Groups: []Result{group}}, err
+	}
+	config, admitted := goWorkspaceConfig(w, c)
+	if admitted {
+		var err error
+		config.originalContext, err = goOriginalContext(ctx, root, w, c)
+		admitted = err == nil
+		if admitted {
+			config.verifyOriginal = func(ctx context.Context) error {
+				current, err := goOriginalContext(ctx, root, w, c)
+				if err != nil || current != config.originalContext {
+					return errors.Join(errors.New("Go original invocation context changed"), err)
+				}
+				return nil
+			}
+		}
+	}
+	if !admitted {
+		group, err := original(ctx, "Go workspace invocation outside qualified contract; executing complete original scope")
+		return Report{Schema: 1, Contract: contractVersion, Complete: group.Complete, Passed: group.Passed, Groups: []Result{group}}, err
+	}
+	called := false
+	config.original = func(ctx context.Context, reason string) (Result, error) {
+		if called {
+			return Result{}, errors.New("Go original workspace fallback attempted twice")
+		}
+		called = true
+		return original(ctx, reason)
+	}
+	report, err := GoWithOptions(ctx, filepath.Join(root, filepath.FromSlash(w.Root)), config, options)
+	if len(report.Groups) == 0 && !called {
+		group, fallbackErr := config.original(ctx, "Go workspace producer unavailable; executing complete original scope")
+		report.Complete, report.Passed, report.Groups = group.Complete, group.Passed, []Result{group}
+		err = fallbackErr
+	}
+	return report, err
+}
+
+func goOriginalContext(ctx context.Context, root string, w Workspace, c RunConfig) (string, error) {
+	if runtime.GOOS != c.Platform || runtime.GOARCH != c.Architecture {
+		return "", errors.New("Go original host differs from native target")
+	}
+	// Bind both command routes, not just the physical compiler reached once.
+	// A retained producer must reject a later alias or PATH entry retarget.
+	selections := [2]struct{ Spelling, Selected, Physical, Digest string }{}
+	for i, spelling := range []string{"go", w.Command.Executable} {
+		selected, err := exec.LookPath(spelling)
+		if err != nil || !filepath.IsAbs(selected) {
+			return "", errors.New("Go original compiler selection unavailable")
+		}
+		physical, err := filepath.EvalSymlinks(selected)
+		if err != nil {
+			return "", errors.New("Go original compiler alias unavailable")
+		}
+		if i == 1 && physical != selections[0].Physical {
+			return "", errors.New("Go original compiler differs from selected native compiler")
+		}
+		sum := selections[0].Digest
+		if i == 0 {
+			sum, err = fileDigestContext(ctx, physical)
+			if err != nil {
+				return "", errors.New("Go original compiler content unavailable")
+			}
+		}
+		selections[i].Spelling, selections[i].Selected, selections[i].Physical, selections[i].Digest = spelling, selected, physical, sum
+	}
+	values := map[string]string{}
+	for key, allowed := range map[string][]string{
+		"GOFLAGS": {""}, "GOENV": {"", "off"}, "GOTOOLCHAIN": {"", "local"}, "GOWORK": {"", "off"},
+		"GOOS": {"", runtime.GOOS}, "GOARCH": {"", runtime.GOARCH}, "GOEXPERIMENT": {""}, "GOAMD64": {"", "v1"}, "GOARM64": {"", "v8.0"}, "GOFIPS140": {"", "off"}, "GODEBUG": {""},
+	} {
+		value := os.Getenv(key)
+		if !slices.Contains(allowed, value) {
+			return "", errors.New("Go original ambient build setting outside qualified contract")
+		}
+		values[key] = value
+	}
+	// These locations and compiler controls do not grant effects, but their
+	// accepted original invocation values must remain live through the batch.
+	for _, key := range []string{"PATH", "GOROOT", "GOPATH", "GOCACHE", "GOTMPDIR", "GO111MODULE", "GOPROXY", "GOSUMDB", "GOVCS", "CGO_ENABLED", "CC", "CXX", "CGO_CFLAGS", "CGO_CPPFLAGS", "CGO_CXXFLAGS", "CGO_FFLAGS", "CGO_LDFLAGS"} {
+		values[key] = os.Getenv(key)
+	}
+	if values["GOENV"] == "" {
+		configDir, err := os.UserConfigDir()
+		if err != nil {
+			return "", errors.New("Go original user settings unavailable")
+		}
+		if _, err := os.Lstat(filepath.Join(configDir, "go", "env")); !os.IsNotExist(err) {
+			return "", errors.New("Go original user settings require full scope")
+		}
+	}
+	directory := filepath.Join(root, filepath.FromSlash(w.Root))
+	if values["GOWORK"] == "" {
+		for cwd := directory; ; cwd = filepath.Dir(cwd) {
+			if _, err := os.Lstat(filepath.Join(cwd, "go.work")); !os.IsNotExist(err) {
+				return "", errors.New("Go original workspace file requires full scope")
+			}
+			if filepath.Dir(cwd) == cwd {
+				break
+			}
+		}
+	}
+	data, err := snapshot.ReadFile(ctx, filepath.Join(directory, "go.mod"), 16<<20)
+	if err != nil {
+		return "", errors.New("Go original module unavailable")
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) > 0 && fields[0] == "toolchain" {
+			return "", errors.New("Go original toolchain selection requires full scope")
+		}
+	}
+	return identity(struct {
+		Version, OS, Arch, Module string
+		Workspace                 model.Workspace
+		Environment               map[string]string
+		Tools                     [2]struct{ Spelling, Selected, Physical, Digest string }
+	}{"go-original-context-v2", runtime.GOOS, runtime.GOARCH, digest(data), w.Workspace, values, selections}), ctx.Err()
+}
+
 func validPackage(p string) bool {
 	if p == "." {
 		return true

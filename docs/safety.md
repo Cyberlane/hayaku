@@ -83,28 +83,36 @@ repository composition checks passed; see [capsules](capsules.md).
 
 ## Separate restricted native group contract
 
-The unreleased `native` command adds actual Linux and explicit macOS Go package
-reuse for a statically checked pure subset. Linux enforces copied files, explicit
+The v0.6.0 candidate `native` command adds Linux and explicit macOS Go package
+reuse, plus fixed Linux-runtime TypeScript/Vitest file reuse, for statically
+checked pure subsets. Final composed acceptance is recorded in
+[implementation status](implementation-status.md). Linux enforces copied files, explicit
 args/env, Landlock/seccomp and container restrictions. The macOS context binds
 the installed fixed system sandbox, loader and kernel/OS/boot identities, with
 its narrower platform scope documented separately. A fresh platform
 probe is required even when every test group reuses. Only the provider's full
 source whitelist can supply a qualification proof; no declaration, trace or
-coverage threshold does so. Unsupported code/platforms run complete original-host
-package commands. Incomplete native evidence broadens to those commands;
+coverage threshold does so. Unsupported code/platforms run complete original
+configured scopes; the legacy Go package configuration retains complete
+original-host package commands. Incomplete native evidence broadens to those commands;
 cancellation/source drift prevents aggregate success. Failed assertions are failures.
 
 Native clocks, entropy and metadata probes are not virtualized. Containment alone
 cannot qualify arbitrary programs. The Go subset excludes observable access to
-those inputs; trusted runtime/testing internals remain part of its contract.
+those inputs; the fixed TypeScript grammar likewise excludes user effects.
+Trusted compiler/framework/runtime/testing internals remain part of the contract.
 Receipts bind compiled bytes, proof, exact case inventory, args/env, backend and
 live platform identities. Only complete all-cases-passed outcomes mint them.
 Invocation-wide audit revokes the native receipt domain before capture/build.
 
 This separate contract does not authorize omission from existing native plans,
 claim equivalence with arbitrary runner commands or provide independent production
-acceptance. Other native languages and imported Go dependency closures remain
-unqualified. See [native groups](native-groups.md) for exact scope and limitations.
+acceptance. The private Go producer accounts for compiler-selected pure local
+helpers, external tests and literal read-only string embeds. The private Vitest
+producer requires complete pinned SDK/runtime inputs and exact original-profile
+admission; public imported closures and source summaries remain descriptive.
+Other language qualification is deferred. See [native groups](native-groups.md)
+and [Go/Vitest profiles](go-typescript-native.md) for exact scope and limitations.
 
 ## Monorepo provenance and report evidence
 

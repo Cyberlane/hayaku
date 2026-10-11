@@ -174,6 +174,65 @@ func TestLinkedWorkspaceCaptureRewritesOnlyDeclaredRoots(t *testing.T) {
 	}
 }
 
+func TestMaterializedSymlinkPermissionPortability(t *testing.T) {
+	request, root := fixture(t)
+	if err := os.Symlink("value.json", filepath.Join(root, "generated/link")); err != nil {
+		t.Fatal(err)
+	}
+	bundle, err := Capture(context.Background(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := bundle.Manifest()
+	destination := filepath.Join(t.TempDir(), "copy")
+	if err := bundle.Materialize(context.Background(), destination); err != nil {
+		t.Fatal(err)
+	}
+	destination, err = filepath.EvalSymlinks(destination)
+	if err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Lstat(filepath.Join(destination, "project/generated/link"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("copied symlink permissions: %04o", info.Mode().Perm())
+	for _, mode := range []uint32{0755, 0777} {
+		// These descriptors exercise copy verification only. They do not issue
+		// authority or replace the original captured manifest and source digest.
+		copyDescriptor := &Bundle{request: bundle.request, manifest: bundle.Manifest()}
+		found := false
+		for i := range copyDescriptor.manifest.Entries {
+			entry := &copyDescriptor.manifest.Entries[i]
+			if entry.Path == "project/generated/link" {
+				entry.Mode = mode
+				found = true
+			}
+		}
+		if !found {
+			t.Fatal("captured link missing")
+		}
+		if err := copyDescriptor.VerifyMaterialization(context.Background(), destination); err != nil {
+			t.Fatalf("captured permissions %04o rejected copied permissions %04o: %v", mode, info.Mode().Perm(), err)
+		}
+		if !reflect.DeepEqual(copyDescriptor.manifest, original) {
+			encoded, err := json.Marshal(copyDescriptor.manifest)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := DecodeManifest(bytes.NewReader(encoded)); err == nil {
+				t.Fatal("source link mode no longer bound by manifest digest")
+			}
+		}
+	}
+	if !reflect.DeepEqual(bundle.Manifest(), original) {
+		t.Fatal("copy verification changed original source manifest")
+	}
+	if err := bundle.VerifySources(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestInternalSymlinkTargetIdentityAndCycles(t *testing.T) {
 	request, root := fixture(t)
 	link := filepath.Join(root, "generated/link")
@@ -268,6 +327,9 @@ func TestUnsafeInputsAndRootCollisionsRejected(t *testing.T) {
 
 func TestMaterializationRejectsOverwriteAndTampering(t *testing.T) {
 	request, root := fixture(t)
+	if err := os.Symlink("value.json", filepath.Join(root, "generated/link")); err != nil {
+		t.Fatal(err)
+	}
 	bundle, err := Capture(context.Background(), request)
 	if err != nil {
 		t.Fatal(err)
@@ -284,7 +346,7 @@ func TestMaterializationRejectsOverwriteAndTampering(t *testing.T) {
 	if err != nil || string(data) != "keep" {
 		t.Fatal("existing destination modified")
 	}
-	for _, scenario := range []string{"bytes", "new", "missing", "mode", "escape"} {
+	for _, scenario := range []string{"bytes", "new", "missing", "mode", "directory-mode", "special-mode", "escape", "link-retarget", "link-escape", "link-file", "link-directory", "directory-file"} {
 		t.Run(scenario, func(t *testing.T) {
 			destination := filepath.Join(t.TempDir(), "copy")
 			if err := bundle.Materialize(context.Background(), destination); err != nil {
@@ -304,6 +366,14 @@ func TestMaterializationRejectsOverwriteAndTampering(t *testing.T) {
 				if err := os.Chmod(name, 0600); err != nil {
 					t.Fatal(err)
 				}
+			case "directory-mode":
+				if err := os.Chmod(filepath.Join(destination, "project/generated/empty"), 0700); err != nil {
+					t.Fatal(err)
+				}
+			case "special-mode":
+				if err := os.Chmod(name, 0640|os.ModeSetuid); err != nil {
+					t.Fatal(err)
+				}
 			case "escape":
 				if err := os.Remove(name); err != nil {
 					t.Fatal(err)
@@ -311,6 +381,33 @@ func TestMaterializationRejectsOverwriteAndTampering(t *testing.T) {
 				if err := os.Symlink(filepath.Join(root, "generated/value.json"), name); err != nil {
 					t.Skip(err)
 				}
+			case "link-retarget", "link-escape", "link-file", "link-directory":
+				name = filepath.Join(destination, "project/generated/link")
+				if err := os.Remove(name); err != nil {
+					t.Fatal(err)
+				}
+				switch scenario {
+				case "link-retarget", "link-escape":
+					target := "bin"
+					if scenario == "link-escape" {
+						target = filepath.Join(root, "generated/value.json")
+					}
+					if err := os.Symlink(target, name); err != nil {
+						t.Fatal(err)
+					}
+				case "link-file":
+					write(t, name, "replacement", 0755)
+				case "link-directory":
+					if err := os.Mkdir(name, 0755); err != nil {
+						t.Fatal(err)
+					}
+				}
+			case "directory-file":
+				name = filepath.Join(destination, "project/generated/empty")
+				if err := os.Remove(name); err != nil {
+					t.Fatal(err)
+				}
+				write(t, name, "replacement", 0750)
 			}
 			if err := bundle.VerifyMaterialization(context.Background(), destination); err == nil {
 				t.Fatal("tampered copy verified")

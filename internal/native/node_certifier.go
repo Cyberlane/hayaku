@@ -49,20 +49,22 @@ type NodeSourceSummary struct {
 	Policy, SourceDigest, ToolsDigest, ParserVersion, NodeVersion string
 	SemanticDigest, EmittedDigest, EmitterDigest, ToolTrust       string
 	Cases                                                         []NodeSourceCase
+	Dependencies                                                  map[string][]string
 	Cost, Nodes                                                   int
 }
 
 type nodeSourceResult struct {
-	Schema         int              `json:"schema"`
-	Version        string           `json:"version"`
-	ParserVersion  string           `json:"parserVersion"`
-	NodeVersion    string           `json:"nodeVersion"`
-	Cases          []NodeSourceCase `json:"cases"`
-	SemanticDigest string           `json:"semanticDigest"`
-	EmittedDigest  string           `json:"emittedDigest"`
-	EmitterDigest  string           `json:"emitterDigest"`
-	Cost           int              `json:"cost"`
-	Nodes          int              `json:"nodes"`
+	Schema         int                 `json:"schema"`
+	Version        string              `json:"version"`
+	ParserVersion  string              `json:"parserVersion"`
+	NodeVersion    string              `json:"nodeVersion"`
+	Cases          []NodeSourceCase    `json:"cases"`
+	Dependencies   map[string][]string `json:"dependencies"`
+	SemanticDigest string              `json:"semanticDigest"`
+	EmittedDigest  string              `json:"emittedDigest"`
+	EmitterDigest  string              `json:"emitterDigest"`
+	Cost           int                 `json:"cost"`
+	Nodes          int                 `json:"nodes"`
 }
 
 // NodeSourceCertificate owns its borrowed source/tool bindings and private
@@ -79,6 +81,7 @@ type NodeSourceCertificate struct {
 	resolutions                    map[string]string
 	seal                           string
 	closed                         bool
+	cleanup                        *dynamicDirectory
 }
 
 func nodeSourceText(value string, limit int) bool {
@@ -126,6 +129,12 @@ func validateNodeCertifierRequest(r NodeCertifierRequest) error {
 }
 
 func CertifyNodeSources(ctx context.Context, request NodeCertifierRequest) (certificate *NodeSourceCertificate, returnedErr error) {
+	return certifyNodeSources(ctx, request, "")
+}
+
+// A reviewed private provider can require publisher-pinned SDK bytes before any
+// parser code executes. Public source proposals retain their unqualified API.
+func certifyNodeSources(ctx context.Context, request NodeCertifierRequest, requiredSDK string) (certificate *NodeSourceCertificate, returnedErr error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -142,11 +151,19 @@ func CertifyNodeSources(ctx context.Context, request NodeCertifierRequest) (cert
 	}
 	c.directory, err = filepath.EvalSymlinks(dir)
 	if err != nil {
-		return nil, errors.Join(err, os.RemoveAll(dir))
+		return nil, errors.Join(err, os.Remove(dir))
+	}
+	info, err := os.Lstat(c.directory)
+	if err != nil {
+		return nil, errors.Join(err, os.Remove(c.directory))
+	}
+	c.cleanup, err = retainDynamicDirectory(c.directory, info, []string{"source", "sdk", "bootstrap", "controls"})
+	if err != nil {
+		return nil, errors.Join(err, os.Remove(c.directory))
 	}
 	defer func() {
 		if returnedErr != nil {
-			returnedErr = errors.Join(returnedErr, c.Close())
+			returnedErr = errors.Join(returnedErr, c.Close(), c.cleanup.abandon())
 			certificate = nil
 		}
 	}()
@@ -172,6 +189,9 @@ func CertifyNodeSources(ctx context.Context, request NodeCertifierRequest) (cert
 	})
 	if err != nil {
 		return nil, err
+	}
+	if requiredSDK != "" && c.sdk.Manifest().Digest != requiredSDK {
+		return nil, errors.New("Node certifier SDK differs from required compiler profile")
 	}
 	compiler := filepath.Join(request.TypeScriptSDK, "lib", "typescript.js")
 	compilerSHA, err := snapshot.FileDigest(ctx, compiler, 64<<20)
@@ -282,7 +302,10 @@ func CertifyNodeSources(ctx context.Context, request NodeCertifierRequest) (cert
 	if err != nil {
 		return nil, err
 	}
-	c.summary = NodeSourceSummary{Policy: nodeSourcePolicy, SourceDigest: c.source.Manifest().Digest, ToolsDigest: c.tools.Digest, ParserVersion: result.ParserVersion, NodeVersion: result.NodeVersion, SemanticDigest: result.SemanticDigest, EmittedDigest: result.EmittedDigest, EmitterDigest: result.EmitterDigest, ToolTrust: "unqualified", Cases: slices.Clone(result.Cases), Cost: result.Cost, Nodes: result.Nodes}
+	if err := validateNodeDependencies(result.Dependencies, request.Sources, request.Tests); err != nil {
+		return nil, err
+	}
+	c.summary = NodeSourceSummary{Policy: nodeSourcePolicy, SourceDigest: c.source.Manifest().Digest, ToolsDigest: c.tools.Digest, ParserVersion: result.ParserVersion, NodeVersion: result.NodeVersion, SemanticDigest: result.SemanticDigest, EmittedDigest: result.EmittedDigest, EmitterDigest: result.EmitterDigest, ToolTrust: "unqualified", Cases: slices.Clone(result.Cases), Dependencies: cloneNodeDependencies(result.Dependencies), Cost: result.Cost, Nodes: result.Nodes}
 	c.seal = c.currentBinding()
 	if err := c.Verify(ctx); err != nil {
 		return nil, err
@@ -456,7 +479,55 @@ func (c *NodeSourceCertificate) Summary() NodeSourceSummary {
 	}
 	summary := c.summary
 	summary.Cases = slices.Clone(summary.Cases)
+	summary.Dependencies = cloneNodeDependencies(summary.Dependencies)
 	return summary
+}
+
+func cloneNodeDependencies(graph map[string][]string) map[string][]string {
+	result := make(map[string][]string, len(graph))
+	for file, targets := range graph {
+		result[file] = slices.Clone(targets)
+	}
+	return result
+}
+
+// The parser's projection is complete over captured modules, including dormant
+// declarations. Entry modules cannot be dependencies of another lifecycle.
+func validateNodeDependencies(graph map[string][]string, sources, tests []string) error {
+	if len(graph) != len(sources) || len(sources) == 0 || len(sources) > 128 {
+		return errors.New("Node module dependency inventory incomplete")
+	}
+	state := map[string]uint8{}
+	var visit func(string, int) error
+	visit = func(file string, depth int) error {
+		if state[file] == 1 || depth > 64 {
+			return errors.New("Node module dependency graph cyclic or exceeds bounds")
+		}
+		if state[file] == 2 {
+			return nil
+		}
+		targets, ok := graph[file]
+		if !ok || !slices.Contains(sources, file) || !slices.IsSorted(targets) {
+			return errors.New("Node module dependency inventory differs from sources")
+		}
+		state[file] = 1
+		for i, target := range targets {
+			if (i > 0 && target == targets[i-1]) || slices.Contains(tests, target) {
+				return errors.New("Node dependency duplicates or imports a test lifecycle")
+			}
+			if err := visit(target, depth+1); err != nil {
+				return err
+			}
+		}
+		state[file] = 2
+		return nil
+	}
+	for _, file := range sources {
+		if err := visit(file, 0); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c *NodeSourceCertificate) Verify(ctx context.Context) error {
@@ -471,7 +542,10 @@ func (c *NodeSourceCertificate) Close() error {
 		return nil
 	}
 	c.closed = true
-	if err := os.RemoveAll(c.directory); err != nil {
+	if c.cleanup == nil {
+		return errors.New("Node certifier private cleanup ownership unavailable")
+	}
+	if err := c.cleanup.close(); err != nil {
 		return errors.Join(errors.New("Node certifier private cleanup failed"), err)
 	}
 	c.directory = ""

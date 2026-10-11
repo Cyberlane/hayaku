@@ -101,8 +101,8 @@ func (b *Bundle) Materialize(ctx context.Context, destination string) (err error
 	return b.VerifySources(ctx)
 }
 
-// VerifyMaterialization checks exact membership, bytes, modes and rewritten link
-// identities. Unexpected files and all symlink escapes fail verification.
+// VerifyMaterialization checks exact membership, bytes, file/directory modes and
+// rewritten link identities. Unexpected files and symlink escapes fail verification.
 func (b *Bundle) VerifyMaterialization(ctx context.Context, destination string) error {
 	if b == nil {
 		return errors.New("missing input envelope")
@@ -140,7 +140,9 @@ func (b *Bundle) VerifyMaterialization(ctx context.Context, destination string) 
 		if err != nil {
 			return errors.New("cannot inspect materialized input")
 		}
-		if uint32(info.Mode().Perm()) != entry.Mode || supportedMode(info.Mode()) != nil {
+		// Copied symlink permissions are platform-managed. File and directory
+		// permissions remain exact; every entry must still have a supported mode.
+		if supportedMode(info.Mode()) != nil || (entry.Kind != "symlink" && uint32(info.Mode().Perm()) != entry.Mode) {
 			return errors.New("materialized input mode differs")
 		}
 		switch entry.Kind {

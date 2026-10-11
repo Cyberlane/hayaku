@@ -27,7 +27,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-const boundaryVersion = "hayaku-linux-boundary-v6"
+const boundaryVersion = "hayaku-linux-boundary-v7"
 const contractVersion = "native-pure-groups-v1"
 
 // Docker uses only already provisioned, immutable images. The daemon and its
@@ -267,7 +267,7 @@ func (b Backend) executePrograms(ctx context.Context, a Artifact, primary *captu
 			return result, controlErr
 		}
 		controls = append(controls, resourceControl)
-		dynamicContract = &dynamicInvocation{Loader: dynamic.runtime.loaderName(), ResourcesDigest: digest(resources)}
+		dynamicContract = &dynamicInvocation{Loader: dynamic.runtime.loaderName(), ResourcesDigest: digest(resources), CompilerProfile: dynamic.profile}
 		defer func() {
 			// Interruption must retain detectable copied-runtime drift before cleanup.
 			post, cancel := context.WithTimeout(context.Background(), 15*time.Second)
@@ -466,11 +466,11 @@ type ExecutionOptions struct {
 func ExecuteWithOptions(ctx context.Context, b Backend, a Artifact, options ExecutionOptions, decode func(process.Output, Artifact) (model.Outcomes, error)) (Result, error) {
 	cacheDir, audit := options.CacheDir, options.Audit
 	r := Result{Name: a.Name, Context: b.platform() + "-" + b.Architecture, Qualified: a.authority != nil, Cache: "disabled"}
-	// The operational envelope is not a reviewed language/runtime proof. Reject
-	// before cache lookup or audit mutation, including caller-supplied Proof.
-	if a.Envelope != nil {
+	// An operational envelope alone is not a reviewed language/runtime proof.
+	// Only a private producer seal can admit its launch before cache or audit.
+	if err := verifyProviderLaunch(ctx, a); err != nil {
 		r.Qualified = false
-		return r, errors.New("native input envelope has no qualified provider")
+		return r, err
 	}
 	if !r.Qualified || b.Identity == "" || runner.ValidateInventory(a.inventory()) != nil {
 		r.Qualified = false
@@ -557,12 +557,13 @@ func ExecuteWithOptions(ctx context.Context, b Backend, a Artifact, options Exec
 		r.Cache = "invalid"
 	}
 	r.Executed = true
-	output, runErr := b.execute(ctx, a)
+	output, runErr := executeArtifact(ctx, b, a)
+	completed := nativeExecutionCompleted(output, runErr)
 	r.Outcomes, err = decode(output, a)
 	if err == nil {
-		err = runner.ValidateExact(r.Outcomes, a.inventory(), output.Completed, output.ExitCode)
+		err = runner.ValidateExact(r.Outcomes, a.inventory(), completed, output.ExitCode)
 	}
-	r.Complete = err == nil && output.Completed
+	r.Complete = err == nil && completed
 	r.Passed = r.Complete && output.ExitCode == 0 && !runner.Failed(r.Outcomes)
 	after, e := fileDigestContext(ctx, a.Program)
 	if e != nil || after != program {
@@ -620,9 +621,16 @@ func ExecuteWithOptions(ctx context.Context, b Backend, a Artifact, options Exec
 		_ = cache.Invalidate(r.Key)
 	}
 	if err != nil {
-		return r, err
+		return r, errors.Join(err, runErr)
 	}
 	return r, runErr
+}
+
+// A complete failing command can have valid terminal assertion outcomes. An
+// error accompanying exit zero is an operational failure, including cleanup;
+// decoded passing output cannot turn that failure into receipt authority.
+func nativeExecutionCompleted(output process.Output, runErr error) bool {
+	return output.Completed && (runErr == nil || output.ExitCode != 0)
 }
 
 func validateNativeArguments(args, env []string) error {
@@ -653,6 +661,9 @@ func passing(o model.Outcomes, a Artifact) bool {
 }
 
 func (a Artifact) inventory() model.ExecutionInventory {
+	if a.authority != nil && a.authority.inventory != nil {
+		return cloneInventory(*a.authority.inventory)
+	}
 	inventory := model.ExecutionInventory{Schema: model.ExecutionSchema, Units: []model.Unit{{ID: a.Name, Workspace: "native"}}}
 	for _, name := range a.Cases {
 		inventory.Cases = append(inventory.Cases, model.Case{Unit: a.Name, ID: name})

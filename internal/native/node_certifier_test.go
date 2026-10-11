@@ -249,6 +249,120 @@ func installedNodeCertifierRequest(t *testing.T, files map[string]string, test s
 	return NodeCertifierRequest{Root: root, Node: node, TypeScriptSDK: sdk, NodeSHA256: nodeSHA, CompilerSHA256: compilerSHA, Sources: sources, Tests: []string{test}}
 }
 
+func TestNodeDependencyProjectionRejectsIncompleteOrConflictingGraph(t *testing.T) {
+	sources := []string{"alpha.ts", "beta.ts", "left.ts", "right.ts", "shared.ts"}
+	tests := []string{"alpha.ts", "beta.ts"}
+	valid := map[string][]string{"alpha.ts": {"left.ts", "right.ts"}, "beta.ts": {"shared.ts"}, "left.ts": {"shared.ts"}, "right.ts": {"shared.ts"}, "shared.ts": {}}
+	if err := validateNodeDependencies(valid, sources, tests); err != nil {
+		t.Fatalf("authored diamond with shared dependency: %v", err)
+	}
+	for _, tc := range []struct {
+		name   string
+		change func(map[string][]string)
+	}{
+		{"missing dormant module", func(g map[string][]string) { delete(g, "right.ts") }},
+		{"undeclared module", func(g map[string][]string) { g["unknown.ts"] = nil }},
+		{"missing import", func(g map[string][]string) { g["left.ts"] = []string{"missing.ts"} }},
+		{"duplicate", func(g map[string][]string) { g["left.ts"] = []string{"shared.ts", "shared.ts"} }},
+		{"unsorted", func(g map[string][]string) { g["alpha.ts"] = []string{"right.ts", "left.ts"} }},
+		{"cycle", func(g map[string][]string) { g["shared.ts"] = []string{"left.ts"} }},
+		{"imported test", func(g map[string][]string) { g["shared.ts"] = []string{"beta.ts"} }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			graph := cloneNodeDependencies(valid)
+			tc.change(graph)
+			if err := validateNodeDependencies(graph, sources, tests); err == nil {
+				t.Fatal("contradictory parser dependency projection accepted")
+			}
+		})
+	}
+	copy := cloneNodeDependencies(valid)
+	copy["alpha.ts"][0] = "missing.ts"
+	delete(copy, "shared.ts")
+	if err := validateNodeDependencies(valid, sources, tests); err != nil {
+		t.Fatal("returned graph mutation reached retained projection")
+	}
+}
+
+func TestNodeCertifierCleanupRetainsPhysicalOwnerAndUnknownSiblings(t *testing.T) {
+	for _, fault := range []string{"redirect", "unknown sibling"} {
+		t.Run(fault, func(t *testing.T) {
+			parent := t.TempDir()
+			name := filepath.Join(parent, "owned")
+			if err := os.Mkdir(name, 0700); err != nil {
+				t.Fatal(err)
+			}
+			info, err := os.Lstat(name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			owner, err := retainDynamicDirectory(name, info, []string{"source", "sdk", "bootstrap", "controls"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer owner.abandon()
+			for _, child := range []string{"source", "sdk", "bootstrap", "controls"} {
+				if err := os.Mkdir(filepath.Join(name, child), 0700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			c := &NodeSourceCertificate{directory: name, cleanup: owner}
+			ownedName := name
+			if fault == "redirect" {
+				ownedName = name + ".retained"
+				if err := os.Rename(name, ownedName); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Mkdir(name, 0700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			marker := filepath.Join(name, "unrelated")
+			if err := os.WriteFile(marker, []byte("preserve"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := c.Close(); err == nil {
+				t.Fatal("incomplete ownership cleanup reported success")
+			}
+			data, err := os.ReadFile(marker)
+			if err != nil || string(data) != "preserve" {
+				t.Fatal("cleanup removed unrelated replacement or sibling", err)
+			}
+			for _, child := range []string{"source", "sdk", "bootstrap", "controls"} {
+				if _, err := os.Stat(filepath.Join(ownedName, child)); !os.IsNotExist(err) {
+					t.Fatal("retained owner cleanup not joined", child, err)
+				}
+			}
+		})
+	}
+}
+
+func TestNodeCertifierPrivateCompilerProfileRejectsBeforeParserLaunch(t *testing.T) {
+	root, sdk := t.TempDir(), t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "test.js"), []byte("unparsed user module"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(sdk, "lib"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(sdk, "lib", "typescript.js"), []byte("untrusted parser"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	marker := filepath.Join(root, "parser-was-executed")
+	node := filepath.Join(t.TempDir(), "node")
+	if err := os.WriteFile(node, []byte("#!/bin/sh\nprintf launched > '"+marker+"'\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	r := NodeCertifierRequest{Root: root, Node: node, TypeScriptSDK: sdk, NodeSHA256: strings.Repeat("a", 64), CompilerSHA256: strings.Repeat("b", 64), Sources: []string{"test.js"}, Tests: []string{"test.js"}}
+	c, err := certifyNodeSources(context.Background(), r, strings.Repeat("c", 64))
+	if c != nil || err == nil || !strings.Contains(err.Error(), "required compiler profile") {
+		t.Fatal("wrong SDK did not reject before compilation", err)
+	}
+	if _, err := os.Stat(marker); !os.IsNotExist(err) {
+		t.Fatal("unadmitted parser executable ran", err)
+	}
+}
+
 func TestInstalledNodeSourceCandidateJavaScriptAndTypeScript(t *testing.T) {
 	for _, extension := range []string{"js", "ts"} {
 		t.Run(extension, func(t *testing.T) {
@@ -272,7 +386,12 @@ func TestInstalledNodeSourceCandidateJavaScriptAndTypeScript(t *testing.T) {
 				t.Fatal(err)
 			}
 			// Caller-owned inputs and returned summaries cannot mutate the seal.
+			if !slices.Equal(summary.Dependencies[test], []string{"math." + extension}) || len(summary.Dependencies["math."+extension]) != 0 {
+				t.Fatal("parser dependency projection differs from actual aliased import")
+			}
 			r.Sources[0], r.Tests[0], summary.Cases[0].Label = "missing.js", "other.js", "mutated"
+			summary.Dependencies[test][0] = "missing.js"
+			delete(summary.Dependencies, "math."+extension)
 			if err := c.Verify(context.Background()); err != nil || !slices.Equal(c.Summary().Cases, want) {
 				t.Fatalf("caller mutation reached retained certificate: %v", err)
 			}
@@ -287,6 +406,26 @@ func TestInstalledNodeSourceCandidateJavaScriptAndTypeScript(t *testing.T) {
 			}
 			if err := c.Verify(context.Background()); err == nil || c.Summary().Policy != "" {
 				t.Fatal("closed certificate usable")
+			}
+		})
+	}
+}
+
+func TestInstalledNodeSourceCandidateRejectsAmbiguousJavaScriptTypeScriptImports(t *testing.T) {
+	for _, extension := range []string{"ts", "js"} {
+		t.Run(extension, func(t *testing.T) {
+			test := "test." + extension
+			r := installedNodeCertifierRequest(t, map[string]string{
+				"helper.js": `export const value = 1;`,
+				"helper.ts": `export const value: number = 2;`,
+				test:        `import {test,expect} from 'vitest';import {value} from './helper.js';test('collision',()=>{expect(value).toBe(1)});`,
+			}, test)
+			candidate, err := CertifyNodeSources(context.Background(), r)
+			if candidate != nil {
+				candidate.Close()
+			}
+			if candidate != nil || err == nil || !strings.Contains(err.Error(), "certification") {
+				t.Fatal("ambiguous framework/compiler resolver choices admitted", err)
 			}
 		})
 	}

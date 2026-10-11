@@ -25,7 +25,7 @@ import (
 	"github.com/Cyberlane/hayaku/internal/snapshot"
 )
 
-var Version = "0.5.1"
+var Version = "0.6.0"
 
 // Run returns a nonzero status for invalid policy, incomplete execution or misses.
 func Run(ctx context.Context, args []string, out, errout io.Writer) int {
@@ -33,12 +33,14 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 		switch args[0] {
 		case "native":
 			return runNative(ctx, args, out, errout)
+		case "native-init":
+			return runNativeInit(ctx, args, out, errout)
 		case "capsule", "suite", "inputs", "compare", "results", "pilot", "inventory":
 			return runTool(ctx, args, out, errout)
 		}
 	}
 	if len(args) == 0 {
-		fmt.Fprintln(errout, "usage: hayaku <init|doctor|catalog|plan|explain|run|shadow|observe|native|capsule|suite|inputs|compare|results|inventory|pilot|version> [options]")
+		fmt.Fprintln(errout, "usage: hayaku <init|doctor|catalog|plan|explain|run|shadow|observe|native-init|native|capsule|suite|inputs|compare|results|inventory|pilot|version> [options]")
 		return 2
 	}
 	if args[0] == "version" {
@@ -50,7 +52,7 @@ func Run(ctx context.Context, args []string, out, errout io.Writer) int {
 		return 0
 	}
 	if args[0] == "help" || args[0] == "--help" {
-		fmt.Fprintln(out, "hayaku init|doctor|catalog|plan|explain|run|shadow|observe|native|capsule|suite|inputs|compare|results|inventory|pilot|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\nnative --config native.json --cache-dir <private directory>\ncapsule --config capsule.json --cache-dir <private directory>\nsuite --config suites.json --cache-dir <private directory>\ninputs --config inputs.json [--destination <new directory>]\ncompare --baseline baseline.json --measurement candidate.json\nresults --format junit|trx|swift|libtest --inventory cases.json --report results.xml\ninventory --config hayaku.json --workspace <nextest workspace>\npilot --package ./internal/graph --cache-dir <private directory>\nNative plans retain full suites. proposal_commands are experimental shadow inputs.")
+		fmt.Fprintln(out, "hayaku init|doctor|catalog|plan|explain|run|shadow|observe|native-init|native|capsule|suite|inputs|compare|results|inventory|pilot|version\nplan --base <revision> --candidate <exact tested commit> --config hayaku.json\nnative-init --language go --package ./math [--root <source directory>]\nnative --config native.json --cache-dir <private directory>\ncapsule --config capsule.json --cache-dir <private directory>\nsuite --config suites.json --cache-dir <private directory>\ninputs --config inputs.json [--destination <new directory>]\ncompare --baseline baseline.json --measurement candidate.json\nresults --format junit|trx|swift|libtest --inventory cases.json --report results.xml\ninventory --config hayaku.json --workspace <nextest workspace>\npilot --package ./internal/graph --cache-dir <private directory>\nNative plans retain full suites. proposal_commands are experimental shadow inputs.\nnative verifies qualified group receipts; unsupported workspace contexts run their complete original command.")
 		return 0
 	}
 	fs := flag.NewFlagSet(args[0], flag.ContinueOnError)

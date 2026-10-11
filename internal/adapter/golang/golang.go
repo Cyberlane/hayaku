@@ -28,8 +28,8 @@ type listedPackage struct {
 	TestGoFiles, XTestGoFiles, EmbedFiles, TestEmbedFiles, XTestEmbedFiles                                                                     []string
 	Imports, TestImports, XTestImports                                                                                                         []string
 	Module                                                                                                                                     *struct {
-		Dir, GoMod string
-		Replace    *struct{ Dir, GoMod string }
+		Dir, GoMod, Path, Version, GoVersion string
+		Replace                              *struct{ Dir, GoMod string }
 	}
 	Error      *json.RawMessage
 	DepsErrors []json.RawMessage

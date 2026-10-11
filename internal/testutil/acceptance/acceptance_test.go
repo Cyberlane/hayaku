@@ -123,3 +123,109 @@ func TestExpectedUnstartedScopeCannotRetainAuthority(t *testing.T) {
 		t.Fatalf("unstarted scope retained authority: %v", issues)
 	}
 }
+
+func originalOracle(mixed bool) Expectation {
+	w := Expectation{Inventory: []model.Unit{{ID: "original", Workspace: "fixture"}},
+		Outcomes:  model.Outcomes{Complete: true, Units: []model.Outcome{{Unit: "original", Action: "pass"}}},
+		Completed: true, Passed: true, OriginalScopes: []string{"original"},
+		Groups: []Group{{Name: "original", Mode: "fallback"}}}
+	if mixed {
+		w.Inventory = append(w.Inventory, model.Unit{ID: "native", Workspace: "fixture"})
+		w.Outcomes.Units = append(w.Outcomes.Units, model.Outcome{Unit: "native", Action: "pass"})
+		w.Outcomes.Tests = []model.Outcome{{Unit: "native", Test: "case", Action: "pass"}}
+		w.Groups = append(w.Groups, Group{Name: "native", Mode: "reuse", Qualified: true})
+		w.Authorized = []string{"native"}
+	}
+	return w
+}
+
+func TestExplicitOriginalScopesRetainExactNativeEvidence(t *testing.T) {
+	for _, mixed := range []bool{false, true} {
+		for _, failed := range []bool{false, true} {
+			w := originalOracle(mixed)
+			if failed {
+				w.Passed, w.Error, w.ExitCode, w.Outcomes.Failed = false, true, 1, true
+				w.Outcomes.Units[0].Action = "fail"
+			}
+			o := Observation{Outcomes: w.Outcomes, Completed: true, Passed: !failed, ExitCode: w.ExitCode, Groups: w.Groups, Authorized: w.Authorized}
+			var invokeErr error
+			if failed {
+				invokeErr = errors.New("original full command failed")
+			}
+			r := Run(context.Background(), Scenario{Name: "original-and-native", Steps: []Step{{Name: "complete", Want: w,
+				Invoke: func(context.Context) (Observation, error) { return o, invokeErr }}}})
+			if r.State != "passed" {
+				t.Fatalf("opaque original mixed=%t failed=%t rejected: %+v", mixed, failed, r)
+			}
+		}
+	}
+	for _, test := range []struct {
+		name   string
+		change func(*Observation)
+	}{
+		{"missing-original-unit", func(o *Observation) { o.Outcomes.Units = o.Outcomes.Units[1:] }},
+		{"unexpected-unit", func(o *Observation) {
+			o.Outcomes.Units = append(o.Outcomes.Units, model.Outcome{Unit: "unknown", Action: "pass"})
+		}},
+		{"original-case", func(o *Observation) {
+			o.Outcomes.Tests = append(o.Outcomes.Tests, model.Outcome{Unit: "original", Test: "invented", Action: "pass"})
+		}},
+		{"original-authority", func(o *Observation) { o.Authorized = append(o.Authorized, "original") }},
+		{"original-qualification", func(o *Observation) { o.Groups[0].Qualified = true }},
+		{"original-reuse", func(o *Observation) { o.Groups[0] = Group{Name: "original", Mode: "reuse", Qualified: true} }},
+		{"native-missing-case", func(o *Observation) { o.Outcomes.Tests = nil }},
+		{"native-extra-case", func(o *Observation) {
+			o.Outcomes.Tests = append(o.Outcomes.Tests, model.Outcome{Unit: "native", Test: "extra", Action: "pass"})
+		}},
+		{"native-duplicate-case", func(o *Observation) { o.Outcomes.Tests = append(o.Outcomes.Tests, o.Outcomes.Tests[0]) }},
+		{"unknown-case-owner", func(o *Observation) { o.Outcomes.Tests[0].Unit = "unknown" }},
+		{"unreconciled-exit", func(o *Observation) { o.ExitCode = 1 }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			w := originalOracle(true)
+			o := Observation{Outcomes: originalOracle(true).Outcomes, Completed: true, Passed: true,
+				Groups: originalOracle(true).Groups, Authorized: []string{"native"}}
+			test.change(&o)
+			if issues := Check(o, nil, w); len(issues) == 0 {
+				t.Fatal("invalid original/native evidence accepted")
+			}
+		})
+	}
+}
+
+func TestOriginalScopeDeclarationsFailBeforeCallbacksAndInDirectChecks(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		change func(*Expectation)
+	}{
+		{"duplicate", func(w *Expectation) { w.OriginalScopes = []string{"original", "original"} }},
+		{"unknown", func(w *Expectation) { w.OriginalScopes = []string{"unknown"} }},
+		{"missing-group", func(w *Expectation) { w.Groups = w.Groups[1:] }},
+		{"qualified", func(w *Expectation) { w.Groups[0].Qualified = true }},
+		{"reuse", func(w *Expectation) { w.Groups[0].Mode = "reuse" }},
+		{"execute", func(w *Expectation) { w.Groups[0].Mode = "execute" }},
+		{"authority", func(w *Expectation) { w.Authorized = append(w.Authorized, "original") }},
+		{"authored-original-case", func(w *Expectation) {
+			w.Outcomes.Tests = append(w.Outcomes.Tests, model.Outcome{Unit: "original", Test: "invented", Action: "pass"})
+		}},
+		{"undeclared-empty-native", func(w *Expectation) { w.OriginalScopes = nil }},
+		{"native-empty-case", func(w *Expectation) { w.Outcomes.Tests = nil }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			w := originalOracle(true)
+			test.change(&w)
+			called := false
+			r := Run(context.Background(), Scenario{Name: "bad-late-oracle", Steps: []Step{
+				{Name: "healthy-first", Want: cleanOracle(), Invoke: func(context.Context) (Observation, error) { called = true; return cleanObservation(), nil }},
+				{Name: "invalid-later", Want: w, Invoke: func(context.Context) (Observation, error) { called = true; return Observation{}, nil }},
+			}})
+			if r.State != "failed" || called || len(r.Steps) != 1 || !slices.Equal(r.Steps[0].Issues, []string{"invalid_scenario"}) {
+				t.Fatalf("invalid late declaration reached callbacks: %+v", r)
+			}
+			o := Observation{Outcomes: w.Outcomes, Completed: true, Passed: true, Groups: w.Groups, Authorized: w.Authorized}
+			if issues := Check(o, nil, w); len(issues) == 0 {
+				t.Fatal("direct Check accepted malformed declarations or empty native cases")
+			}
+		})
+	}
+}

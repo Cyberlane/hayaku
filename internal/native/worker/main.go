@@ -26,7 +26,8 @@ import (
 	"unsafe"
 )
 
-const version = "hayaku-linux-boundary-v6"
+const version = "hayaku-linux-boundary-v7"
+const managedCompilerProfile = "trusted-managed-compiler-v1"
 const childOutputLimit = 128 << 10
 const childTimeout = 30 * time.Second
 
@@ -37,6 +38,7 @@ type childContract struct {
 type dynamicInvocation struct {
 	Loader          string `json:"loader"`
 	ResourcesDigest string `json:"resources_digest"`
+	CompilerProfile string `json:"compiler_profile,omitempty"`
 }
 type invocation struct {
 	Args         []string           `json:"args"`
@@ -177,6 +179,9 @@ func validValues(args, env []string) bool {
 }
 func validInvocation(c invocation) bool {
 	if c.Dynamic != nil {
+		if c.Dynamic.CompilerProfile != "" && c.Dynamic.CompilerProfile != managedCompilerProfile {
+			return false
+		}
 		if !c.Envelope || c.Child != nil || !runtimeName(c.Dynamic.Loader) || len(c.Dynamic.ResourcesDigest) != 64 {
 			return false
 		}
@@ -254,7 +259,7 @@ func restrict(contract invocation, broker, child bool) error {
 	if _, err = call(446, ruleset, 0, 0); err != nil {
 		return err
 	}
-	return filter(broker, contract.Dynamic != nil)
+	return filter(broker, contract.Dynamic != nil, contract.Dynamic != nil && contract.Dynamic.CompilerProfile == managedCompilerProfile)
 }
 
 // The untrusted main receives only anonymous RUN/reply channels. Installation
@@ -545,7 +550,10 @@ func allowPath(ruleset uintptr, name string, rights uint64) error {
 	_, err = call(445, ruleset, 1, uintptr(unsafe.Pointer(&rule)))
 	return err
 }
-func filter(broker, dynamic bool) error {
+func filter(broker, dynamic, managedCompiler bool) error {
+	if managedCompiler && (!dynamic || broker) {
+		return syscall.EINVAL
+	}
 	arch := uint32(0xc00000b7)
 	clone := uint32(220)
 	denied := []uint32{198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 117, 97, 40, 41, 39, 51, 264, 265, 268, 270, 271, 280, 282, 241, 281, 242, 243, 244}
@@ -624,9 +632,22 @@ func filter(broker, dynamic bool) error {
 	for _, n := range []uint32{mmap, mprotect, pkey} {
 		block := []syscall.SockFilter{{Code: 0x20, K: 36}, {Code: 0x15, Jt: 1, K: 0}, {Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, {Code: 0x20, K: 32}, {Code: 0x45, Jt: 1, K: 4}, {Code: 0x06, K: 0x7fff0000}}
 		if dynamic && n == mmap {
+			if managedCompiler {
+				// The exact captured compiler/runtime is trusted to generate code.
+				// V8 Wasm needs anonymous RWX, including its non-PKU fallback.
+				// This is not W^X or syscall-level generated-code provenance.
+				block = append(block,
+					syscall.SockFilter{Code: 0x20, K: 44}, syscall.SockFilter{Code: 0x15, Jt: 1, K: 0}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)},
+					syscall.SockFilter{Code: 0x20, K: 40}, syscall.SockFilter{Code: 0x45, Jf: 1, K: 0x20}, syscall.SockFilter{Code: 0x06, K: 0x7fff0000},
+					syscall.SockFilter{Code: 0x20, K: 32})
+			}
 			// RX only from a file descriptor on immutable runtime or kernel noexec data
 			// mounts. A valid FD alone is not executable-byte provenance.
 			block = append(block, syscall.SockFilter{Code: 0x45, Jf: 1, K: 2}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 44}, syscall.SockFilter{Code: 0x15, Jt: 1, K: 0}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 40}, syscall.SockFilter{Code: 0x45, Jf: 1, K: 0x20}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 52}, syscall.SockFilter{Code: 0x15, Jt: 1, K: 0}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x20, K: 48}, syscall.SockFilter{Code: 0x15, Jf: 1, K: 0xffffffff}, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)}, syscall.SockFilter{Code: 0x06, K: 0x7fff0000})
+		} else if managedCompiler {
+			// Kernel noexec data mounts still prohibit file-backed executable
+			// transitions. Anonymous compiler pages may become executable.
+			block = append(block, syscall.SockFilter{Code: 0x06, K: 0x7fff0000})
 		} else {
 			block = append(block, syscall.SockFilter{Code: 0x06, K: 0x50000 | uint32(syscall.EPERM)})
 		}

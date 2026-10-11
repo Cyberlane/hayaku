@@ -36,8 +36,12 @@ type Observation struct {
 // Authorized and Revoked must come from inspecting actual receipt authority in
 // the callback, not from copying a report's claimed cache labels.
 type Expectation struct {
-	Inventory           []model.Unit
-	Outcomes            model.Outcomes
+	Inventory []model.Unit
+	Outcomes  model.Outcomes
+	// OriginalScopes explicitly declares opaque full-command units. They have
+	// only unqualified fallback decisions and unit/exit outcomes, never native
+	// case discovery or omission authority. Other units retain exact case checks.
+	OriginalScopes      []string
 	Completed, Passed   bool
 	Error               bool
 	ExitCode            int
@@ -117,7 +121,7 @@ func validate(s Scenario) error {
 			return errors.New("contradictory expected pass")
 		}
 		// A complete oracle must itself have valid exact unit/test identities.
-		if step.Want.Completed && runner.ValidateExact(step.Want.Outcomes, independentInventory(step.Want), true, step.Want.ExitCode) != nil {
+		if validateOriginalScopes(step.Want) != nil || (step.Want.Completed && validateTerminal(step.Want.Outcomes, step.Want, true, step.Want.ExitCode) != nil) {
 			return errors.New("invalid independent terminal oracle")
 		}
 		if !validGroups(step.Want.Groups) || !validNames(step.Want.Authorized) || !validNames(step.Want.Revoked) {
@@ -147,7 +151,15 @@ func Check(got Observation, err error, want Expectation) []string {
 	if got.Passed != want.Passed || got.ExitCode != want.ExitCode {
 		issues = append(issues, "aggregate_mismatch")
 	}
-	validation := runner.ValidateExact(got.Outcomes, independentInventory(want), got.Completed, got.ExitCode)
+	validation := validateTerminal(got.Outcomes, want, got.Completed, got.ExitCode)
+	if validateOriginalScopes(want) != nil {
+		issues = append(issues, "invalid_original_scope_oracle")
+	}
+	for _, name := range want.OriginalScopes {
+		if slices.Contains(got.Authorized, name) {
+			issues = append(issues, "unsafe_original_scope_authority")
+		}
+	}
 	if got.Completed && validation != nil {
 		issues = append(issues, "invalid_terminal_inventory")
 	}
@@ -173,6 +185,78 @@ func Check(got Observation, err error, want Expectation) []string {
 		issues = append(issues, "receipt_revocation_mismatch")
 	}
 	return issues
+}
+
+func validateOriginalScopes(want Expectation) error {
+	if !validNames(want.OriginalScopes) {
+		return errors.New("invalid original scope declarations")
+	}
+	for _, name := range want.OriginalScopes {
+		units, groups := 0, 0
+		for _, unit := range want.Inventory {
+			if unit.ID == name {
+				units++
+			}
+		}
+		for _, group := range want.Groups {
+			if group.Name == name {
+				if group.Mode != "fallback" || group.Qualified {
+					return errors.New("original scope requires unqualified fallback")
+				}
+				groups++
+			}
+		}
+		if units != 1 || groups != 1 || slices.Contains(want.Authorized, name) {
+			return errors.New("original scope ownership or authority contradiction")
+		}
+		for _, item := range want.Outcomes.Tests {
+			if item.Unit == name {
+				return errors.New("opaque original scope cannot declare native cases")
+			}
+		}
+	}
+	return nil
+}
+
+func validateTerminal(outcomes model.Outcomes, want Expectation, completed bool, exit int) error {
+	if err := validateOriginalScopes(want); err != nil {
+		return err
+	}
+	if len(want.OriginalScopes) == 0 {
+		return runner.ValidateExact(outcomes, independentInventory(want), completed, exit)
+	}
+	if err := runner.Validate(outcomes, want.Inventory, completed, exit); err != nil {
+		return err
+	}
+	inventory := model.ExecutionInventory{Schema: model.ExecutionSchema}
+	native := model.Outcomes{Complete: outcomes.Complete}
+	for _, unit := range want.Inventory {
+		if !slices.Contains(want.OriginalScopes, unit.ID) {
+			inventory.Units = append(inventory.Units, unit)
+		}
+	}
+	for _, item := range want.Outcomes.Tests {
+		inventory.Cases = append(inventory.Cases, model.Case{Unit: item.Unit, ID: item.Test})
+	}
+	for _, item := range outcomes.Tests {
+		if slices.Contains(want.OriginalScopes, item.Unit) {
+			return errors.New("opaque original scope reported unexpected native cases")
+		}
+		native.Tests = append(native.Tests, item)
+	}
+	for _, item := range outcomes.Units {
+		if !slices.Contains(want.OriginalScopes, item.Unit) {
+			native.Units = append(native.Units, item)
+		}
+	}
+	if len(inventory.Units) == 0 {
+		return nil
+	}
+	nativeExit := 0
+	if runner.Failed(native) {
+		native.Failed, nativeExit = true, 1
+	}
+	return runner.ValidateExact(native, inventory, completed, nativeExit)
 }
 
 func independentInventory(want Expectation) model.ExecutionInventory {

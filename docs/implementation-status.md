@@ -2,6 +2,38 @@
 
 The source and tests define current behavior. “Native” below means installed-runner evidence and result handling, not complete runtime influence or permission to skip a native suite. Original native plan commands remain full. The unreleased restricted native group command has its own contract, described below. v0.4.0 permits whole-suite reuse only within the separately enforced [deterministic WASI contract](capsules.md).
 
+## Go and TypeScript release priority
+
+The next local candidate is v0.6.0, focused on Go and TypeScript/Vitest.
+Other-language expansion and Windows qualification are deferred; subsequent
+releases add one language each. Publication and hosted CI acceptance remain
+separate from local implementation and verification.
+
+- Restricted Go helpers, external tests and string fixtures, the private Vitest
+  issuer, complete inventories and transactional `native-init` share the same
+  execution, receipt, audit and fallback coordinator. Independent source review
+  and actual macOS/Linux normal/race CLI controls passed.
+- The final matrix has 21 obligations: three current repository gates, eight
+  current native gates and ten explicitly impact-qualified historical behavior
+  gates. It records 304 mandatory native acceptance terminals and 164 measured
+  CLI steps, with no required skips. Core normal/race each passed 2,030 terminals
+  and record 204 optional skips; vet passed. Input guards match and owned
+  processes and containers drained. See [release checks](release-checks.md).
+- Qualified runtime contexts are macOS/Linux ARM64 with Go 1.27.1 and the fixed
+  Linux ARM64 Node 22.18.0/TypeScript 6.0.2/Vitest 4.1.11/Vite 8.2.2 runtime from
+  either controller. Unsupported syntax, effects, setup and invocation settings
+  run the complete configured original scope. Historical coverage is unnecessary.
+- Tiny acceptance fixtures run faster in full; measured qualification and reuse
+  costs establish no representative speedup. Final staged Mori, signed local
+  source, six versioned archives, extracted ARM64 checks and disposable-task
+  cleanup remain local release gates. Hosted CI and consumer acceptance are
+  separate. This profile does not qualify arbitrary native Go/TypeScript or
+  an AST/source-only proposal for CI omission.
+
+See the [release plan](go-typescript-release-plan.md),
+[candidate setup guide](go-typescript-native.md) and
+[dependency kanban](affected-tests-kanban.md) for the exact completion scope.
+
 ## Unreleased shared execution work
 
 - Shared analysis/runner composition, entrypoint/environment binding and normalized
@@ -50,7 +82,7 @@ The source and tests define current behavior. “Native” below means installed
   unknown effects before native cache access. Empty effect data
   cannot establish completeness; actual containment probes do not prove native
   equivalence. Independent native probes and full normal/race/vet checks passed.
-- Native artifact authority is private to the reviewed in-process Go producer.
+- Native artifact authority is private to reviewed in-process producers.
   Public proof strings and inventories cannot issue it. Its binding includes
   captured source, compiler tree, artifact, inventory and backend context;
   caller-supplied result decoders cannot replace the producer's decoder.
@@ -145,7 +177,9 @@ The source and tests define current behavior. “Native” below means installed
   namespace maps with exact combined cases and unchanged private issuer guards.
   Actual macOS/Linux normal/race source, failure, skip, drift, audit and cache
   controls passed, followed by full repository normal/race/vet composition.
-  Helper imports and setup/fixture qualification remain unfinished.
+  The earlier external-test corpus did not qualify helpers/setup; the separate
+  Go/TypeScript candidate above adds its reviewed restricted helper/string-input
+  contracts and still requires final composed release acceptance.
 - SwiftPM/Xcode closure APIs now bind compiler bytes, source/resources, build
   producers and private test products with fresh pre/post invocation checks.
   Actual installed normal/race tests passed within original fixture deadlines.
@@ -192,8 +226,8 @@ cards do not authorize native omission or change the capabilities listed here.
 
 | Integration | Implemented evidence | Assurance |
 | --- | --- | --- |
-| Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted pure-package Linux reuse | Ordinary native plans remain full; imports/cgo/external inputs are outside native group qualification |
-| Vitest | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; configured transforms, native outcomes, shadow and diagnostic runtime traces | Ordinary fork/thread file scopes only; custom Cloudflare/VM/browser/typecheck contexts rejected. Renewed local adapter checks passed for all four locked fixtures; the fourth CI job is defined locally, with hosted acceptance outstanding |
+| Go | Native package/import/embed/build inputs; execution and shadow challenges; separate restricted package reuse on macOS/Linux, including compiler-selected pure local helpers, external tests and string fixtures | Ordinary native plans remain full; cgo, concurrency, dynamic setup and unknown external influence run original scopes. Candidate composed release gates remain pending |
+| Vitest | Four exact Vitest/Vite pairs for ordinary evidence; fixed 4.1.11/8.2.2 candidate private file reuse with Node 22.18.0 / TypeScript 6.0.2 and complete runtime closure | Custom Cloudflare/VM/browser/typecheck contexts remain unqualified. Private issuer/CLI acceptance and hosted CI remain separate from ordinary adapter checks |
 | Node test, unittest, pytest, Jest, Playwright | Version-gated native collection/execution, whole-file/module proposals, strict terminal outcomes | Every workspace input conservatively owns every unit; browser/services/runtime completeness unqualified |
 | Cargo | Offline, locked package graph and package commands; Rust result imports | Build scripts, proc macros and external runtime influence unqualified |
 | cargo-nextest | Pinned 0.9.146 configured binary/case inventory, Cargo package proposals and real JUnit fixture | Full original execution retained; automatic native shadow/case-reconciliation integration remains future work |

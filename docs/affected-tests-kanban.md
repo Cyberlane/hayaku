@@ -1,6 +1,6 @@
 # Affected-test execution kanban
 
-Updated: 2026-10-10. This is the working backlog for end-to-end affected-test
+Updated: 2026-10-11. This is the working backlog for end-to-end affected-test
 execution across supported languages and runners. It is a plan, not qualification
 evidence or authorization to publish, deploy, or omit existing CI gates.
 
@@ -13,8 +13,9 @@ finite test score can qualify skipping by itself. See [safety](safety.md).
 Current implementation milestone: macOS and Linux, as explicitly requested on
 2026-10-06. Windows support is deferred; its qualification and acceptance cards
 are outside the current milestone and cannot block its handoff. The Windows
-cards remain unqualified future work. K40 is the initial local Go/TS handoff; K41
-closes all promised macOS/Linux contexts after their separate acceptance gates.
+cards remain unqualified future work. R06-HANDOFF is the finite local Go/TS
+release milestone; broader K40/K39 remains open. K41 closes all promised
+macOS/Linux contexts after their separate acceptance gates.
 
 ## Current release priority
 
@@ -24,6 +25,23 @@ and acceptance. New work for other languages is deferred until that release is
 complete, then proceeds one language per release. Existing unfinished language
 worktrees are preserved; historical DOING records do not authorize their resumption.
 
+The local v0.6.0 release has the following finite gates. The broader K39 consumer
+performance and K41 all-language promises remain separate backlog work; passing
+these gates cannot establish representative consumer speedups or hosted acceptance.
+
+| Release gate | State | Dependencies | Required result |
+| --- | --- | --- | --- |
+| R06-GO | REVIEW | K14A, K50, reviewed K14B/C handoffs | Restricted compiler-selected helpers, external tests and string fixtures; actual macOS/Linux normal/race and private original-fallback lifecycle. |
+| R06-TS | REVIEW | K10D, K10E, K15, reviewed K16A/B/C handoffs | Fixed Linux ARM64 Vitest runtime, complete source/case graph and private file issuer; unsupported inputs run the exact original command. |
+| R06-CORE | REVIEW | K31, K48, reviewed K52/K32/K33 handoffs | Shared launch/inventory/cache/audit/outcome engine, retained ownership and transactional enrollment; no public configuration can mint authority. |
+| R06-QA | REVIEW | Frozen R06-GO, R06-TS, R06-CORE operational handoffs | All 21 core/native obligations passed with 304 mandatory native terminals, 164 measured CLI steps, matching input guards and drained owned processes; final composition and staged review precede completion. |
+| R06-HANDOFF | BLOCKED | R06-GO, R06-TS, R06-CORE, R06-QA | Independent final review, accurate docs, local commit, six versioned archives/checksums, actual ARM64 archive smoke checks and disposable-task cleanup. |
+
+Publication is a separate authorized action after the local handoff. Windows
+archives are build-only targets; the v0.6.0 artifact checks are pending. Windows
+runtime qualification is deferred. Subsequent language releases require their own
+scoped acceptance gates.
+
 ## Board rules
 
 - States: `READY -> DOING -> REVIEW -> DONE`; `BLOCKED` means a listed dependency
@@ -32,15 +50,20 @@ worktrees are preserved; historical DOING records do not authorize their resumpt
   activity table below records verified live assignments separately.
 - `DONE` means the card's acceptance evidence exists, not that a feature is
   published or accepted in a consumer's production CI.
-- Dependencies are hard gates for completing implementation. Read-only design
-  and inspection can proceed before they complete. Fixture edits need a separately
-  claimed card/file scope and must not assume unfinished upstream interfaces.
+- Dependencies are hard gates for qualification and completing a card. Read-only
+  design can proceed earlier. The coordinator may hand off an independently
+  reviewed, source-frozen operational candidate after its assigned actual controls
+  pass. Dependent draft work remains unqualified until the dependencies and final
+  composed normal/race/vet gates are complete. Record the exact immutable interface
+  and acceptance evidence for each such handoff; changed upstream bytes require
+  fresh review and affected checks. Fixture edits require a separate file claim.
 - Record a claimed card, agent, file scope and evidence below before editing.
   One agent owns a card; one writer owns each file. The coordinator owns this
   board, shared registration, final integration and capability documentation.
 - Use up to three worker agents plus the coordinator. Prefer independent cards;
   use isolated worktrees for overlapping changes, otherwise assign disjoint files.
-  Do not delegate one dependency and its dependent as concurrent implementation.
+  A dependency and dependent may overlap only after the recorded frozen handoff;
+  there must be no concurrent writer changing that upstream contract.
 - Reuse existing graph, influence, process, outcome, input and receipt machinery.
   Language adapters supply language semantics, runners supply collection and
   execution semantics, backends supply enforced runtime boundaries. Add no
@@ -92,7 +115,11 @@ remain authoritative if this board drifts.
 
 | K14B | GO | K14A, K50 | Typed closed local Go helper imports | Bind compiler-selected internal/external test variants and every admitted local dependency, type-resolved direct call and source/tool/import-map identity; unsupported or dormant effects broaden before private issuance. |
 
-| K16B | TS | K15, K06, K09, K10D | Restricted Vitest framework and startup contract | Review the exact configured bootstrap, transformer/addon, matcher, thread, collection, timer and global-state semantics; preserve the explicitly configured full command and retain observable/unknown-effect gaps until justified. A static user-source certificate alone is insufficient. |
+| K16B | TS | K15, K06, K09, K10D, K10E | Restricted Vitest framework and startup contract | Review the exact configured bootstrap, transformer/addon, matcher, thread, collection, timer and global-state semantics; preserve the explicitly configured full command and retain observable/unknown-effect gaps until justified. A static user-source certificate alone is insufficient. |
+
+| K10E | RUNTIME | K10D, K10B, K09 | Private trusted managed compiler profile | Bind an issuer-owned executable-memory profile to captured program and transport identities; public capture stays strict, data stays noexec and external file/network/process restrictions remain. Pinned compiler/framework code is trusted explicitly; actual Wasm/startup, denial, drift and failure controls precede TypeScript qualification. |
+
+| K52 | CORE | K10D, K31, K07 | Private provider execution seam | Reuse the native cache/audit/outcome engine for a producer-owned sealed launch and stable functional context; public envelopes/callbacks cannot create authority, mutations and live guard failures reject before cache, and legacy Go keys/launch remain unchanged. |
 
 ## REVIEW
 
@@ -162,7 +189,7 @@ remain authoritative if this board drifts.
 | K37 | CI | K34, K35, K36 | Reproducible CI workflow | Exact revisions, provisioned tools, matrix context, private cache authority, fallback, artifacts and audits work in disposable CI-equivalent runs. External workflow changes require applicable authorization. |
 | K38 | QA | K33, K35, K03 | Independent selection and isolation review | Review the influence algorithm and backend assumptions; run real hidden-dependency, unexecuted-effect, state, bypass, cache and fault cases against original full runs. Passing comparisons alone confer no qualification. |
 | K39 | QA | K37, K38, P02 | Compatibility and performance acceptance | Run actual declared versions/platforms and representative consumer workloads; record cold/warm end-to-end costs including capture/build/audits and negative savings. Unsupported modes demonstrably fall back. |
-| K40 | COORDINATOR | K39 | Capability documentation and local handoff | Update status/safety/runner/CI docs with exact supported contexts and evidence; initial Go/TS milestone is complete locally, with external acceptance and release status separately recorded. |
+| K40 | COORDINATOR | K39 | Capability documentation and local handoff | Update status/safety/runner/CI docs with exact supported contexts and evidence; record the initial Go/TS milestone after its finite release gates pass, with external acceptance and release status separately recorded. |
 | K41 | COORDINATOR | K42, K40, A01, A02, A03, A04, A05, A06, A07, A08, A10 | Whole-backlog local completion | Reconcile every promised context with implemented qualification, actual acceptance evidence, explicit exclusions and accurate docs; no placeholder or untested platform remains claimed as supported. External production acceptance and release remain separate. |
 
 ## Remaining language implementation lanes
@@ -237,8 +264,9 @@ framework-specific acceptance; common full-run import support is insufficient.
 
 ## Context acceptance gates
 
-K40 completes the initial Go and ordinary TS/Vitest milestone only. It is not
-completion of all languages. Each additional promised context needs the same
+R06-HANDOFF completes the restricted Go/private TS/Vitest local release milestone.
+Broader K40/K39 consumer acceptance remains open. This is not completion of all
+languages. Each additional promised context needs the same
 integration, reconciliation, audits, CI and independent acceptance gates:
 
 | ID | Context | Dependencies | Acceptance criterion |
@@ -291,14 +319,135 @@ Windows evidence is required before either can be completed or claimed supported
 
 ## Claims and evidence
 
-Live fleet activity verified 2026-10-10 for the Go/TypeScript release:
+K14B -> K14C / coordinator: frozen source `1d1d43ee` and final actual receipt
+`6d40b994` independently checked at handoff. All four macOS/Linux normal/race
+phases passed all seven mandatory parents, including dormant assembly fallback,
+without skips; tool/source guards matched and owned guests drained. The ten
+source files are integrated in root, with only the separately claimed private
+`Report.finalize` field composed into `go.go`. Full combined gates remain pending.
+
+K14C claim: `/root/go_release` may edit `go.go`,
+`go_dependency_proof.go`/`go_dependency_proof_test.go`,
+`go_dependency_boundary_test.go`, `internal/adapter/golang/typedfacts.go`
+and NEW `go_setup_proof.go`/`go_setup_proof_test.go` plus NEW
+`go_workspace_test.go` in its existing isolated worktree. Admit only exact
+compiler-selected string embeds with read-only use; unsupported setup retains
+the complete original scope. Add the agreed private workspace namespace,
+original full-scope callback and deferred producer finalizer; canonical explicit
+test-package selectors only. Copy root common dependencies read-only for
+compilation. No other source files or SDK execution until separately assigned.
+
+Current coordinator source claims: K52 extends `authority.go`/`backend.go`
+with NEW `provider_inventory.go`/`provider_inventory_test.go` for private sealed
+multi-unit inventories; legacy Go inventories remain unchanged. K32/K33/K35/K36
+claim NEW `coordinator.go`/`coordinator_test.go`, NEW `vitest_workspace.go` and
+`internal/app/native.go` for registry-based workspace dispatch, exact original
+fallback and aggregate identity/audit handling. No producer authority is enabled
+before the independently reviewed provider handoff. The K10E compiler-profile,
+transport and worker projection remains frozen; these common-engine extensions
+need their own source review and final combined gates.
+The coordinator also claims only the private `Report.finalize` field in
+`go.go`; the Go donor owns the remaining Go implementation in its isolated
+worktree. Integration must preserve both changes. This finalizer retains
+producer ownership until every workspace has run and aggregate cleanup ends.
+
+K16C dependency projection claim: `/root` may edit
+`internal/native/node_certifier.go`, `node_certifier.cjs` and
+`node_certifier_test.go` to expose and seal the already parser-resolved direct
+module dependencies. The private issuer requires a complete, acyclic graph over
+all captured modules; public source summaries remain unqualified. No heuristic
+imports or historical coverage may grant omission authority.
+
+K16C draft issuer claim: `/root/typescript_release` owns NEW
+`internal/native/node_issuer.go`/`node_issuer_test.go` in its isolated worktree.
+The reviewed immutable K16B source may be used read-only for a downstream draft
+while its actual acceptance runs. Root owns `vitest_workspace.go` and NEW
+`vitest_workspace_test.go` for complete filesystem discovery, fixed original
+command admission and retained aggregate ownership. Provider activation and
+qualification require the upstream actual handoff, independent issuer/profile
+review and final composed gates; a downstream draft closes no dependency card.
+
+Release enrollment claim: `/root` owns NEW `internal/app/native_init.go` and
+`native_init_test.go`, plus only command dispatch/help/version in `app.go`.
+Generate new Go/Vitest profile configuration from already installed inputs,
+never overwrite existing files or install dependencies. This makes the bounded
+accepted original context reproducible without manual Docker argv assembly.
+
+Release packaging claim: `/root` may update only the archive documentation list
+in `cmd/hayaku-dist/main.go` and its existing documentation fixture in
+`main_test.go`, plus the v0.6.0 release notes and setup/status docs.
+Include the new native profile, enrollment, cache and provisioning guides in
+versioned archives. Build and smoke-test locally after final source gates;
+publishing, remote tags and external CI execution remain separately authorized.
+Root also owns release-scope corrections in `docs/safety.md`,
+`docs/qualification.md`, `docs/runner-support.md` and `docs/release-checks.md`:
+distinguish ordinary full-run plans and descriptive APIs from the finite private
+Go/Vitest native producer profiles, preserving pending acceptance boundaries.
+Root owns NEW `scripts/verify-go-typescript-release.sh` and its documented use in
+`docs/ci.md`: a thin installed-input-only command for the required CLI/certifier
+normal/race tests. It performs no provisioning or hosted workflow execution.
+
+Final acceptance controller claim: `/root/release_testing` owns only NEW
+`/tmp/hayaku-go-ts-final-cli-controller.py` and
+`/tmp/hayaku-go-ts-final-cli-controller-source-ready.json`, plus its owned
+acceptance output directories. The former 44-file root source projection `a07c0906` and canceled controller
+remain historical evidence. Root must accept the revised Go/Vitest admission
+gates, combined source projection and frozen controller before execution. Controller `8220ec9b` and ready receipt `a2795da1` passed independent review:
+all 44 projection files, 312 root/donor code identities, 519 donor entries and
+six cancellation controls match. That V4 chain joined with a failed acceptance
+harness at typed Go normal: its full-original oracle lacked an explicit opaque
+command scope. Core normal/race/vet and Darwin legacy normal/race passed and
+were independently reviewed; the overall run remains unaccepted. All source,
+SDK and tool guards matched and owned guests drained before the V5 retry.
+
+Oracle correction claim: `/root/go_release` exclusively owns
+`internal/app/go_typescript_acceptance_test.go`,
+`internal/app/typescript_release_acceptance_test.go`, and
+`internal/testutil/acceptance/acceptance.go` / `acceptance_test.go` in main.
+Represent full original command completion explicitly without inventing native
+CASE discovery; preserve exact case validation for every selective native unit.
+Add SDK-free structural validation of the actual scenario definitions. The
+reviewer accepted the frozen four-file correction, handoff `1c143ba5` and source
+freeze `3569caf7`. Twelve portable parents passed normal/race/vet, and all seven
+actual constructors validate their 41 steps before callbacks. Actual V5 stopped
+after twelve partial successes: Linux startup used a read-only module cache and
+the final guard found a missing pinned Docker client. Its failed aggregate and
+drain proof are retained. The Linux continuation passed four Go phases before
+the initial TypeScript controls failed. Its full input guards matched and all
+owned processes drained. At that revision, sixteen phases were independently
+accepted partial results; five Linux phases and final composition were pending. A one-cold
+diagnostic preserved the original assertions and located rejection at Vitest
+runtime preparation. An unchanged healthy runtime test then captured
+`materialized input mode differs`: copied symlink permissions differ across
+hosts. The narrow shared copy-verifier fix and regression tests are independently
+reviewed. Current-source qualification requires fresh core and TypeScript gates;
+ten behavior phases are eligible for reuse only with exact source-delta and
+relevant-input attribution.
+
+Qualification revision claim: `/root/go_release` owns only `go.go`,
+`go_workspace_test.go`, `go_dependency_proof.go` and
+`go_dependency_proof_test.go` in its isolated Go donor. Restrict new typed
+workspace and helper/setup producer admission to the actually accepted ARM64
+contexts, including the legacy entrypoint's new dependency-proof path. Preserve
+the preexisting legacy pure-Go behavior. Add portable architecture/nonlaunch
+fallback controls. The first final controller run is intentionally canceled and
+drained before root/tester code changes; its incomplete evidence is retained.
+Source review, a new freeze and actual composed gates precede acceptance.
+The coordinator additionally owns the matching Vitest controller-profile guard
+in `vitest_workspace.go` and `node_issuer.go`, plus their existing tests. Keep
+complete-scope/key fixture checks descriptive on other build hosts; actual
+workspace admission and private issuance require the tested macOS/Linux ARM64
+controller cohort before parser execution or authority creation.
+
+Live fleet activity verified 2026-10-11 for the Go/TypeScript release:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | ACTIVE | K10D/K14A actual controls and exact ten-file integration independently reviewed; frozen source249 normal843.480s/race1414.513s/vet1.278s passed. Final staged review and local commit close this milestone; shared CLI/execution integration follows Go/TS qualification. |
-| `/root/go_release` | DESIGN COMPLETE / WAITING HANDOFF | Typed closed local helpers, explicit compiler/language/variant facts and reachable group identities. No source mutation or SDK runs before K14A closeout and exact implementation claim. |
-| `/root/typescript_release` | DESIGN COMPLETE / WAITING HANDOFF | Real restricted Vitest startup/collection/run and private Node issuance. Restore the missing locked fixture before actual tests; macOS qualification remains separate. |
-| `/root/release_acceptance` | INDEPENDENT REVIEW | Source/evidence/document closeout accepted subject to final board/status/canonical updates; release CLI scenario matrix next. |
+| `/root` | STAGED SOURCE AND ARTIFACT PREPARATION | Final projection `a6cfa9bd` and freeze `e0142f08` match all reviewed source bytes. Root composition `8e312b1f` binds core3, current native8 and impact-qualified historical10: 304 mandatory native terminals and 164 measured CLI steps. Failed/interrupted history remains unaccepted. Canonical staged Mori, signed local source, archives and finite disposable-task cleanup remain pending. |
+| `/root/release_review` | CORE/NATIVE ACCEPTED; ROOT COMPOSITION REVIEW | Review `bb0c9c9f` accepts current core normal/race/vet; `43be6f27` accepts current native8, final guards, all 33 helper joins and exact detached-controller absence. Every required native terminal passes without skips; core optional skips are disclosed. Root21 data composition is under narrow review. Artifacts remain pending. |
+| `/root/typescript_release` | SOURCE HANDOFF COMPLETE | Six K16B real Vitest normal/race phases accepted without skips, receipt fb699b90. Private issuer is integrated with independently reviewed cache identity corrections. Composed issuer/CLI qualification remains pending. |
+| `/root/release_records` | PRIVATE EVIDENCE RETAINED; IDLE | Preparatory index `553c25f9` retains 575 metadata/log records with exact mandatory provenance copy fields and unchanged interrupted history. All copies were rechecked under existing bounds. Status remains incomplete and cannot authorize cleanup until staged/artifact results and passed wrappers are bound. |
+| `/root/native_finish` | NATIVE EXECUTION COMPLETE; IDLE | Both current normal results plus six fresh phases form accepted native8 proof `9c17b938` with 154 required terminals and 128 CLI costs. Fresh aggregate `883ae328` passes with no post failures; final drain closure `e034ac57` confirms controller95373 absent and owned inventories empty. Independent review `43be6f27` accepts actual results and unchanged input guards. No tests remain in this lane. |
 
 Other-language assignments below are historical and deferred from active work.
 
@@ -490,3 +639,19 @@ K14A, K10D | DONE | /root + independent /root/release_acceptance | Exact ten int
 K14B | DOING | /root/go_release | NEW isolated /tmp/hayaku-go-release-worktree from the K14A/K10D closeout commit; internal/adapter/golang/golang.go metadata only, closure.go, NEW typedfacts.go/typedfacts_test.go; native NEW go_dependency_proof.go/go_dependency_proof_test.go plus go.go/goclosure.go/proof.go and associated Go tests only | K14A/K50 DONE with assigned actual controls, full composition and independent review; exact selected compiler/language/variant design complete | Implement typed closed local helpers and reachable group identities, explicit accepted compiler admission, cleanup-error propagation and conservative fallback. No core selector/CLI/backend/cache edits. K14C setup implementation waits for K14B acceptance. Serialized SDK/native slot required before execution.
 
 K16B | DOING | /root/typescript_release | NEW isolated /tmp/hayaku-typescript-release-worktree from the K14A/K10D closeout commit; adapter/vitest NEW runtime.go/runtime.mjs/runtime_test.go; native NEW node_runtime.go/node_runtime_test.go; exact Go/TypeScript SDK fixture restoration under newly private /tmp/hayaku-language-acceptance-* only | K10D/K15/K06/K09 DONE; real restricted Vitest API/source plan complete; historical installed fixture bytes no longer present | Implement and validate the real locked Vitest runtime profile, exact complete collection and terminal outcomes under enforced Linux context. macOS remains original full fallback until separately qualified. Restore only the approved exact pinned fixture with official integrity evidence; no global installs. K16C issuance waits for K16B acceptance. SDK restoration assigned this slot; native executions separately serialized.
+
+K52 | DOING | /root | internal/native/authority.go and backend.go only; NEW internal/native/provider_launch_test.go | K10D/K31/K07 DONE; independent reviewer endorses private generic launch inside existing authority and stable functional context separated from physical live guards | Minimal sealed execution seam for the existing shared cache/audit/exact-outcome engine. No new public issuer or provider, no language branches. Source admission/forgery/drift/stable-context tests, advisory review and final combined normal/race/vet before completion; actual TypeScript provider acceptance remains K16B/C.
+
+P02 | REFRESH | /root | NEW private /tmp/hayaku-language-acceptance-go-sdk-* containing the exact already-approved official Go1.27.1 Linux ARM64 archive/SDK and restore evidence only | Original P02 publisher/archive/executable pins retained in docs/evidence/runner-provisioning-2026-10-06.json; missing temporary installation cannot qualify new tests | Restore the exact verified bytes without global installation, then actual offline SDK identity/baseline in the serialized Linux slot. Archive67,009,954 bytes SHA3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec; no other-language provisioning.
+
+K14B | SCOPE REFINEMENT | /root/go_release | Additionally exact internal/native/external_boundary_test.go and NEW internal/native/go_dependency_boundary_test.go only | Existing K14A subject-import positive is newly covered by typed local helpers; dormant-clock negative stays full fallback | Update only the newly supported positive expectation, preserve exact namespace/inventory/outcome oracles and original three-minute controls. New compiler/typed helper/platform checks remain under K14B; no SDK execution without root slot.
+
+K38G | DOING | /root/release_testing | NEW isolated /tmp/hayaku-go-ts-release-testing-worktree from af2270e; NEW internal/app/go_typescript_acceptance_test.go only; authored private fixture directories | Existing F01/F02/F05/K11/K31 and native CLI API DONE; independent fixture plan reviewed by /root/release_acceptance | Packaged real Go CLI cold/warm/own change/new-delete/failure/skip/unsupported fallback/corrupt cache/audit controls; independently authenticate receipts against authored outcomes without creating absent caches. No production edits or SDK/native runs until serialized slot. Future TypeScript parity waits for accepted profile/dispatcher.
+
+K10E | DOING | /root production + /root/release_testing independent controls | Root exact internal/native/dynamic.go, backend.go, worker/main.go, NEW managed_runtime_test.go and docs/native-groups.md; tester NEW internal/native/managed_boundary_test.go in isolated testing worktree only | K10D/K10B/K09 DONE; independent reviewer confirms Node22.18 Wasm requests anonymous RWX and endorses explicit trusted compiler TCB rather than an unsupported W^X claim | Add a private sealed managed-compiler operational profile, retain public strict profile and all external denies; immutable Node/V8/framework closure must be producer-owned before future issuer authority. Real Wasm/original parity, strict unchanged denial controls, resource/scratch noexec, drift/cancel/output/cleanup and complete review/gates required. Go retains exclusive SDK slot until drained; K16B adaptation waits for K10E acceptance.
+
+P03 | DOING | /root | NEW task-private Linux controller environment, tool copies, fixture caches and digest-only evidence only; no project source files | P02 exact LinuxGo1.27.1 restored and offline healthy/fault baselines passed; independent reviewer accepts trusted non-root controller with Docker socket excluded from guests | Prepare actual Linux-process/cache acceptance in the existing immutable ARM64 image with identical host-shared paths/TMPDIR. Use an installed pinned Linux Docker client or official verified private SDK. Socket belongs only to trusted development controller; copied native guests receive no controller/compiler/cache/socket. Record actual OS/compiler/UID/filesystem, permission and cleanup controls without required root skips. No global installs, pulls, credentials or hosted CI; serialized SDK slot required.
+
+K10E -> K16B | FROZEN OPERATIONAL HANDOFF | /root | Exact six-file source freeze34848dd7; private captureManagedCompilerProgram and trusted-managed-compiler-v1, boundaryv7; dependent TS five-file candidate only | Independent source review accepted seal/transport/BPF and corrected direct-mmap claim; root checked all ten joined normal/race parent logs with zero skips and empty inventories; composed actual receipt b72cb9750b9bd34034c730a0a9cbefb89e0f5e012b01dd162105d1fc74ce6868 | Unblock operational TypeScript source adaptation and authored acceptance while root composition gates remain pending. No issuer, receipt or CI omission authority. Compiler-profile/transport/worker projection is read-only; separately claimed common inventory/coordinator changes need fresh review and affected gates. Profile/tool/context or boundary production changes invalidate affected operational checks. K10E/K16B stay unfinished until required final composed gates and real Vitest controls pass.
+
+P03 | BASELINE | /root | Private installed Linux Docker27.5.1 ELF copy SHA3e2d3307e386e59268ab1b17c195f5f224b7c616f06c553d22c0d10f90e5e618 from installed immutable image; no network fetch or image pull | Actual non-root Linux UID501/GID20, Go1.27.1 linux/arm64, Docker client27.5.1 connected to server29.4.0; all four bounded controllers joined and removed | Trusted development socket remains outside native guests. Actual final Linux CLI/cache/permission acceptance still pending; baseline does not qualify native omission. Initial missing /usr/bin/docker copy retained; corrected installed /usr/local/bin/docker source copied and byte-pinned.

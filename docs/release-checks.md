@@ -1,3 +1,91 @@
+# v0.6.0 local release candidate
+
+Local core and native acceptance passed; no v0.6.0 tag or release has been published.
+The restricted Go profile uses Go 1.27.1 on macOS ARM64 and Linux ARM64.
+TypeScript/Vitest uses the fixed Linux ARM64 runtime from either controller.
+The other four archive targets are build-only; Windows runtime qualification is
+not part of this release.
+
+The final 48-file projection `a6cfa9bd` freezes 312 code files and 519 donor
+entries. The shared coordinator, private producers, complete inventories,
+authenticated reuse, full original fallback and transactional enrollment passed
+independent source review. See [supported profiles](go-typescript-native.md)
+for the exact syntax, runner, toolchain and platform limits.
+
+The current full repository gates passed and were independently reviewed:
+
+| Gate | Seconds | Result |
+| --- | ---: | --- |
+| `go test -count=1 -p=1 ./...` | 853.753 | 38 passing packages, three packages without tests; 2,030 passing test terminals |
+| `go test -race -count=1 -p=1 ./...` | 1508.262 | Same package/test counts; no race reports |
+| `go vet ./...` | 2.272 | Exit zero, empty output |
+
+Each repository test run also records 204 optional test skips. The mandatory
+installed-runner phases require every specified terminal to pass without skips;
+repository skips do not count as native acceptance. The core source, SDK, tools
+and exact two offline module guards matched before/after, and all four owned
+process groups drained. Core aggregate: `83252cb5`.
+
+Current-source TypeScript normal acceptance passed on both controllers:
+Linux in 1339.400 seconds and macOS in 1163.187 seconds. Each has eight mandatory
+acceptance terminals, 32 measured CLI steps and three empty joined container
+inventories. Both results are independently reviewed. The controller stopped
+before the first race result; its cause is unknown. Its aggregate `cfb641e9`
+remains interrupted, and no missing result is inferred from an empty log.
+A separate finite drain closure confirms its process group is absent, no task
+containers remain and unrelated containers are preserved.
+
+A reviewed continuation completed the six missing phases in a new owner:
+
+| Gate | Seconds | Mandatory terminals / measured CLI steps |
+| --- | ---: | ---: |
+| Linux TypeScript race | 1161.659 | 8 / 32 |
+| macOS TypeScript race | 1057.985 | 8 / 32 |
+| Linux source certifier normal | 79.904 | 61 / 0 |
+| Linux source certifier race | 194.073 | 61 / 0 |
+| Linux targeted vet | 8.081 | 0 / 0 |
+| macOS targeted vet | 5.315 | 0 / 0 |
+
+Every required terminal passed without skips, failures or race reports. Each
+phase joined its command and three empty post-run container inventories. Current
+source, SDK, tool and exact offline module guards matched the completed normal
+results before carrying them and matched again after execution. All 33 helper
+commands joined with exit zero; final inventories are empty and detached
+PID/PGID 95373 is absent. Independent review `43be6f27` accepts the separate
+logical eight-phase proof `9c17b938`; fresh-six aggregate `883ae328` passed with
+no post failures. Interrupted aggregate `cfb641e9` remains unchanged.
+
+The whole matrix is 21 completed obligations: three current core gates, eight
+current native checks and ten explicitly impact-qualified historical behavior
+checks. The ten are eight Go CLI normal/race checks across both hosts and two
+macOS source-certifier checks. The changed symlink-copy branch is unreachable
+with their authored inputs; independent source review and matching current
+relevant inputs support this reuse. Root composition `8e312b1f` records exactly 304 mandatory native
+acceptance terminals and 164 measured typed Go/TypeScript CLI steps. Terminal
+counts include parent and nested acceptance tests; they are not 304 separate
+public CLI scenarios. Race runs instrument the harness/core/providers while the
+CLI under test is compiled normally.
+
+Measured fixture costs do not establish representative speedup. The current
+TypeScript lifecycle cold/warm costs are 52.285/26.192 seconds on Linux and
+58.725/30.042 seconds from macOS. The Linux forced full audit costs 1.271 seconds;
+these tiny fixtures run faster in full than through qualification and reuse.
+All capture/build/collection/audit costs are included in CLI step timings.
+
+Earlier failed attempts and their immutable logs are retained as history.
+They exposed an acceptance-helper scope error, a read-only Linux module cache,
+a missing task-owned Linux client, and copied symlink permission differences.
+The portable copy fix preserves source manifests and exact file/directory
+permissions while checking link type, target and containment. Its normal/race
+regressions and vet passed. A separate core-driver environment error was repaired
+without changing product behavior. Failed and interrupted aggregates remain
+unaccepted even when individual completed results are relevant.
+
+Immutable staged Mori review, signed local source, six archives, extracted ARM64
+smoke checks and authorized task cleanup remain pending. Hosted CI and external
+consumer acceptance are separate. Published v0.5.1 evidence below does not
+qualify this candidate.
+
 # v0.5.1 release checks
 
 ## Local source acceptance, 2026-10-05

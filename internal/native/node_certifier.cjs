@@ -51,6 +51,9 @@ function certify(ts, files, tests, emitted) {
     if (!/^\.\.?\/[A-Za-z0-9_./-]+\.(?:js|ts)$/.test(spec)) fail();
     const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(file), spec));
     if (resolved.startsWith('../') || resolved.startsWith('/')) fail();
+    // Framework TS remapping can precede a real .js file. Ambiguous compiler
+    // and framework choices must retain the complete original scope.
+    if (resolved.endsWith('.js') && Object.hasOwn(files, resolved) && Object.hasOwn(files, resolved.slice(0, -3) + '.ts')) fail();
     if (Object.hasOwn(files, resolved)) return resolved;
     if (resolved.endsWith('.js') && Object.hasOwn(files, resolved.slice(0, -3) + '.ts')) return resolved.slice(0, -3) + '.ts';
     fail();
@@ -233,7 +236,9 @@ function certify(ts, files, tests, emitted) {
     semantic.push([mod.file, mod.imports, mod.canonical, functions, caseTrees]);
   }
   if (!cases.length) fail();
-  return { cases, semantic, cost: totalCost, nodes: nodeCount };
+  const dependencies = Object.fromEntries([...modules].map(([file, mod]) =>
+    [file, [...new Set(mod.imports.map(item => item[0]).filter(target => target !== 'vitest'))].sort()]));
+  return { cases, semantic, dependencies, cost: totalCost, nodes: nodeCount };
 }
 
 try {
@@ -262,7 +267,7 @@ try {
   }
   const second = certify(ts, emitted, input.tests, true);
   if (JSON.stringify(original.semantic) !== JSON.stringify(second.semantic) || JSON.stringify(original.cases) !== JSON.stringify(second.cases)) fail();
-  const result = { schema: 1, version: input.version, parserVersion: ts.version, nodeVersion: process.versions.node, cases: original.cases, semanticDigest: hash(original.semantic), emittedDigest: hash(emitted), emitterDigest: hash(options), cost: original.cost, nodes: original.nodes };
+  const result = { schema: 1, version: input.version, parserVersion: ts.version, nodeVersion: process.versions.node, cases: original.cases, dependencies: original.dependencies, semanticDigest: hash(original.semantic), emittedDigest: hash(emitted), emitterDigest: hash(options), cost: original.cost, nodes: original.nodes };
   fs.writeSync(1, JSON.stringify(result) + '\n');
 } catch {
   fs.writeSync(2, 'Node source certification rejected\n');

@@ -3,14 +3,16 @@
 `hayaku catalog` separates language/framework, native collection, report format,
 selection granularity and assurance. The catalog is a capability map, not a
 claim that every framework/version/platform is natively implemented or qualified
-to skip. Original native full commands remain required.
+to skip. Ordinary native plans preserve original full commands. The separate
+[Go/Vitest native candidate](go-typescript-native.md) uses private, finite
+compiler/runtime profiles; its composed acceptance status is recorded separately.
 
 ## Native evidence integrations
 
 | Runner | Evidence and proposal scope | Version/fixture boundary |
 | --- | --- | --- |
 | Go `testing` | Package/import/embed/build graph, package proposal, native execution/shadow | Installed Go context/tool bytes; cgo/runtime influence remains unqualified |
-| Vitest | Configured Vite graph, file/project proposal, native results/shadow, additive runtime observations and separate case collection | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; Node 22.18.0 fixture. Fourth pair: new AST/closure adapter checks and application aggregate712.177s passed; latter preceded only legacy-specific deltas. Locked CI fixture and renewed older graph acceptance outstanding. New collection path admits only fourth pair |
+| Vitest | Configured Vite graph, file/project proposal, native results/shadow, additive runtime observations and separate case collection | Exact 3.2.7/6.4.3, 4.1.11/7.3.1, 4.1.11/8.1.5 and 4.1.11/8.2.2 Vitest/Vite pairs; Node 22.18.0 fixture. Fourth pair: new AST/closure adapter checks and application aggregate712.177s passed; latter preceded only legacy-specific deltas. Renewed local macOS configured-graph acceptance passed all older pairs; the new collection path admits only the fourth pair. Hosted CI acceptance remains separate |
 | Node `node:test` | Explicit-file collection with bodies suppressed; native whole-file execution | Exact Node 22.18.0 and 25.2.1 gates/fixtures |
 | Python unittest | Native `TestLoader`, including `load_tests`, module scope and terminal results | Stable APIs accepted for Python 3.11–3.14; actual fixture 3.14.7 |
 | pytest | Collection and fixture-aware terminal execution, whole-file scope | Hook protocol 7–9 accepted; actual fixture 9.0.2 |
@@ -88,7 +90,8 @@ and run terminals; cancellation/repetition reject. Rust libtest/nextest format
 binaries separately. Upstream Rust JSON support is experimental.
 
 Native imported outcomes, catalogs and observations are not authenticated capsule
-receipts. See [qualification](qualification.md) for future native boundaries and
+receipts. See [qualification](qualification.md) for native boundaries and
+[restricted native profiles](go-typescript-native.md) for producer-owned group reuse, and
 [capsules](capsules.md) for the separate enforced contract that can reuse passes.
 
 ## Native nextest inventory

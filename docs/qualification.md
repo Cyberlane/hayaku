@@ -2,6 +2,13 @@
 
 Native affected-test plans authorize original full suites. No finite trace, mutation score or configuration declaration authorizes native omission. The separate [WASI capsule contract](capsules.md) permits whole-suite pass reuse because guest capabilities and inputs are enforced, not because native observations happened to pass.
 
+The separate [Go/Vitest native candidate](go-typescript-native.md) admits only
+its reviewed finite compiler/framework profiles through private producers.
+Qualified unchanged package/file groups may reuse complete authenticated passes;
+unsupported influence executes the complete configured original scope. Source
+summaries, discovery, input envelopes and passing comparisons alone cannot issue
+that authority. Final local acceptance and publication remain separate gates.
+
 `internal/qualification.Compare` validates observations; its `valid` field means comparable observations. `internal/metrics.Compare` similarly validates cost comparability. Neither utility grants execution authority or native qualification.
 
 ## Independent observations
@@ -16,7 +23,7 @@ Strict imported report reconciliation requires independent expected identities a
 
 | Boundary | Regression challenges | Interpretation |
 | --- | --- | --- |
-| Native selection | Hidden dynamic dependency, old/new influence, new/deleted tests, setup/hooks, aliases and conflicting/missing results | Proposals broaden or fail; original full gates remain |
+| Native selection | Hidden dynamic dependency, old/new influence, new/deleted tests, setup/hooks, aliases and conflicting/missing results | Proposals broaden or fail; unsupported private producer profiles execute original scopes |
 | Input capture | New/deleted/missing inputs, byte/mode/link drift, linked targets, escapes/cycles, collisions, size/depth limits and cancellation | Incomplete capture/materialization never succeeds |
 | WASI capabilities | Forbidden imports/host calls, outside/missing file access, attempted writes, entropy/clocks, memory/table/output bounds and cancellation | Unsupported effects trap; no reusable pass |
 | Receipt authority | Forged/foreign/tampered/duplicate metadata, changed backend/producer/input context, unsafe cache paths and unavailable cache | Invalid/unavailable cache executes again |
@@ -33,4 +40,4 @@ Enforcement establishes the narrow guest contract; tests challenge implementatio
 
 [Measurements](measurements.md) count capture, identity validation, planning, compilation, evidence and startup costs. Match source/input/runner/environment/platform/suite identities and upstream cache state. Keep full shadow cost separate from reuse savings; a Turbo hit is not a Hayaku gain. Record cold/warm conditions and negative savings. The self-pilot measures a separate WASI graph suite and does not establish representative consumer savings.
 
-Native case-level narrowing still requires a sound adapter-specific algorithm accounting for collection, initialization, fixtures, dispatch, order, parameterization, resources, subprocesses and services, plus enforced input/isolation boundaries. Unknown influence rounds out to the containing suite. Historical coverage can add candidates but cannot prune the required envelope. Native context acceptance, rollback/full-audit policy and consumer rollout remain explicit future work.
+Native case-level narrowing still requires a sound adapter-specific algorithm accounting for collection, initialization, fixtures, dispatch, order, parameterization, resources, subprocesses and services, plus enforced input/isolation boundaries. Unknown influence rounds out to the containing suite. Historical coverage can add candidates but cannot prune the required envelope. The restricted private Go/Vitest group contract implements full audits and revocation; its final composed acceptance is recorded in [implementation status](implementation-status.md). Broader native contexts, case-level qualification and consumer rollout remain future work.

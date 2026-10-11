@@ -14,9 +14,11 @@ import (
 	"go/token"
 	"go/types"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"sort"
 	"strconv"
@@ -38,6 +40,7 @@ const ClosureVersion = "go-compiler-closure-v1"
 // startup effects and scopes without cases retain explicit gaps.
 type Closure struct {
 	Version, Digest, SourceDigest, ToolchainDigest, ContextDigest string
+	TypedDigest                                                   string
 	Packages                                                      []ClosurePackage
 	Scopes                                                        []model.Unit
 	Inventory                                                     model.ExecutionInventory
@@ -47,6 +50,7 @@ type Closure struct {
 	Effects                                                       []model.Effect
 	Gaps                                                          []model.Gap
 	artifacts                                                     []closureArtifact
+	typed                                                         *typedFactTable
 }
 
 type closureArtifact struct {
@@ -56,6 +60,9 @@ type closureArtifact struct {
 
 type ClosurePackage struct {
 	ID, ImportPath, ForTest, Directory, ExportDigest, SemanticDigest string
+	ModulePath, ModuleVersion, GoVersion                             string
+	Replaced                                                         bool
+	ImportMap                                                        map[string]string
 	Standard, Root, TestBinary                                       bool
 	Imports, ActiveSources                                           []string
 	// Private copies for a subsequent source certifier. Contents never serialize.
@@ -87,15 +94,31 @@ func closureDigest(value any) string {
 // resolves variants and exports offline; the importer may open only copied
 // export bytes returned by that invocation, never ambient source paths.
 func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace, execution model.Context) (Closure, error) {
+	return resolveClosure(ctx, snapshotRoot, w, execution, nil)
+}
+
+// ResolveClosureEnvironment records the exact offline native build environment.
+// It supplies descriptive facts only; it never grants runtime authority.
+func ResolveClosureEnvironment(ctx context.Context, snapshotRoot string, w model.Workspace, execution model.Context, env []string) (Closure, error) {
+	if !nativeClosureEnvironment(env, execution) {
+		return Closure{}, errors.New("unsupported native Go closure environment")
+	}
+	return resolveClosure(ctx, snapshotRoot, w, execution, slices.Clone(env))
+}
+
+func resolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace, execution model.Context, supplied []string) (Closure, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	c := Closure{Version: ClosureVersion, Inventory: model.ExecutionInventory{Schema: model.ExecutionSchema}}
+	c := Closure{Version: ClosureVersion, Inventory: model.ExecutionInventory{Schema: model.ExecutionSchema}, typed: &typedFactTable{facts: map[BindingKey]Binding{}}}
 	if w.ID == "" {
 		return c, errors.New("Go closure requires a workspace identity")
 	}
 	flags, patterns, err := commandParts(w)
 	if err != nil {
 		return c, err
+	}
+	if supplied != nil {
+		flags = append([]string{"-buildvcs=false"}, flags...)
 	}
 	root, err := filepath.Abs(snapshotRoot)
 	if err != nil {
@@ -113,9 +136,12 @@ func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace,
 	if !within(root, dir) {
 		return c, errors.New("Go closure cwd escapes snapshot")
 	}
-	env, err := ExecutionEnvironment(ctx, root, w, execution)
-	if err != nil {
-		return c, err
+	env := supplied
+	if env == nil {
+		env, err = ExecutionEnvironment(ctx, root, w, execution)
+		if err != nil {
+			return c, err
+		}
 	}
 	flags, err = closureModuleFlags(ctx, root, dir, w, env, flags)
 	if err != nil {
@@ -156,6 +182,11 @@ func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace,
 		c.artifacts = append(c.artifacts, closureArtifact{filename, closureDigest(data), 256 << 20})
 	}
 	c.ToolchainDigest = closureDigest(toolDigests)
+	c.typed.root = root
+	c.typed.checker = runtime.Version()
+	c.typed.compiler = tools.GOVERSION
+	c.typed.arch = environmentValue(env, "GOARCH")
+	c.typed.compatible = typedCheckerCompatible(tools.GOVERSION, c.typed.arch, env)
 	c.ContextDigest = closureDigest(struct {
 		Workspace     model.Workspace
 		Execution     model.Context
@@ -237,6 +268,11 @@ func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace,
 		p := listed[id]
 		owner := w.ID + ":" + id
 		cp := ClosurePackage{ID: owner, ImportPath: id, ForTest: p.ForTest, Standard: p.Standard, TestBinary: isTestBinary(p.listedPackage), Root: !p.DepOnly && p.ForTest == "" && !isTestBinary(p.listedPackage), Sources: map[string][]byte{}}
+		cp.ImportMap = maps.Clone(p.ImportMap)
+		if p.Module != nil {
+			cp.ModulePath, cp.ModuleVersion, cp.GoVersion = p.Module.Path, p.Module.Version, p.Module.GoVersion
+			cp.Replaced = p.Module.Replace != nil
+		}
 		if cp.Root {
 			roots[id] = model.Unit{ID: owner, Workspace: w.ID, Selector: id, Kind: "go-package"}
 		}
@@ -430,7 +466,7 @@ func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace,
 			return io.NopCloser(bytes.NewReader(data)), nil
 		})
 		metadata := listed[cp.ImportPath]
-		config := types.Config{Importer: closureImporter{base: base, mapping: metadata.ImportMap}, Sizes: types.SizesFor("gc", environmentValue(env, "GOARCH")), Error: func(error) {}}
+		config := types.Config{GoVersion: moduleLanguageVersion(cp.GoVersion), Importer: closureImporter{base: base, mapping: metadata.ImportMap}, Sizes: types.SizesFor("gc", environmentValue(env, "GOARCH")), Error: func(error) {}}
 		if config.Sizes == nil {
 			gap("typed-semantics-unavailable", cp.ID)
 			continue
@@ -449,6 +485,11 @@ func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace,
 		}
 		sort.Strings(bindings)
 		cp.SemanticDigest = closureDigest(bindings)
+		if c.typed.compatible && config.GoVersion != "" {
+			if err := c.typed.retain(ctx, *cp, fset, info); err != nil {
+				return c, err
+			}
+		}
 		unit, isRoot := roots[metadata.ForTest]
 		if !isRoot {
 			continue
@@ -537,6 +578,7 @@ func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace,
 			c.InventoryComplete = false
 		}
 	}
+	c.TypedDigest = c.typed.digest()
 	c.Digest = closureDigest(c)
 	if err := RevalidateClosure(ctx, root, c); err != nil {
 		return c, err
@@ -547,6 +589,9 @@ func ResolveClosure(ctx context.Context, snapshotRoot string, w model.Workspace,
 // RevalidateClosure rejects snapshot drift. This observes current state, not
 // transient writes or external influence; it grants no runtime qualification.
 func RevalidateClosure(ctx context.Context, root string, c Closure) error {
+	if c.typed != nil && c.TypedDigest != c.typed.digest() {
+		return errors.New("Go closure private typed facts changed")
+	}
 	want := c.Digest
 	c.Digest = ""
 	if want == "" || closureDigest(c) != want {

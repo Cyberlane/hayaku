@@ -27,6 +27,10 @@ import (
 // Runtime capture supplies operational inputs, never runtime-equivalence proof.
 const DynamicFileLimit int64 = 256 << 20
 const dynamicPolicy = "native-dynamic-manual-loader-v3"
+
+// This private profile trusts the captured compiler's generated code. It does
+// not prove code provenance or grant test qualification or receipt authority.
+const managedCompilerProfile = "trusted-managed-compiler-v1"
 const dynamicLibraryLimit = 128
 
 type RuntimeLibrary struct{ Name, Path string }
@@ -66,6 +70,7 @@ type DynamicProgram struct {
 	primary *dynamicFile
 	runtime *Runtime
 	args    []string
+	profile string
 	seal    string
 	closed  atomic.Bool
 	cleanup *dynamicDirectory
@@ -642,6 +647,20 @@ func (r *Runtime) Close() error {
 }
 
 func CaptureDynamicProgram(ctx context.Context, request DynamicProgramRequest) (result *DynamicProgram, err error) {
+	return captureDynamicProgram(ctx, request, "")
+}
+
+// Only an internal producer can select this operational compiler profile. The
+// eventual issuer must independently admit the exact compiler/framework closure
+// and closed user grammar; public capture and caller hashes cannot select it.
+func captureManagedCompilerProgram(ctx context.Context, request DynamicProgramRequest) (*DynamicProgram, error) {
+	return captureDynamicProgram(ctx, request, managedCompilerProfile)
+}
+
+func captureDynamicProgram(ctx context.Context, request DynamicProgramRequest, profile string) (result *DynamicProgram, err error) {
+	if profile != "" && profile != managedCompilerProfile {
+		return nil, errors.New("unknown dynamic compiler profile")
+	}
 	if err = ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -699,7 +718,7 @@ func CaptureDynamicProgram(ctx context.Context, request DynamicProgramRequest) (
 			}
 		}
 	}
-	p := &DynamicProgram{dir: dir, primary: primary, runtime: runtime, args: append([]string(nil), request.Args...), cleanup: cleanup}
+	p := &DynamicProgram{dir: dir, primary: primary, runtime: runtime, args: append([]string(nil), request.Args...), profile: profile, cleanup: cleanup}
 	p.root, err = os.Lstat(dir)
 	if err == nil && (!p.root.IsDir() || p.root.Mode() != created.Mode() || !os.SameFile(created, p.root)) {
 		err = errors.New("dynamic program private directory replaced")
@@ -717,10 +736,14 @@ func (p *DynamicProgram) currentDigest() string {
 	if p == nil || p.primary == nil || p.runtime == nil {
 		return ""
 	}
-	return identity([]any{dynamicPolicy, p.dir, physicalDynamicInfo(p.root), p.primary.binding(), p.runtime.currentDigest(), p.args, p.closed.Load()})
+	data := []any{dynamicPolicy, p.dir, physicalDynamicInfo(p.root), p.primary.binding(), p.runtime.currentDigest(), p.args, p.closed.Load()}
+	if p.profile != "" {
+		data = append(data, p.profile)
+	}
+	return identity(data)
 }
 func (p *DynamicProgram) Verify(ctx context.Context) error {
-	if p == nil || p.closed.Load() || p.seal == "" || p.currentDigest() != p.seal || validateNativeArguments(p.args, nil) != nil {
+	if p == nil || p.closed.Load() || p.seal == "" || (p.profile != "" && p.profile != managedCompilerProfile) || p.currentDigest() != p.seal || validateNativeArguments(p.args, nil) != nil {
 		return errors.New("dynamic program private identity changed")
 	}
 	if err := p.runtime.Verify(ctx); err != nil {
@@ -1231,6 +1254,7 @@ func RunDynamicProgram(ctx context.Context, b Backend, p *DynamicProgram, e *Env
 type dynamicInvocation struct {
 	Loader          string `json:"loader"`
 	ResourcesDigest string `json:"resources_digest"`
+	CompilerProfile string `json:"compiler_profile,omitempty"`
 }
 
 // Copied controller/configuration files are part of the same launch context,

@@ -1,4 +1,10 @@
-# Restricted native Go groups (unreleased)
+# Restricted native groups (v0.6.0 candidate)
+
+Go and TypeScript/Vitest share authenticated group reuse, complete inventories,
+audits and full original fallback. See [enrollment and profiles](go-typescript-native.md)
+for the configured workspace workflow and [implementation status](implementation-status.md)
+for final acceptance. The legacy explicit-Go-package configuration below remains
+supported. Public source/capture summaries grant no omission authority.
 
 `hayaku native` can skip execution of an unchanged **qualified pure Go package**
 by reusing its authenticated complete pass. It compiles and executes actual
@@ -39,20 +45,25 @@ been established for representative consumers.
 
 ## Qualification and fallback
 
-The first certifier accepts a small, deliberately conservative subset:
+The Go certifier accepts a small, deliberately conservative subset:
 
 - A complete package source map, including same-package and external test
   namespaces; no mutable package globals, initialization hooks, methods or native
   object files. Both namespaces must meet the same closed pure-source whitelist.
 - Direct local function calls, scalar/string/array/slice computation, constants,
   loops and ordinary control flow. The exact syntax is a whitelist in source.
-- Only `testing` imports in test files, conventional test signatures and a fixed
+- Compiler-resolved acyclic imports of admitted local pure helpers, including
+  supported external test namespaces. Selected variants, typed declarations and
+  reachable input bytes bind each package; dormant code is checked too.
+- A compiler-selected literal read-only string `go:embed` fixture with complete
+  input and use accounting. Byte slices, embed.FS, globs and general setup reject.
+- Conventional test signatures, `testing` imports and a fixed
   set of assertion/status methods. Testing handles and function/method values
   cannot escape. No subtests, parallel tests, test logging or `TestMain`.
 
-Other imports, clocks, entropy, files/directories/probes, services, subprocesses,
-reflection, unsafe code, concurrency, maps, compiler directives and unknown
-syntax are unqualified. They run the complete original-host package command
+Unknown or external imports, clocks, entropy, general files/directories/probes,
+services, subprocesses, reflection, unsafe code, concurrency, maps, unsupported
+compiler directives and unknown syntax are unqualified. Legacy packages run the complete original-host package command
 (`go test -json -count=1 <package>`) every time. An unavailable platform also
 runs those complete commands; incomplete native execution evidence broadens to
 the complete original-host group. Cancellation and live source drift prevent
@@ -67,9 +78,12 @@ process diagnostics or environment values are included in reports.
 
 This command is a separate, restricted execution contract. It does not replace
 ordinary `hayaku run` full native gates, certify equivalence with arbitrary
-native commands, or qualify other languages/frameworks. An explicit package
-list cannot authorize omissions from an existing broader CI suite. Independent
-review and consumer CI acceptance remain outstanding.
+native commands. Typed workspaces run their complete configured original command
+once when admission is unavailable; custom flags, environment, prerequisites and
+recursive selectors retain that scope. The separate fixed Vitest profile uses
+file groups and its own private compiler/framework admission. An explicit package
+list cannot authorize omissions from an existing broader CI suite. Final composed
+evidence review and consumer CI acceptance remain outstanding.
 
 ## Restricted macOS context
 
@@ -124,7 +138,7 @@ and overflowing runs are removed with a bounded cleanup context.
 metadata probes are not virtualized. Landlock is not a complete metadata-probe
 filter. Self-exec of the same permitted program is also not a deterministic
 computation guarantee. Those behaviors cannot qualify through this backend
-alone; the Go certifier excludes them. The trusted Go runtime/testing library
+alone; the Go and fixed Vitest source certifiers exclude user access to them. The trusted Go runtime/testing library
 still uses operational clocks, entropy and threads internally. Receipts certify
 functional test outcomes within the restricted contract, not wall-clock timing,
 host-load behavior, absence of operating-system bugs or arbitrary program safety.
@@ -181,8 +195,9 @@ Actual static C and Rust controls, repeated startup, exact-limit/overflow cases,
 resource totals, cancellation, alias retargeting and source/copy drift passed on
 Linux arm64. The API returns raw operational results and cannot issue receipts.
 Ignored denials, observable clocks/entropy/metadata and self-execution remain
-outside qualification. `Execute` rejects every nonnil envelope before
-provider authority, cache lookup or audit. This API does not qualify an arbitrary runner or make
+outside qualification. `Execute` rejects an envelope without its matching private
+producer launch before cache lookup or audit. Public envelope capture supplies no
+producer authority. This API does not qualify an arbitrary runner or make
 an installed static CLI's process orchestration supported.
 
 ## Operational dynamic program transport
@@ -220,6 +235,28 @@ startup changes Node's executable-path observations. JIT, arbitrary interpreter
 modes, ordinary runtime equivalence and native test-provider qualification remain
 unqualified. These APIs return raw operational results with no decoder, cache,
 proof or receipt authority.
+
+An additional unreleased **private trusted managed compiler profile** has local
+operational controls for pinned Node/V8 and the closed Vitest toolchain. Public capture
+continues to use the strict executable-memory policy above. The private profile
+binds its name into the captured program and retained invocation contract. It
+admits anonymous executable memory, including simultaneous write/execute pages,
+and executable permission transitions required by the trusted compiler. It does
+not establish W^X or identify the origin of generated instructions. The exact
+compiler, framework, transitive modules and captured addons must be reviewed
+trusted components; hashes supplied by callers cannot grant test authority.
+
+Direct file-backed `mmap` write/execute requests remain denied. Managed permission
+transitions do not identify the backing origin: private runtime mappings may
+become writable/executable within the trusted compiler contract. Runtime mounts remain readonly;
+resource and scratch mounts remain noexec. Network, foreign process creation,
+memfd, outside filesystem access and extra runtime files remain denied. Source,
+profile and transport drift, cancellation, output overflow or cleanup errors
+invalidate completion. Ten managed-boundary normal/race phases and six locked
+Vitest operational phases passed on the Linux ARM64 backend controlled from
+macOS. Private TypeScript issuance is implemented; its composed acceptance,
+final repository checks and Linux-host CLI acceptance remain separate gates.
+The operational profile does not authorize omission by itself.
 
 Additional installed Linux arm64 normal/race controls check consumed chmod and
 extended-attribute effects, self process-memory access, SCM_RIGHTS descriptor

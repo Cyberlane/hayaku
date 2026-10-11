@@ -8,7 +8,7 @@ that may be affected, and explains its recommendations. Review the test commands
 see what Hayaku could not establish, and compare experimental recommendations
 against a full test run.
 
-**Your normal test suite still runs in full.** Hayaku does not skip native Go,
+**The ordinary plan/run/shadow workflow runs your suite in full.** It does not skip native Go,
 JavaScript, Python, browser, or service tests based on a recommendation, a trace,
 or a confidence score. When information is incomplete, it keeps the full run or
 stops planning. See [how test decisions work](docs/safety.md).
@@ -20,10 +20,11 @@ suites run with controlled inputs and restricted access to your computer. Reuse
 requires unchanged code, inputs, and execution settings; it does not replace or
 prove the result of your normal test suite.
 
-**Unreleased source work adds restricted native Go group reuse.** `hayaku native`
-can reuse unchanged passes for a statically checked pure subset under a Linux
-input boundary. Unsupported groups execute in full. This does not replace normal
-native CI gates; see [native groups](docs/native-groups.md).
+**The unreleased v0.6.0 candidate focuses on Go and TypeScript/Vitest.**
+`hayaku native` shares authenticated group reuse, audits and complete original
+fallback across restricted compiler/framework profiles. Local CLI/platform
+acceptance passed; artifact and publication gates remain open. See [candidate setup](docs/go-typescript-native.md)
+and [implementation status](docs/implementation-status.md).
 
 ## Install
 
@@ -160,17 +161,19 @@ See [how performance is measured](docs/measurements.md).
 
 | Test tool | What Hayaku supports | What runs today |
 | --- | --- | --- |
-| Go | Package, import, test, and embedded-file dependencies; full-run comparisons and JSON result checks | Full test suite |
+| Go | Package, import, test, and embedded-file dependencies; full-run comparisons and JSON result checks | Ordinary plans run in full; restricted native candidate can reuse qualified packages |
 | Cargo | Offline, locked package dependencies and Rust result reports | Full test suite |
 | Node test runner, unittest, pytest, Jest, Playwright | Test lists and completed results; every workspace input is treated as potentially affecting every test | Full test suite |
-| Vitest 3.2.7 / 4.1.11 | Three pinned Vitest/Vite pairs; configured JS/TS dependencies, results, full-run comparisons, and observed file reads | Full test suite |
+| Vitest 3.2.7 / 4.1.11 | Four pinned Vitest/Vite pairs; configured JS/TS dependencies, results, full-run comparisons, and observed file reads | Ordinary plans run in full; fixed 4.1.11/8.2.2 native candidate can reuse qualified files |
 | cargo-nextest 0.9.146 | Test binary and case lists, Cargo package recommendations; automatic shadow result checks are not yet supported | Full test suite |
 | JVM, .NET, Apple, Ruby, PHP, Dart/Flutter, C/C++, Bun, Deno, Bazel | Configured full test commands and applicable result reports; no claim of native discovery or filtering | Full test suite |
 | Custom command | Your configured command, regardless of language | Full test suite |
 | WASI capsule | Separate suite with controlled inputs and execution | Reuse a verified whole-suite pass when unchanged |
 
 Use `hayaku catalog` to list integrations and `hayaku doctor` to check installed
-tools. None of the native integrations allow production tests to be skipped.
+tools. Ordinary native plans preserve full execution. The separate Go/Vitest
+native candidate requires the [finite producer contract](docs/go-typescript-native.md)
+and final local acceptance; metadata or recommendations cannot authorize reuse.
 See [supported versions and limitations](docs/runner-support.md) for the difference
 between tested versions, accepted report formats, and full-command integrations.
 

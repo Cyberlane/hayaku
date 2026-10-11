@@ -270,6 +270,13 @@ func TestInstalledGoExternalSubjectImportAndDormantEffectBroaden(t *testing.T) {
 			}
 			g := r.Groups[0]
 			assertExternalOutcomes(t, g, "pass", "pass")
+			if fault == "subject-import" {
+				externalNativeGroup(t, r, err, config, 0, "pass", "pass")
+				if (attempt == 0) != g.Executed || (attempt == 1) != g.Reused {
+					t.Fatal("closed typed subject import did not execute then reuse")
+				}
+				continue
+			}
 			if g.Qualified || g.Reused || !g.Executed || g.Context != "original-host" || g.Reason == "" {
 				t.Fatal("subject import or dormant external effect acquired pure authority")
 			}

@@ -56,17 +56,19 @@ func runNative(ctx context.Context, args []string, out, errout io.Writer) (statu
 			}
 		}()
 	}
-	var c native.Config
+	var c native.RunConfig
 	if err = readToolJSON(abs, *name, &c); err != nil {
 		return failure(errout, err)
 	}
-	value, runErr := native.GoWithOptions(ctx, abs, c, options)
-	var current native.Config
+	value, runErr := native.RunWithOptions(ctx, abs, c, options)
+	var current native.RunConfig
 	if readToolJSON(abs, *name, &current) != nil || !reflect.DeepEqual(c, current) || !stableCacheAuthority(ctx, authority) {
 		value.Complete = false
 		value.Passed = false
-		_ = native.RevokeWithOptions(options, value)
-		runErr = errors.New("native configuration changed during execution")
+		for i := range value.Groups {
+			value.Groups[i].Complete, value.Groups[i].Passed, value.Groups[i].Qualified = false, false, false
+		}
+		runErr = errors.Join(runErr, errors.New("native configuration changed during execution"), native.RevokeWithOptions(options, value))
 	}
 	if auditHandle != nil {
 		if err := auditHandle.Check(runErr != nil || !value.Complete || !value.Passed); err != nil {

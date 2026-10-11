@@ -29,8 +29,8 @@ different qualified contexts, which must be explicit in reports and docs.
 | Go local helpers and setup contracts | K14B, K14C, K14 | Compiler-selected typed bindings, dormant-effect rejection and actual original-versus-selected cases |
 | TypeScript/Vitest execution and private issuer | K16B, K16C, K16 | Real Vitest cases under the declared runtime; source-only parser demonstrations are insufficient |
 | Shared selective execution and complete outcomes | K32, K33 | Same selection/reuse/fallback machinery for both languages, no framework branches in the selector |
-| CLI, audits and reproducible acceptance | K35, K36, K37, K38, K39 | Actual packaged-CLI matrix, authenticated cache faults and measured end-to-end costs |
-| Release candidate and handoff | K40 | Versioned artifacts, checksums, documentation and explicit remaining external acceptance |
+| CLI, audits and reproducible acceptance | K35, K36, K37, K38, R06-QA | Actual packaged-CLI matrix, authenticated cache faults and measured fixture end-to-end costs; broader K39 consumer performance remains deferred |
+| Release candidate and handoff | R06-HANDOFF | Versioned artifacts, checksums, documentation and explicit remaining external acceptance; broader K40/K39 dependencies stay open |
 
 K14B/C and K16B/C are release blockers. Existing adapters for other languages
 remain intact; their new implementation and qualification are deferred.
@@ -59,8 +59,10 @@ remain intact; their new implementation and qualification are deferred.
 
 Use three worker slots for independent Go, TypeScript and acceptance/review
 work, with the coordinator owning common execution, registration and integration.
-Claim exact files before edits. Heavy SDK/native acceptance remains serialized;
-source work can proceed independently. Reuse completed evidence on unchanged
+Claim exact files before edits. Heavy SDK/native acceptance uses one lane. A
+separate Docker-free host-core process may run alongside it with private caches
+and temporary directories, the same frozen source and complete input guards.
+Source work can proceed independently. Reuse completed evidence on unchanged
 bytes, and run full repository gates once per meaningful integration batch.
 
 Preserve unfinished other-language work in its existing worktrees. After

@@ -2,11 +2,18 @@
 
 Keep native tests, lint, security, migrations and other original gates. Native graph or collection evidence produces proposals for shadow comparison; it never grants an affected-only native CI run. Deterministic [WASI capsules](capsules.md) are a separate suite contract and can reuse a matching authenticated passing receipt.
 
+The v0.6.0 [Go/Vitest native candidate](go-typescript-native.md) has a separate
+private producer contract. Its finite installed-input acceptance runs on actual
+macOS ARM64 and Linux ARM64 hosts; TypeScript uses the fixed Linux original and
+selected runtime from either controller. Public plans and collection evidence
+cannot enroll an arbitrary command into that contract. Local CI-equivalent
+verification is distinct from hosted CI and consumer acceptance.
+
 ## Native planning and shadow checks
 
 `scripts/ci-shadow.sh` is a reference integration. Set `HAYAKU_BASE` to a locally available comparison commit and `HAYAKU_CANDIDATE` to the exact tested commit. Use a fresh artifact directory under Git metadata for each matrix job. Shadow defaults on; `HAYAKU_FORCE_FULL=1` suppresses the additional proposal challenge and still executes the original full required suite. It cannot enable omissions.
 
-Native execution/collection support includes Go, the pinned [Vitest pairs](vitest.md) and supported [additional runners](runner-support.md). Native contexts remain unqualified for omission. Runner prerequisites, generated source and services that lack a supported immutable native boundary stay in the original pipeline. Planning failure must not become “no tests affected”; an owner can recover by running the original full command while retaining a failed planning gate.
+Native execution/collection support includes Go, the pinned [Vitest pairs](vitest.md) and supported [additional runners](runner-support.md). Ordinary planning/collection contexts do not authorize omission. Runner prerequisites, generated source and services that lack a supported immutable native boundary stay in the original pipeline. Planning failure must not become “no tests affected”; an owner can recover by running the original full command while retaining a failed planning gate.
 
 Do not infer the base from a branch name, PR title, `HEAD~1` or an unavailable remote. Provision required Git objects through normal checkout policy; Hayaku does no fetch. Reports use exclusive-created files and should be access controlled. Save exact source/context identity, native full/shadow outcomes and costs without raw environment values, source contents or diagnostic output.
 
@@ -22,7 +29,19 @@ The receipt authority key belongs to the invoking user. Do not publish it or sha
 
 ## Required development fixtures
 
-The reusable CI workflow defines Linux amd64 and macOS arm64 full Go test/race/vet jobs, three exact Vitest/Vite fixture pairs, installed Node/Python/Jest/Playwright checks, and capsule/input-envelope/metrics/pilot checks. Development dependencies are explicitly provisioned outside the checkout; Hayaku itself installs no runners. Browser-free Playwright fixtures do not establish browser or service isolation. Native application fixtures that require explicit runtime variables skip without them; release CI must supply them and exercise the required cases.
+The reusable CI workflow defines Linux amd64 and macOS arm64 full Go test/race/vet jobs, four exact Vitest/Vite fixture pairs, installed Node/Python/Jest/Playwright checks, and capsule/input-envelope/metrics/pilot checks. Development dependencies are explicitly provisioned outside the checkout; Hayaku itself installs no runners. Browser-free Playwright fixtures do not establish browser or service isolation. Native application fixtures that require explicit runtime variables skip without them; release CI must supply them and exercise the required cases.
+
+For the new private native profiles, provision the exact inputs described in
+[setup](go-typescript-native.md) and set `HAYAKU_NATIVE_IMAGE`,
+`HAYAKU_DYNAMIC_NODE`, `HAYAKU_NODE_CERTIFIER_NODE`, `HAYAKU_VITEST_MODULES`,
+`HAYAKU_NODE_CERTIFIER_TYPESCRIPT`, `HAYAKU_NATIVE_ADDON_ROLLDOWN` and
+`HAYAKU_VITEST_LIBRARY_DIR` to those installed inputs. Run
+`sh scripts/verify-go-typescript-release.sh` from the checkout. This invokes
+the real CLI cache/fallback/audit/mixed-workspace controls and all installed
+source-certifier controls in normal and race modes. Required flags make absent
+inputs fail instead of silently skipping. It performs no installation or fetch.
+Full repository tests/races/vet are separate gates; the ordinary hosted workflow
+does not yet establish this new ARM64 native profile's acceptance.
 
 The capsule pilot captures and compiles the same committed package independently for an uncached baseline and a reusable candidate. CI requires complete passing results and comparable metrics, not a minimum speedup. Remote job acceptance is recorded separately in [release checks](release-checks.md).
 

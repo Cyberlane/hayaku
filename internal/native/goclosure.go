@@ -17,6 +17,7 @@ type GoClosure struct {
 	Evidence                                golang.Closure
 	SourceDigest                            string
 	root, source, temporary, evidenceDigest string
+	closed                                  bool
 }
 
 func CaptureGoClosure(ctx context.Context, root string, workspace model.Workspace, execution model.Context) (_ *GoClosure, err error) {
@@ -59,14 +60,14 @@ func CaptureGoClosure(ctx context.Context, root string, workspace model.Workspac
 // Directory is a private build path, never report evidence or a runner context
 // equivalence claim. Only trusted in-process builders should use it.
 func (c *GoClosure) Directory() string {
-	if c == nil {
+	if c == nil || c.closed {
 		return ""
 	}
 	return c.source
 }
 
 func (c *GoClosure) Revalidate(ctx context.Context) error {
-	if c == nil || c.temporary == "" || c.Evidence.Digest != c.evidenceDigest {
+	if c == nil || c.closed || c.temporary == "" || c.Evidence.Digest != c.evidenceDigest {
 		return errors.New("Go closure capture unavailable or changed")
 	}
 	current, err := treeIdentity(ctx, c.root)
@@ -80,6 +81,7 @@ func (c *GoClosure) Close() error {
 	if c == nil || c.temporary == "" {
 		return nil
 	}
+	c.closed = true
 	err := os.RemoveAll(c.temporary)
 	if err == nil {
 		c.temporary = ""
