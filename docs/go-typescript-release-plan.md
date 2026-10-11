@@ -32,8 +32,11 @@ different qualified contexts, which must be explicit in reports and docs.
 | CLI, audits and reproducible acceptance | K35, K36, K37, K38, R06-QA | Actual packaged-CLI matrix, authenticated cache faults and measured fixture end-to-end costs; broader K39 consumer performance remains deferred |
 | Release candidate and handoff | R06-HANDOFF | Versioned artifacts, checksums, documentation and explicit remaining external acceptance; broader K40/K39 dependencies stay open |
 
-K14B/C and K16B/C are release blockers. Existing adapters for other languages
-remain intact; their new implementation and qualification are deferred.
+K14B/C and K16B/C are complete for the documented initial profiles. All finite
+R06 local gates passed, including independently reviewed archives and cleanup.
+The reproducible local CI-equivalent lane is complete; hosted CI remains open
+and has not run. Existing adapters for other languages remain intact; their new
+implementation and qualification are deferred. Publication requires approval.
 
 ## Required acceptance
 

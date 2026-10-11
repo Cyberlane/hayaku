@@ -1,6 +1,6 @@
 # v0.6.0 local release candidate
 
-Local core and native acceptance passed; no v0.6.0 tag or release has been published.
+All finite local Go/TypeScript release gates passed; no v0.6.0 tag or release has been published.
 The restricted Go profile uses Go 1.27.1 on macOS ARM64 and Linux ARM64.
 TypeScript/Vitest uses the fixed Linux ARM64 runtime from either controller.
 The two AMD64 archive targets are build-only; Windows packaging and runtime
@@ -97,9 +97,42 @@ type is unchanged. Focused packager normal/race/vet passed in 1.883/3.607/0.303
 seconds with unchanged runtime source pins and drained command groups. The
 release workflow uses this ordinary builder; no overlay is required.
 
-Four archives, extracted ARM64 smoke checks and authorized task cleanup remain
-pending. Hosted CI and external consumer acceptance are separate. Published
-v0.5.1 evidence below does not qualify this candidate.
+The ordinary offline builder at signed source commit
+`ad6c4ced88c29e89b37f25587be88ecaf2ed03d0` produced four macOS/Linux archives.
+Build aggregate `7550e7a4` and receipt `4bcd8d6b` passed. Each archive contains
+43 members: the binary and 42 committed documents. Checksums, target headers,
+archive metadata and all four embedded build records passed. Extracted macOS
+ARM64 and Linux ARM64 version/help/catalog smokes passed; Linux kernel and
+non-root UID controls passed. AMD64 remains build-only. Verifier `d1eeea2f`
+records 36 joined successful commands, matching source/artifact/tool guards,
+five removed owned containers and an empty final inventory. Independent
+artifact review `478231e4` accepts the build, smokes and read-only drain.
+
+Private release-helper failures remain immutable unaccepted history: a build-info
+check initially rejected the correct commit-derived Go module version, and the
+Docker launcher initially used OrbStack's internal binary name and a private
+configuration missing its context metadata. Exact module/time checks, the
+selected Docker alias and a credential-free context for the existing local daemon
+corrected those checks. Product runtime code and accepted runtime gates were
+unchanged; the passed build was reused.
+
+All 139 obsolete task-owned payloads were removed after eight complete preflights
+and a cross-scope uniqueness/overlap check. Cleanup removed 10,115,891,346 logical
+bytes (9.42 GiB); directory allocation totals are 10,882,138,112 bytes and do not
+establish an equivalent APFS free-space gain. All eight cleanup helpers joined
+successfully, original paths are absent and no quarantine remains. Release
+archives, proof metadata, source worktrees and deferred language inputs remain.
+Independent cleanup review `8880e921` rechecked all removals, helper joins,
+retained copies and unchanged final assets.
+The retained index before deletion contains 921 byte-pinned records; original
+mandatory provenance copy fields are preserved. Earlier refused preflights are
+retained, including a strict file-mode metadata mismatch corrected before deletion.
+
+Runtime source is `13084875`; archive source is `ad6c4ced`. This later documentation
+closeout does not change the archived runtime bytes or rebuild the already
+accepted artifacts. Hosted CI, consumer acceptance and publication remain
+separate open actions. Tiny fixtures establish no representative speedup.
+Published v0.5.1 evidence below does not qualify this candidate.
 
 # v0.5.1 release checks
 

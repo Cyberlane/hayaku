@@ -35,12 +35,15 @@ these gates cannot establish representative consumer speedups or hosted acceptan
 | R06-TS | DONE | K10D, K10E, K15, reviewed K16A/B/C handoffs | Fixed Linux ARM64 Vitest runtime, complete source/case graph and private file issuer accepted; unsupported inputs run the exact original command. |
 | R06-CORE | DONE | K31, K48, reviewed K52/K32/K33 handoffs | Shared launch/inventory/cache/audit/outcome engine, retained ownership and transactional enrollment accepted; no public configuration can mint authority. |
 | R06-QA | DONE | Frozen R06-GO, R06-TS, R06-CORE operational handoffs | All 21 core/native obligations passed with 304 mandatory native terminals, 164 measured CLI steps, matching input guards and drained owned processes; independent composition review and canonical staged Mori passed. |
-| R06-HANDOFF | DOING | R06-GO, R06-TS, R06-CORE, R06-QA | Signed runtime source committed; ordinary four-target packager scope corrected and focused checks passed. Four macOS/Linux archives/checksums, actual ARM64 archive smoke checks and disposable-task cleanup remain. |
+| R06-HANDOFF | DONE | R06-GO, R06-TS, R06-CORE, R06-QA | Signed runtime source `13084875` and ordinary packager source `ad6c4ced`; four archives/checksums and actual ARM64 smokes accepted by review `478231e4`. All 139 obsolete payloads removed after complete guarded preflights; 9.42 GiB logical bytes removed, evidence and release files retained. Local publication preparation complete. |
 
-Publication is a separate authorized action after the local handoff. The two
-AMD64 archives are build-only targets; the v0.6.0 artifact checks are pending.
-Windows packaging and runtime qualification are deferred. Subsequent language releases require their own
-scoped acceptance gates.
+Publication awaits explicit approval after the completed local handoff. The two
+AMD64 archives passed build-only verification; ARM64 archive smokes ran on both
+platforms. Windows packaging and runtime qualification are deferred. Subsequent
+language releases require their own scoped acceptance gates.
+
+Hosted CI: **OPEN, not run**. External consumer acceptance: **OPEN**. These are
+separate from the completed K37 local CI-equivalent lane and R06 local gates.
 
 ## Board rules
 
@@ -99,27 +102,24 @@ remain authoritative if this board drifts.
 
 ## READY
 
+These dependency-satisfied future cards have no active assignment. New runner
+work waits for the next scoped release; consumer changes require authorization.
+
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
+| K17 | JS | K16, K02 | Node test affected execution | Account for runner collection, hooks, module loading, concurrency and exact terminal inventory using common qualification/reuse machinery. |
+| K18 | JS | K16, K02 | Jest affected execution | Account for configured transforms, resolution, mocks, setup, snapshots and process scopes; reject unsupported plugin behavior and snapshot update modes. |
+| K39 | QA | K37, K38, P02 | Compatibility and performance acceptance | Run actual declared versions/platforms and representative consumer workloads; record cold/warm end-to-end costs including capture/build/audits and negative savings. Unsupported modes demonstrably fall back. |
 | K22 | PYTHON | K21, K06, K10 | Python runtime and pytest/unittest qualification | Actual interpreter, native extension, subprocess and resource effects meet the supported boundary; both runners pass common and native-specific acceptance cases. |
 | K24 | RUST | K23, K06, K10 | Rust runtime and Cargo/nextest qualification | Supported actual binaries have enforced input boundaries and reconciled outcomes; filtering and runtime effects preserve full-command semantics or fall back. |
 | K27 | BROWSER | K04, K06, K09, K10, K02 | Browser/application/service boundary | Bind browser bytes, application build, storage, requests, service fixtures and cleanup/reset semantics; uncontrolled services or device state prevent reuse. |
 | K26 | APPLE | K25, K06, K11, K09 | Swift/Xcode runtime qualification | Qualify documented host/simulator scopes with reset application/device state; UI/device/external-state tests cannot inherit host-unit qualification. |
 | K19 | WORKER | K15, K07, K08, K09, K02 | Cloudflare worker runtime qualification | Independently qualify worker execution, bindings, storage, requests, isolation and reset state against a defined worker context; ordinary Node/Vitest qualification is insufficient. |
 
-
 ## DOING
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-
-| K14B | GO | K14A, K50 | Typed closed local Go helper imports | Bind compiler-selected internal/external test variants and every admitted local dependency, type-resolved direct call and source/tool/import-map identity; unsupported or dormant effects broaden before private issuance. |
-
-| K16B | TS | K15, K06, K09, K10D, K10E | Restricted Vitest framework and startup contract | Review the exact configured bootstrap, transformer/addon, matcher, thread, collection, timer and global-state semantics; preserve the explicitly configured full command and retain observable/unknown-effect gaps until justified. A static user-source certificate alone is insufficient. |
-
-| K10E | RUNTIME | K10D, K10B, K09 | Private trusted managed compiler profile | Bind an issuer-owned executable-memory profile to captured program and transport identities; public capture stays strict, data stays noexec and external file/network/process restrictions remain. Pinned compiler/framework code is trusted explicitly; actual Wasm/startup, denial, drift and failure controls precede TypeScript qualification. |
-
-| K52 | CORE | K10D, K31, K07 | Private provider execution seam | Reuse the native cache/audit/outcome engine for a producer-owned sealed launch and stable functional context; public envelopes/callbacks cannot create authority, mutations and live guard failures reject before cache, and legacy Go keys/launch remain unchanged. |
 
 ## REVIEW
 
@@ -128,8 +128,27 @@ remain authoritative if this board drifts.
 
 ## DONE
 
+Go/TypeScript runtime and coordinator cards below are complete for the initial
+documented restricted profiles. Unsupported constructs and toolchains use full
+original fallback. Each future language or runtime expansion needs its own
+acceptance; these local states do not qualify hosted CI or arbitrary programs.
+
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
+| K14B | GO | K14A, K50 | Typed closed local Go helper imports | Bind compiler-selected internal/external test variants and every admitted local dependency, type-resolved direct call and source/tool/import-map identity; unsupported or dormant effects broaden before private issuance. |
+| K16B | TS | K15, K06, K09, K10D, K10E | Restricted Vitest framework and startup contract | Review the exact configured bootstrap, transformer/addon, matcher, thread, collection, timer and global-state semantics; preserve the explicitly configured full command and retain observable/unknown-effect gaps until justified. A static user-source certificate alone is insufficient. |
+| K10E | RUNTIME | K10D, K10B, K09 | Private trusted managed compiler profile | Bind an issuer-owned executable-memory profile to captured program and transport identities; public capture stays strict, data stays noexec and external file/network/process restrictions remain. Pinned compiler/framework code is trusted explicitly; actual Wasm/startup, denial, drift and failure controls precede TypeScript qualification. |
+| K52 | CORE | K10D, K31, K07 | Private provider execution seam | Reuse the native cache/audit/outcome engine for a producer-owned sealed launch and stable functional context; public envelopes/callbacks cannot create authority, mutations and live guard failures reject before cache, and legacy Go keys/launch remain unchanged. |
+| K14 | GO | K13, K06, K10, K14A, K14B, K14C | Broader Go qualification | Support documented Go constructs, external test packages, setup and fixture inputs with enforced effect contracts; unsupported interfaces/reflection/cgo/concurrency broaden rather than guess. |
+| K14C | GO | K14B, K07, K09 | Go setup and fixture contracts | Admit only reviewed bounded setup and fixture influence with complete compiler/input/runtime identity; unsupported TestMain, dynamic initialization, reflection, cgo and concurrency retain full original scopes. |
+| K16C | TS | K16A, K16B, K31, K10, K07, K08, K49 | Private Node issuer and shared execution integration | A producer-owned seal binds source, transformed code, tools, configured invocation, inventory, runtime, transport and decoder before shared cache/audit/execute; forged public proofs and envelopes remain rejected, with independent drift/outcome/failure/reuse controls. |
+| K16 | TS | K15, K06, K10, K16A, K16B, K16C | Node runtime qualification for TS/Vitest | Installed Node/module/runner identities and all startup/collection/execution effects fit an enforced context; native addons, JIT/runtime behavior and unsupported loaders cannot bypass qualification. |
+| K32 | CORE | K05, K06, K31, K14, K16 | Selective execution coordinator | For initial Go and TS/Vitest contexts, execute changed groups, validate reused groups, and run complete original scopes on qualification gaps; no unrelated existing native gate is silently replaced. |
+| K33 | CORE | K32, K02 | Aggregate outcome reconciliation | Every required case/group has an executed terminal outcome or authenticated pass; startup/build/hook errors, unexpected identities, truncation, cancellation and drift cannot produce green. |
+| K35 | CORE | K33, K02, K48 | Full audits, revocation and recovery | Forced-full and scheduled audit paths revoke previous authority before execution, including cancellation/failure; mismatches revoke relevant qualification and retain original full gates. |
+| K36 | CLI | K33, K30 | One end-to-end command and explanation | Setup/doctor/plan/run connect qualified paths and original fallbacks; stable reports distinguish executed, reused, affected, broadened and incomplete scopes without exposing source or environment values. |
+| K37 | CI | K34, K35, K36 | Local CI-equivalent workflow | Reviewed offline helper and 21 actual core/native gates bind exact revisions, provisioned tools, private cache authority, fallback and audits. Hosted CI remains OPEN and unexecuted; external workflow actions require approval. |
+| K38 | QA | K33, K35, K03 | Independent selection and isolation review | Review the influence algorithm and backend assumptions; run real hidden-dependency, unexecuted-effect, state, bypass, cache and fault cases against original full runs. Passing comparisons alone confer no qualification. |
 | K14A | GO | K13, K06, K10 | Pure external Go test namespaces | Certify the complete mixed internal/external source map by namespace with exact combined case identities and unchanged private issuer/context binding; duplicate cases and unsupported imports or dormant effects broaden. |
 | K10D | RUNTIME | K10B, K10C, K09, F03 | Captured native addon execution roles | Admit only explicitly captured native addon bytes and their loader/library closure in a separate executable runtime role, preserving resource noexec restrictions, bounded inputs and denial policy; actual supported addons require source/tool/alias/live-drift/cancellation controls and cannot grant user FFI or provider authority. |
 | K51 | CORE | F02, F03, K42 | Shared observed native stages | Reuse the common guarded build lifecycle and bounded process runner for completed native nonzero exits, sealed native report products and exact output; failures, interruption, drift or overflow remain unusable and cannot become passing evidence. |
@@ -174,21 +193,8 @@ remain authoritative if this board drifts.
 
 | ID | Lane | Dependencies | Feature | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| K14 | GO | K13, K06, K10, K14A, K14B, K14C | Broader Go qualification | Support documented Go constructs, external test packages, setup and fixture inputs with enforced effect contracts; unsupported interfaces/reflection/cgo/concurrency broaden rather than guess. |
-| K14C | GO | K14B, K07, K09 | Go setup and fixture contracts | Admit only reviewed bounded setup and fixture influence with complete compiler/input/runtime identity; unsupported TestMain, dynamic initialization, reflection, cgo and concurrency retain full original scopes. |
-| K16C | TS | K16A, K16B, K31, K10, K07, K08, K49 | Private Node issuer and shared execution integration | A producer-owned seal binds source, transformed code, tools, configured invocation, inventory, runtime, transport and decoder before shared cache/audit/execute; forged public proofs and envelopes remain rejected, with independent drift/outcome/failure/reuse controls. |
-| K16 | TS | K15, K06, K10, K16A, K16B, K16C | Node runtime qualification for TS/Vitest | Installed Node/module/runner identities and all startup/collection/execution effects fit an enforced context; native addons, JIT/runtime behavior and unsupported loaders cannot bypass qualification. |
-| K17 | JS | K16, K02 | Node test affected execution | Account for runner collection, hooks, module loading, concurrency and exact terminal inventory using common qualification/reuse machinery. |
-| K18 | JS | K16, K02 | Jest affected execution | Account for configured transforms, resolution, mocks, setup, snapshots and process scopes; reject unsupported plugin behavior and snapshot update modes. |
 | K20 | WORKER | K19, K06 | Worker Vitest integration | Collect and execute supported worker-pool groups with complete outcomes and qualified reuse; binding/state changes invalidate consumers and unsupported worker modes fall back. |
 | K28 | BROWSER | K27 | Playwright affected execution | Actual browser-based workloads reconcile discovery and outcomes and reuse only qualified isolated groups; browser-free reporter tests are insufficient. |
-| K32 | CORE | K05, K06, K31, K14, K16 | Selective execution coordinator | For initial Go and TS/Vitest contexts, execute changed groups, validate reused groups, and run complete original scopes on qualification gaps; no unrelated existing native gate is silently replaced. |
-| K33 | CORE | K32, K02 | Aggregate outcome reconciliation | Every required case/group has an executed terminal outcome or authenticated pass; startup/build/hook errors, unexpected identities, truncation, cancellation and drift cannot produce green. |
-| K35 | CORE | K33, K02, K48 | Full audits, revocation and recovery | Forced-full and scheduled audit paths revoke previous authority before execution, including cancellation/failure; mismatches revoke relevant qualification and retain original full gates. |
-| K36 | CLI | K33, K30 | One end-to-end command and explanation | Setup/doctor/plan/run connect qualified paths and original fallbacks; stable reports distinguish executed, reused, affected, broadened and incomplete scopes without exposing source or environment values. |
-| K37 | CI | K34, K35, K36 | Reproducible CI workflow | Exact revisions, provisioned tools, matrix context, private cache authority, fallback, artifacts and audits work in disposable CI-equivalent runs. External workflow changes require applicable authorization. |
-| K38 | QA | K33, K35, K03 | Independent selection and isolation review | Review the influence algorithm and backend assumptions; run real hidden-dependency, unexecuted-effect, state, bypass, cache and fault cases against original full runs. Passing comparisons alone confer no qualification. |
-| K39 | QA | K37, K38, P02 | Compatibility and performance acceptance | Run actual declared versions/platforms and representative consumer workloads; record cold/warm end-to-end costs including capture/build/audits and negative savings. Unsupported modes demonstrably fall back. |
 | K40 | COORDINATOR | K39 | Capability documentation and local handoff | Update status/safety/runner/CI docs with exact supported contexts and evidence; record the initial Go/TS milestone after its finite release gates pass, with external acceptance and release status separately recorded. |
 | K41 | COORDINATOR | K42, K40, A01, A02, A03, A04, A05, A06, A07, A08, A10 | Whole-backlog local completion | Reconcile every promised context with implemented qualification, actual acceptance evidence, explicit exclusions and accurate docs; no placeholder or untested platform remains claimed as supported. External production acceptance and release remain separate. |
 
@@ -439,15 +445,15 @@ complete-scope/key fixture checks descriptive on other build hosts; actual
 workspace admission and private issuance require the tested macOS/Linux ARM64
 controller cohort before parser execution or authority creation.
 
-Live fleet activity verified 2026-10-11 for the Go/TypeScript release:
+Fleet closeout recorded 2026-10-11 for the Go/TypeScript release:
 
 | Agent/task | Activity | Assignment |
 | --- | --- | --- |
-| `/root` | RELEASE PACKAGING AND CLEANUP COORDINATION | Root composition `8e312b1f` binds core3, current native8 and impact-qualified historical10: 304 mandatory native terminals and 164 CLI steps. Signed runtime source `13084875` and canonical staged Mori passed. The packaging-only target declaration removes deferred Windows without changing runtime functions. Archives and finite disposable-task cleanup remain. |
-| `/root/release_review` | PACKAGING AND CLEANUP SOURCE REVIEW | Reviews `43be6f27` and `935c1d21` accept native8 and root21. Review now covers ordinary four-target packaging and finite cleanup; no native tests remain. Failed/interrupted aggregates stay unaccepted. |
-| `/root/typescript_release` | COMPLETED; HISTORICAL OWNER | The private Vitest issuer and actual composed CLI checks are accepted for the fixed supported runtime. This agent has no active assignment. |
-| `/root/release_records` | FINITE CLEANUP SOURCE PREPARATION | Preparation `8201a96c` retains 606 proof/log records, including failed Windows packaging history. Copies and mandatory provenance fields are checked. It remains incomplete and cannot authorize cleanup until actual archive acceptance is retained. |
-| `/root/native_finish` | FOUR-TARGET ARTIFACT PREPARATION | Native8 proof `9c17b938` is accepted. Preparing the ordinary macOS/Linux packager and archive verifier, with actual ARM64 smokes and AMD64 build-only checks. Windows packaging and runtime execution are deferred. |
+| `/root` | LOCAL HANDOFF COMPLETE | Runtime/core 21 gates, signed source, four archived targets, all 139 payload removals and documentation closeout complete. Publication requires approval. |
+| `/root/release_review` | COMPLETED | Root/native matrix, artifact actuals and finite cleanup actuals accepted; cleanup review `8880e921` verifies all removals, retained records and final assets. No active assignment. |
+| `/root/typescript_release` | COMPLETED; HISTORICAL OWNER | Private Vitest issuer and actual composed CLI controls accepted for the documented fixed runtime. No active assignment. |
+| `/root/release_records` | COMPLETED | Final cleanup helpers and focused mode correction reviewed; before deletion, 921 pinned records retained with mandatory provenance fields unchanged. No active assignment. |
+| `/root/native_finish` | COMPLETED | Four ordinary macOS/Linux archives and actual ARM64 smokes passed. AMD64 is build-only; Windows is deferred. No active assignment. |
 
 Other-language assignments below are historical and deferred from active work.
 

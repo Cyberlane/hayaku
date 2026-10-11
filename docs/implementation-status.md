@@ -4,7 +4,7 @@ The source and tests define current behavior. “Native” below means installed
 
 ## Go and TypeScript release priority
 
-The next local candidate is v0.6.0, focused on Go and TypeScript/Vitest.
+The local v0.6.0 candidate is complete for the restricted Go and TypeScript/Vitest profiles.
 Other-language expansion and Windows qualification are deferred; subsequent
 releases add one language each. Publication and hosted CI acceptance remain
 separate from local implementation and verification.
@@ -26,8 +26,10 @@ separate from local implementation and verification.
 - Tiny acceptance fixtures run faster in full; measured qualification and reuse
   costs establish no representative speedup. Final staged Mori, signed local
   runtime source and independent matrix review passed. Four macOS/Linux archives,
-  extracted ARM64 checks and disposable-task cleanup remain local release gates.
-  The ordinary archive builder excludes deferred Windows targets. Hosted CI and consumer acceptance are
+  extracted ARM64 checks and independent artifact review passed. All 139 obsolete
+  task payloads were removed, totalling 10,115,891,346 logical bytes (9.42 GiB),
+  with release files and evidence retained. The ordinary archive builder excludes
+  deferred Windows targets. AMD64 archives have build-only checks. Hosted CI and consumer acceptance are
   separate. This profile does not qualify arbitrary native Go/TypeScript or
   an AST/source-only proposal for CI omission.
 

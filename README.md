@@ -23,7 +23,8 @@ prove the result of your normal test suite.
 **The unreleased v0.6.0 candidate focuses on Go and TypeScript/Vitest.**
 `hayaku native` shares authenticated group reuse, audits and complete original
 fallback across restricted compiler/framework profiles. Local CLI/platform
-acceptance passed; artifact and publication gates remain open. See [candidate setup](docs/go-typescript-native.md)
+acceptance, four archive checks and task cleanup passed locally; publication
+requires approval. See [candidate setup](docs/go-typescript-native.md)
 and [implementation status](docs/implementation-status.md).
 
 ## Install
