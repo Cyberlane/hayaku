@@ -24,6 +24,10 @@ import (
 
 const AppleClosureVersion = "apple-observed-closure-v4-owned-imports"
 
+// maxAppleToolBytes bounds the total size of distinct producer executables
+// hashed for one closure. Each tool still has to fit inputbundle.MaxBytes.
+const maxAppleToolBytes int64 = 4 << 30
+
 type appleTool struct {
 	invocation, resolved, digest string
 	alias, file                  os.FileInfo
@@ -60,7 +64,7 @@ type AppleClosure struct {
 	env                        []string
 	tools                      map[string]appleTool
 	trees                      map[string]appleTree
-	bytes                      int64
+	bytes, toolBytes           int64
 	state                      string
 }
 
@@ -202,7 +206,9 @@ func (c *AppleClosure) CaptureTool(ctx context.Context, name string) (string, er
 			seen = true
 		}
 	}
-	if !seen && (info.Size() < 0 || info.Size() > inputbundle.MaxBytes-c.bytes) {
+	// Tools are stream-hashed, never retained, so they have their own budget
+	// and do not consume the in-memory tree and copy allowance in c.bytes.
+	if !seen && (info.Size() < 0 || info.Size() > inputbundle.MaxBytes || info.Size() > maxAppleToolBytes-c.toolBytes) {
 		return "", errors.New("Apple producer byte closure exceeds bounds")
 	}
 	digest, err := snapshot.FileDigest(ctx, resolved, inputbundle.MaxBytes)
@@ -211,7 +217,7 @@ func (c *AppleClosure) CaptureTool(ctx context.Context, name string) (string, er
 	}
 	c.tools[invocation] = appleTool{invocation, resolved, digest, alias, info}
 	if !seen {
-		c.bytes += info.Size()
+		c.toolBytes += info.Size()
 	}
 	c.state = c.Digest()
 	if err := c.Verify(ctx); err != nil {
@@ -493,7 +499,7 @@ func (c *AppleClosure) Digest() string {
 	if c.copy != nil {
 		copied = []any{c.copy.source, c.copy.destination, c.copy.bytes}
 	}
-	return appleDigest([]any{c.request, c.source, tools, trees, outputs, copied, c.producers, c.stages, c.unusable, c.bytes, c.sdkResolved, appleInfo(c.sdkAlias), appleInfo(c.sdkRoot), c.sourceInvocation, appleInfo(c.sourceAlias), appleInfo(c.sourceRoot)})
+	return appleDigest([]any{c.request, c.source, tools, trees, outputs, copied, c.producers, c.stages, c.unusable, c.bytes, c.toolBytes, c.sdkResolved, appleInfo(c.sdkAlias), appleInfo(c.sdkRoot), c.sourceInvocation, appleInfo(c.sourceAlias), appleInfo(c.sourceRoot)})
 }
 
 // ReadAppleFile reuses immutable bounded input capture, then reads its private
