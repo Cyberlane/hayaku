@@ -10,23 +10,37 @@ against a full test run.
 
 **The ordinary plan/run/shadow workflow runs your suite in full.** It does not skip native Go,
 JavaScript, Python, browser, or service tests based on a recommendation, a trace,
-or a confidence score. When information is incomplete, it keeps the full run or
+or a confidence score. Result reuse is a separate command with its own rules,
+described below. When information is incomplete, it keeps the full run or
 stops planning. See [how test decisions work](docs/safety.md).
 
-**v0.5.1 adds SwiftPM XCTest target proposals and full Xcode result reconciliation.** Installed Node dependencies can also be bound to an unchanged generic full command, including custom Cloudflare test pools. See [Apple integration](docs/apple.md) and the [release notes](docs/releases/v0.5.1.md). Native full suites remain required.
+**v0.6.2 adds result reuse for restricted Go and TypeScript/Vitest tests.**
+`hayaku native` runs each Go package or Vitest file once, then reuses its
+verified passing result while its code, dependencies, test cases and execution
+settings are unchanged. Changed groups run again; failures are never saved.
 
-**v0.4.0 can reuse passing results for separate WASI suites.** These WebAssembly
+The supported profile is narrow, and most existing projects fall outside it:
+
+- **Go:** plain functions over basic values. A test's dependencies must stay
+  inside your module, with no standard-library imports beyond `testing`, and no
+  type declarations, methods, package variables, goroutines, cgo or `TestMain`.
+- **TypeScript:** constants, number-only functions, relative named imports, and
+  Vitest `test`/`expect` with `toBe`, `toBeGreaterThan` and `toBeLessThan`.
+- **Platforms:** macOS and Linux on ARM64, with Go 1.27.1 and one fixed
+  Node/TypeScript/Vitest toolchain.
+
+Code outside the profile runs your complete original test command, so the
+result stays correct but nothing is skipped. Checking the profile costs time on
+every run, and the small suites measured so far ran faster in full. See
+[setup and limits](docs/go-typescript-native.md) and
+[implementation status](docs/implementation-status.md).
+
+**v0.5.1 added SwiftPM XCTest target proposals and full Xcode result reconciliation.** Installed Node dependencies can also be bound to an unchanged generic full command, including custom Cloudflare test pools. See [Apple integration](docs/apple.md) and the [release notes](docs/releases/v0.5.1.md). Native full suites remain required.
+
+**v0.4.0 added passing-result reuse for separate WASI suites.** These WebAssembly
 suites run with controlled inputs and restricted access to your computer. Reuse
 requires unchanged code, inputs, and execution settings; it does not replace or
 prove the result of your normal test suite.
-
-**v0.6.2 focuses on Go and TypeScript/Vitest.**
-`hayaku native` shares authenticated group reuse, audits and complete original
-fallback across restricted compiler/framework profiles. Local CLI/platform
-acceptance, four archive checks and task cleanup passed locally. Hosted
-publication status is recorded in [release checks](docs/release-checks.md).
-See [setup](docs/go-typescript-native.md)
-and [implementation status](docs/implementation-status.md).
 
 ## Install
 
@@ -117,6 +131,33 @@ unsupported. Separate source copies still share access to services and external
 state. A successful comparison helps evaluate a recommendation, but does not prove
 that omitted tests would always be unaffected. The original full suite stays required.
 
+For configured Vitest installations, Hayaku can observe filesystem activity to
+help explain runtime dependencies. See [runtime observation setup and limits](docs/runtime-observations.md).
+These observations can add tests to a recommendation, but cannot authorize
+skipping native tests.
+
+## Reuse results for restricted Go and Vitest tests
+
+`hayaku native` is separate from the plan workflow above. List every test
+package your suite needs, then run the same command each time:
+
+```sh
+hayaku native-init --root /absolute/project --language go \
+  --package ./math --package ./validation
+hayaku native --root /absolute/project --config native.json \
+  --cache-dir /absolute/private-hayaku-cache
+# Force a fresh full run and discard earlier saved passes.
+hayaku native --root /absolute/project --config native.json \
+  --cache-dir /absolute/private-hayaku-cache --no-reuse
+```
+
+The report marks each group as `executed` or `reused` and gives a reason when a
+workspace falls back. One package outside the profile currently sends its whole
+workspace to the original command. Keep the cache private and outside the
+source tree. Linux runs need an already installed Docker image, and Vitest needs
+its pinned Node, TypeScript and runtime inputs; nothing is downloaded for you.
+See [setup and limits](docs/go-typescript-native.md).
+
 ## Reuse results from a separate WASI suite
 
 A [capsule](docs/capsules.md) is Hayaku's controlled environment for an explicitly
@@ -140,8 +181,8 @@ saved passing results with a private authentication key; this trusts the user
 running Hayaku and the executable. If the cache is invalid or unavailable, the
 suite runs again. Reports omit guest logs, source contents, and raw environment values.
 
-The unreleased `hayaku suite --config suites.json --cache-dir .git/hayaku-passes`
-command coordinates multiple independent WASI groups, rerunning groups whose
+`hayaku suite --config suites.json --cache-dir .git/hayaku-passes`
+coordinates multiple independent WASI groups, rerunning groups whose
 envelopes changed and reusing unchanged passes. See the
 [shared execution design and configuration](docs/shared-execution.md).
 
@@ -155,17 +196,17 @@ hayaku pilot --package ./internal/graph --cache-dir .git/hayaku-passes \
 
 Both sides use separate fresh compiler caches. The measurement includes checking
 the compiler, copying source, compiling, validating the final result, and cleaning
-up. This pilot does not replace `go test ./...` or DocPulse's normal suites.
+up. This pilot does not replace `go test ./...` or your normal suites.
 See [how performance is measured](docs/measurements.md).
 
 ## Supported test tools
 
 | Test tool | What Hayaku supports | What runs today |
 | --- | --- | --- |
-| Go | Package, import, test, and embedded-file dependencies; full-run comparisons and JSON result checks | Ordinary plans run in full; restricted native candidate can reuse qualified packages |
+| Go | Package, import, test, and embedded-file dependencies; full-run comparisons and JSON result checks | Ordinary plans run in full; `hayaku native` can reuse packages inside the restricted profile |
 | Cargo | Offline, locked package dependencies and Rust result reports | Full test suite |
 | Node test runner, unittest, pytest, Jest, Playwright | Test lists and completed results; every workspace input is treated as potentially affecting every test | Full test suite |
-| Vitest 3.2.7 / 4.1.11 | Four pinned Vitest/Vite pairs; configured JS/TS dependencies, results, full-run comparisons, and observed file reads | Ordinary plans run in full; fixed 4.1.11/8.2.2 native candidate can reuse qualified files |
+| Vitest 3.2.7 / 4.1.11 | Four pinned Vitest/Vite pairs; configured JS/TS dependencies, results, full-run comparisons, and observed file reads | Ordinary plans run in full; `hayaku native` can reuse files inside the restricted profile on the fixed 4.1.11/8.2.2 toolchain |
 | cargo-nextest 0.9.146 | Test binary and case lists, Cargo package recommendations; automatic shadow result checks are not yet supported | Full test suite |
 | JVM, .NET, Apple, Ruby, PHP, Dart/Flutter, C/C++, Bun, Deno, Bazel | Configured full test commands and applicable result reports; no claim of native discovery or filtering | Full test suite |
 | Custom command | Your configured command, regardless of language | Full test suite |
@@ -173,8 +214,9 @@ See [how performance is measured](docs/measurements.md).
 
 Use `hayaku catalog` to list integrations and `hayaku doctor` to check installed
 tools. Ordinary native plans preserve full execution. The separate Go/Vitest
-native candidate requires the [finite producer contract](docs/go-typescript-native.md)
-and final local acceptance; metadata or recommendations cannot authorize reuse.
+`native` command reuses results only inside its
+[restricted profile](docs/go-typescript-native.md); metadata or recommendations
+cannot authorize reuse.
 See [supported versions and limitations](docs/runner-support.md) for the difference
 between tested versions, accepted report formats, and full-command integrations.
 
@@ -186,7 +228,7 @@ never counted as Hayaku result reuse.
 ## Documentation
 
 - [How test decisions work](docs/safety.md), [architecture](docs/architecture.md) and [how support is qualified](docs/qualification.md)
-- [Vitest setup and limits](docs/vitest.md), [CI integration](docs/ci.md) and [implementation status](docs/implementation-status.md)
+- [Go and Vitest result reuse](docs/go-typescript-native.md), [Vitest setup and limits](docs/vitest.md), [CI integration](docs/ci.md) and [implementation status](docs/implementation-status.md)
 - [WASI result reuse](docs/capsules.md), [input bundles](docs/inputs.md), [supported runners](docs/runner-support.md) and [performance measurement](docs/measurements.md)
 - [Pilot methodology](docs/pilot-methodology.md) and [historical observations](docs/pilot-results.md)
 - [Verification](docs/verification.md) and [distribution](docs/distribution.md)
@@ -215,9 +257,3 @@ outside source. Local native fixture verification uses `HAYAKU_VITEST_NODE`,
 
 See [contributing](CONTRIBUTING.md). Licensed under [MIT](LICENSE).
 Bundled dependency notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-For configured Vitest installations, Hayaku can observe filesystem activity to
-help explain runtime dependencies. See [runtime observation setup and limits](docs/runtime-observations.md).
-These observations can add tests to a recommendation, but cannot authorize
-skipping native tests. WASI result reuse has its own separate execution rules
-and authenticated passing results.
