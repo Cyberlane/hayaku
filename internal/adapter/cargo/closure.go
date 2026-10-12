@@ -264,7 +264,7 @@ func (c *Closure) captureRuntimeDirectory(ctx context.Context, name string) erro
 	}
 	sum, err := snapshot.Digest(ctx, resolved)
 	if err != nil {
-		return errors.New("Cargo runtime tree unavailable or exceeds bounds")
+		return errors.Join(errors.New("Cargo runtime tree unavailable or exceeds bounds"), err)
 	}
 	var size int64
 	count := 0
